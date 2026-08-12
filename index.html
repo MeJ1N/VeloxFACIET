@@ -1,125 +1,93 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b0d10">
-  <title>Velox Arena — Standoff 2</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Lunex Cases</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">V</div>
-        <div><strong>VELOX</strong><span>ARENA</span></div>
-      </div>
+<div class="bg"></div>
 
-      <nav class="nav">
-        <button class="nav-item active" data-page="home">⌂ <span>Главная</span></button>
-        <button class="nav-item" data-page="matches">⚔ <span>Матчи</span></button>
-        <button class="nav-item" data-page="leaderboard">♛ <span>Рейтинг</span></button>
-        <button class="nav-item" data-page="profile">◉ <span>Профиль</span></button>
-      </nav>
+<header>
+  <div class="logo"><span>☾</span><b>LUNEX</b><small>CASES</small></div>
+  <nav>
+    <button class="nav active" data-page="cases">Кейсы</button>
+    <button class="nav" data-page="upgrader">⚡ Апгрейдер</button>
+    <button class="nav" data-page="inventory">🎒 Инвентарь</button>
+  </nav>
+  <div class="account">◆ <strong id="balance">1000</strong></div>
+</header>
 
-      <div class="sidebar-card">
-        <span class="online-dot"></span>
-        <div><b>Сервера онлайн</b><small id="onlineCount">1 284 игрока</small></div>
-      </div>
-
-      <div class="sidebar-bottom">
-        <button class="ghost-btn" id="themeBtn">◐ Тема</button>
-        <button class="ghost-btn" id="resetBtn">↻ Сбросить демо</button>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div class="mobile-brand">VELOX</div>
-        <div class="status"><span class="online-dot"></span> Standoff 2 Competitive</div>
-        <button class="avatar" id="avatarBtn">K</button>
-      </header>
-
-      <section id="home" class="page active-page">
-        <div class="hero">
-          <div>
-            <p class="eyebrow">STANDOFF 2 • COMPETITIVE</p>
-            <h1>Играй. Побеждай.<br><span>Поднимай рейтинг.</span></h1>
-            <p class="hero-text">Соревновательная платформа для матчей Standoff 2. Собирай команду, играй рейтинговые матчи и становись №1.</p>
-            <div class="hero-actions">
-              <button class="primary-btn" id="findMatchBtn">⚡ Найти матч</button>
-              <button class="secondary-btn" data-page-jump="matches">Посмотреть матчи</button>
-            </div>
-          </div>
-          <div class="rank-card">
-            <div class="rank-top"><span>ТВОЙ РЕЙТИНГ</span><b>LVL 8</b></div>
-            <div class="rank-number" id="heroElo">1428</div>
-            <div class="progress"><i id="heroProgress"></i></div>
-            <div class="rank-bottom"><span>До следующего уровня</span><b id="heroNext">72 ELO</b></div>
-          </div>
-        </div>
-
-        <div class="section-head"><h2>Быстрый доступ</h2><button class="text-btn" data-page-jump="matches">Все матчи →</button></div>
-        <div class="quick-grid">
-          <button class="quick-card" data-queue="5v5"><span class="icon">5v5</span><b>Ranked 5v5</b><small>Соревновательный режим</small></button>
-          <button class="quick-card" data-queue="2v2"><span class="icon">2v2</span><b>Team 2v2</b><small>Быстрый командный матч</small></button>
-          <button class="quick-card" data-queue="1v1"><span class="icon">1v1</span><b>Duel 1v1</b><small>Чистый скилл</small></button>
-        </div>
-
-        <div class="section-head"><h2>Последние матчи</h2><button class="text-btn" data-page-jump="profile">Статистика →</button></div>
-        <div class="match-list" id="recentMatches"></div>
-      </section>
-
-      <section id="matches" class="page">
-        <div class="page-title"><div><p class="eyebrow">MATCHMAKING</p><h1>Матчи</h1><p>Выбери режим и встань в очередь.</p></div></div>
-        <div class="queue-grid">
-          <button class="queue-card selected" data-queue="5v5"><span>5v5</span><b>Ranked</b><small>Обычный рейтинг</small><em>~ 2 мин</em></button>
-          <button class="queue-card" data-queue="2v2"><span>2v2</span><b>Team</b><small>Командный режим</small><em>~ 45 сек</em></button>
-          <button class="queue-card" data-queue="1v1"><span>1v1</span><b>Duel</b><small>Один против одного</small><em>~ 20 сек</em></button>
-        </div>
-        <div class="queue-panel">
-          <div><span class="queue-dot"></span><div><b id="queueTitle">Ranked 5v5</b><small id="queueText">Поиск соперников с похожим рейтингом</small></div></div>
-          <button class="primary-btn" id="queueBtn">⚡ Встать в очередь</button>
-        </div>
-        <div class="section-head"><h2>Активные лобби</h2><span class="muted">Демо-режим</span></div>
-        <div class="match-list" id="activeMatches"></div>
-      </section>
-
-      <section id="leaderboard" class="page">
-        <div class="page-title"><div><p class="eyebrow">GLOBAL RANKING</p><h1>Лидерборд</h1><p>Лучшие игроки Velox Arena.</p></div></div>
-        <div class="leaderboard" id="leaderboardList"></div>
-      </section>
-
-      <section id="profile" class="page">
-        <div class="profile-head">
-          <div class="big-avatar">K</div>
-          <div><p class="eyebrow">PLAYER PROFILE</p><h1>kolt</h1><p class="muted">Velox member • с августа 2026</p></div>
-          <div class="profile-rank"><small>RATING</small><strong id="profileElo">1428</strong><span>LVL 8</span></div>
-        </div>
-        <div class="stats-grid">
-          <div class="stat"><small>ПОБЕДЫ</small><b id="wins">24</b><span>+3 за неделю</span></div>
-          <div class="stat"><small>K/D</small><b>1.47</b><span>Топ 18%</span></div>
-          <div class="stat"><small>WINRATE</small><b id="winrate">67%</b><span>Последние 30 игр</span></div>
-          <div class="stat"><small>MVP</small><b>11</b><span>12% матчей</span></div>
-        </div>
-        <div class="section-head"><h2>История матчей</h2></div>
-        <div class="match-list" id="profileMatches"></div>
-      </section>
-    </main>
+<main>
+<section id="cases" class="page active">
+  <div class="hero">
+    <div>
+      <div class="badge">✦ LUNEX DROP SYSTEM</div>
+      <h1>Открывай.<br><em>Выигрывай.</em></h1>
+      <p>Открывай кейсы, собирай редкие предметы и используй их в апгрейдере.</p>
+      <button class="primary" id="scrollCases">Открыть кейсы</button>
+    </div>
+    <div class="orb">☾</div>
   </div>
 
-  <div class="toast" id="toast"></div>
-  <div class="modal hidden" id="modal">
-    <div class="modal-box">
-      <button class="close" id="closeModal">×</button>
-      <div class="modal-icon">⚡</div>
-      <h2>Поиск матча</h2>
-      <p id="modalText">Ищем соперников для Ranked 5v5...</p>
-      <div class="loader"><i></i></div>
-      <button class="secondary-btn full" id="cancelQueue">Отменить</button>
+  <div class="section-head"><div><small>DROP SYSTEM</small><h2>Кейсы</h2></div></div>
+  <div id="casesGrid" class="grid"></div>
+</section>
+
+<section id="upgrader" class="page">
+  <div class="title"><div class="badge">⚡ LUNEX UPGRADE</div><h1>Апгрейдер</h1><p>Выбери предмет и цель. Чем выше цена цели, тем меньше шанс.</p></div>
+  <div class="upgrade-box">
+    <div class="slot">
+      <label>ВАШ ПРЕДМЕТ</label>
+      <div id="sourceSlot" class="item-slot empty">?</div>
+      <button class="secondary" id="chooseSource">Выбрать предмет</button>
+    </div>
+    <div class="upgrade-center">
+      <div id="chance">0%</div>
+      <div class="arrow">⚡</div>
+      <button id="upgradeBtn" class="upgrade primary" disabled>АПГРЕЙД</button>
+      <small>При проигрыше предмет теряется.</small>
+    </div>
+    <div class="slot">
+      <label>ЦЕЛЬ</label>
+      <div id="targetSlot" class="item-slot empty">?</div>
+      <div class="target-price">◆ <span id="targetPrice">0</span></div>
     </div>
   </div>
+  <h2 class="sub">Цели</h2>
+  <div id="targets" class="items"></div>
+</section>
 
-  <script src="script.js"></script>
+<section id="inventory" class="page">
+  <div class="title"><div class="badge">YOUR ITEMS</div><h1>Инвентарь</h1><p>Все полученные предметы находятся здесь.</p></div>
+  <div class="inventory-stat">Стоимость: ◆ <b id="inventoryValue">0</b></div>
+  <div id="inventoryGrid" class="items"></div>
+</section>
+</main>
+
+<div id="modal" class="modal">
+  <div class="modal-card">
+    <button class="close" id="closeModal">×</button>
+    <div class="badge">CASE OPENING</div>
+    <h2 id="modalTitle">Открытие кейса</h2>
+    <div class="roulette"><div class="pointer"></div><div id="rouletteTrack"></div></div>
+    <div id="result" class="result">Открываем...</div>
+    <button id="again" class="primary hidden">Открыть ещё</button>
+  </div>
+</div>
+
+<div id="selector" class="modal">
+  <div class="modal-card selector">
+    <button class="close" id="closeSelector">×</button>
+    <div class="badge">SELECT ITEM</div>
+    <h2>Выбери предмет</h2>
+    <div id="selectorGrid" class="items"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<footer>☾ LUNEX CASES · Demo</footer>
+<script src="script.js"></script>
 </body>
 </html>
