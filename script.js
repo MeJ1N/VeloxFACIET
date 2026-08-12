@@ -1,204 +1,1535 @@
-const items={
- common:[
-  {name:"Blue Shard",price:35,icon:"🔷",c:"#1688ff",rarity:"COMMON"},
-  {name:"Neon Coin",price:55,icon:"🪙",c:"#1688ff",rarity:"COMMON"},
-  {name:"Lunar Stone",price:80,icon:"🌑",c:"#1688ff",rarity:"COMMON"}
- ],
- rare:[
-  {name:"Phantom Blade",price:150,icon:"🗡️",c:"#6c5cff",rarity:"RARE"},
-  {name:"Void Crystal",price:220,icon:"💠",c:"#6c5cff",rarity:"RARE"},
-  {name:"Cyber Mask",price:300,icon:"🎭",c:"#6c5cff",rarity:"RARE"}
- ],
- epic:[
-  {name:"Galaxy Orb",price:550,icon:"🔮",c:"#b34cff",rarity:"EPIC"},
-  {name:"Lunex Core",price:750,icon:"💎",c:"#b34cff",rarity:"EPIC"},
-  {name:"Astral Sword",price:950,icon:"⚔️",c:"#b34cff",rarity:"EPIC"}
- ],
- legendary:[
-  {name:"Solar Crown",price:1600,icon:"👑",c:"#ffc42e",rarity:"LEGENDARY"},
-  {name:"Dragon Core",price:2400,icon:"🐉",c:"#ffc42e",rarity:"LEGENDARY"}
- ],
- mythic:[
-  {name:"Lunex Star",price:5000,icon:"⭐",c:"#ff4d88",rarity:"MYTHIC"},
-  {name:"Eternal Moon",price:9000,icon:"🌙",c:"#ff4d88",rarity:"MYTHIC"}
- ]
-};
+(()=>{const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const ITEMS=[
+[1,'Glock-18 | Moonrise','pistol','Restricted',72,'🔫','#5278ff'],[2,'USP-S | Cyrex','pistol','Classified',115,'🔫','#8656ff'],[3,'Desert Eagle | Ocean','pistol','Classified',180,'🔫','#3fa9ff'],[4,'AK-47 | Neon Rider','rifle','Covert',420,'🔫','#ff3f8b'],[5,'M4A1-S | Hyper Beast','rifle','Covert',560,'🔫','#9d5cff'],[6,'AWP | Neo-Noir','rifle','Covert',760,'🎯','#c14cff'],[7,'AWP | Dragon Lore','rifle','Contraband',1450,'🎯','#ffb52e'],[8,'Karambit | Doppler','knife','Covert',2200,'🔪','#4f8cff'],[9,'Butterfly Knife | Fade','knife','Covert',3150,'🔪','#ff6cc9'],[10,'M9 Bayonet | Lore','knife','Covert',4200,'🔪','#f0b93c'],[11,'Karambit | Gamma Doppler','knife','Covert',5900,'🔪','#4de5a2'],[12,'Butterfly Knife | Emerald','knife','Covert',8400,'🔪','#38e3b1'],[13,'AK-47 | Fire Serpent','rifle','Covert',960,'🔫','#ef6d32'],[14,'M4A4 | Howl','rifle','Contraband',1780,'🔫','#f05658'],[15,'USP-S | Kill Confirmed','pistol','Covert',680,'🔫','#e85c9e'],[16,'Glock-18 | Fade','pistol','Restricted',340,'🔫','#e8a73d'],[17,'Flip Knife | Lore','knife','Covert',1320,'🔪','#d9a044'],[18,'Huntsman Knife | Gamma','knife','Covert',1120,'🔪','#42d5a0'],[19,'M4A1-S | Printstream','rifle','Covert',880,'🔫','#d6e2f0'],[20,'AK-47 | Vulcan','rifle','Covert',710,'🔫','#4d91ff']
+].map(x=>({id:x[0],name:x[1],type:x[2],rarity:x[3],price:x[4],icon:x[5],color:x[6]}));
+const CASES=[['starter','Starter Case',100,'📦','#4e8cff',[1,2,3,4,5]],['phantom','Phantom Case',250,'🎁','#8b5cff',[2,3,4,5,6,15,19]],['galaxy','Galaxy Case',600,'💎','#bd5cff',[4,5,6,7,8,13,14]],['lunar','Lunar Knife Case',1200,'🌙','#39b7ff',[7,8,9,10,17,18]],['mythic','Mythic Case',2500,'👑','#ffbd45',[7,8,9,10,11,12,14]],['eclipse','Eclipse Case',5000,'🌑','#ff4d75',[8,9,10,11,12]]].map(x=>({id:x[0],name:x[1],price:x[2],icon:x[3],color:x[4],pool:x[5]}));
+const KEY='lunex-demo-v5';let state={balance:1000,inv:[],history:[],source:null,target:null,filter:'all',search:'',tsearch:'',sort:'asc',case:null};
+function id(){return crypto.randomUUID?crypto.randomUUID():Date.now()+Math.random()}
+function item(idv){return ITEMS.find(x=>x.id===Number(idv))}
+function fmt(n){return Number(n).toLocaleString('ru-RU')}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function load(){try{Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}if(!state.inv?.length)state.inv=[{uid:id(),itemId:1},{uid:id(),itemId:2},{uid:id(),itemId:4},{uid:id(),itemId:16}];state.balance=Number(state.balance||1000);state.history=state.history||[];save()}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.remove('show'),2200)}
+function page(p){$$('.page').forEach(x=>x.classList.toggle('active',x.id===p));$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));if(p==='inventory')fullInv();if(p==='history')history();scrollTo({top:0,behavior:'smooth'})}
+function renderBalance(){$('#balance').textContent=fmt(state.balance)}
+function inv(){return state.inv.map(x=>({...item(x.itemId),uid:x.uid})).filter(x=>x.id)}
+function sourceList(){let a=inv(),q=state.search.toLowerCase();if(state.filter!=='all')a=a.filter(x=>x.type===state.filter);if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));a.sort((x,y)=>x.price-y.price);$('#count').textContent=inv().length;$('#sourceList').innerHTML=a.length?a.map(x=>`<button class="src ${state.source?.uid===x.uid?'sel':''}" data-src="${x.uid}"><div class="art" style="--c:${x.color}">${x.icon}</div><div><strong>${x.name}</strong><small>${x.rarity} · ${x.type}</small></div><em>◆ ${fmt(x.price)}</em></button>`).join(''):'<div style="padding:25px;color:#667486;font-size:9px;text-align:center">Ничего не найдено</div>';$$('[data-src]').forEach(b=>b.onclick=()=>selectSource(b.dataset.src))}
+function selectSource(uid){state.source=inv().find(x=>x.uid===uid)||null;if(state.target&&state.target.price<=state.source.price)state.target=null;render();toast('Предмет выбран')}
+function targets(){let a=[...ITEMS];if(state.source)a=a.filter(x=>x.price>state.source.price);let q=state.tsearch.toLowerCase();if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));if(state.sort==='asc')a.sort((x,y)=>x.price-y.price);if(state.sort==='desc')a.sort((x,y)=>y.price-x.price);if(state.sort==='name')a.sort((x,y)=>x.name.localeCompare(y.name));return a}
+function targetGrid(){let a=targets();$('#targets').innerHTML=a.length?a.map(x=>`<button class="target ${state.target?.id===x.id?'sel':''}" data-target="${x.id}"><label>${x.rarity}</label><div class="art" style="--c:${x.color}">${x.icon}</div><strong>${x.name}</strong><span>◆ ${fmt(x.price)}</span></button>`).join(''):'<div style="padding:30px;color:#687485;font-size:9px">Нет целей дороже выбранного предмета.</div>';$$('[data-target]').forEach(b=>b.onclick=()=>{if(!state.source)return toast('Сначала выбери свой предмет');state.target=item(b.dataset.target);render();})}
+function calc(){if(!state.source||!state.target)return {m:0,c:0};let m=state.target.price/state.source.price,c=Math.max(2,Math.min(96,96/m));return{m,c}}
+function selections(){let s=$('#sourceSlot'),t=$('#targetSlot');if(state.source){s.className='slot';s.style.setProperty('--c',state.source.color);s.innerHTML=`<div class="chosen">${state.source.icon}<strong>${state.source.name}</strong><small>◆ ${fmt(state.source.price)}</small></div>`}else{s.className='slot empty';s.innerHTML='＋<small>Выбери предмет слева</small>'}if(state.target){t.className='slot';t.style.setProperty('--c',state.target.color);t.innerHTML=`<div class="chosen">${state.target.icon}<strong>${state.target.name}</strong><small>◆ ${fmt(state.target.price)}</small></div>`}else{t.className='slot empty';t.innerHTML='＋<small>Выбери цель ниже</small>'}}
+function stats(){let c=calc();$('#sourceValue').textContent=state.source?fmt(state.source.price):0;$('#targetValue').textContent=state.target?fmt(state.target.price):0;$('#multiplier').textContent='x'+c.m.toFixed(2);$('#multi2').textContent='x'+c.m.toFixed(2);$('#chance').textContent=Math.round(c.c)+'%';$('#chance2').textContent=Math.round(c.c)+'%';$('#ring').style.background=`conic-gradient(#4d8dff ${c.c*3.6}deg,#19212c ${c.c*3.6}deg)`;$('#upgrade').disabled=!(state.source&&state.target&&state.target.price>state.source.price);$('#upgrade small').textContent=state.source&&state.target?`Шанс ${Math.round(c.c)}%`:'Выбери предметы'}
+function render(){renderBalance();sourceList();targetGrid();selections();stats();fullInv()}
+function upgrade(){if(!state.source||!state.target)return toast('Выбери предмет и цель');let c=calc(),src=state.source,tar=state.target,btn=$('#upgrade');btn.disabled=true;btn.innerHTML='⚡ ПРОВЕРКА...<small>Генерируем результат</small>';let ring=$('#ring'),start=performance.now();function tick(){let p=Math.min(1,(performance.now()-start)/2200);ring.style.transform=`scale(${1+Math.sin(p*35)*.025})`;$('#chance').textContent=Math.round(50+Math.sin(p*40)*40)+'%';if(p<1)return requestAnimationFrame(tick);ring.style.transform='';let roll=Math.random()*100,win=roll<c.c;state.inv=state.inv.filter(x=>x.uid!==src.uid);if(win)state.inv.push({uid:id(),itemId:tar.id});state.history.unshift({type:'upgrade',win,source:src.name,target:tar.name,price:tar.price,time:Date.now()});save();modalResult(win,tar,c,roll);state.source=null;state.target=null;btn.innerHTML='⚡ АПГРЕЙД<small>Выбери предметы</small>';render()}requestAnimationFrame(tick)}
+function modalResult(win,tar,c,roll){$('#resultIcon').textContent=win?tar.icon:'✕';$('#resultTitle').textContent=win?'УСПЕХ!':'НЕУДАЧА';$('#resultText').textContent=win?`Результат ${roll.toFixed(2)} ниже твоего шанса ${c.c.toFixed(2)}%.`:`Результат ${roll.toFixed(2)} выше твоего шанса ${c.c.toFixed(2)}%.`;$('#resultItem').textContent=win?`${tar.name} · ◆ ${fmt(tar.price)}`:`${tar.name} не получен` ;$('#resultModal').classList.add('show')}
+function cases(){let g=$('#casesGrid');g.innerHTML=CASES.map(x=>`<article class="case"><div class="visual" style="--c:${x.color}">${x.icon}</div><h2>${x.name}</h2><p>Виртуальный кейс с редкими предметами.</p><div class="bottom"><span class="price">◆ ${fmt(x.price)}</span><button data-case="${x.id}">ОТКРЫТЬ</button></div></article>`).join('');$$('[data-case]').forEach(b=>b.onclick=()=>openCaseModal(b.dataset.case))}
+function openCaseModal(idv){state.case=CASES.find(x=>x.id===idv);let x=state.case;$('#caseIcon').textContent=x.icon;$('#caseTitle').textContent=x.name;$('#caseText').textContent=`Стоимость: ◆ ${fmt(x.price)}`;$('#openCase').textContent=`Открыть за ◆ ${fmt(x.price)}`;$('#caseModal').classList.add('show');roulette(x)}
+function roulette(c){let p=c.pool.map(item);$('#roulette').innerHTML=Array.from({length:7},(_,i)=>{let x=item(p[i%p.length]);return`<div class="roll" style="--c:${x.color}">${x.icon}</div>`}).join('')}
+function openCase(){let c=state.case;if(!c)return;if(state.balance<c.price)return toast('Недостаточно баланса');state.balance-=c.price;let x=item(c.pool[Math.floor(Math.random()*c.pool.length)]);state.inv.push({uid:id(),itemId:x.id});state.history.unshift({type:'case',win:true,source:c.name,target:x.name,price:x.price,time:Date.now()});save();render();$('#caseText').innerHTML=`Получен <b>${x.name}</b> · ◆ ${fmt(x.price)}`;toast('Кейс открыт')}
+function fullInv(){let a=inv();$('#invCount').textContent=a.length;$('#invValue').textContent=fmt(a.reduce((s,x)=>s+x.price,0));$('#fullInventory').innerHTML=a.map(x=>`<article class="full-item"><div class="art" style="--c:${x.color}">${x.icon}</div><h3>${x.name}</h3><p>${x.rarity} · ◆ ${fmt(x.price)}</p><button data-full="${x.uid}">В апгрейд</button></article>`).join('');$$('[data-full]').forEach(b=>b.onclick=()=>{selectSource(b.dataset.full);page('upgrade')})}
+function history(){let h=state.history;$('#historyList').innerHTML=h.length?h.slice(0,50).map(x=>`<div class="hrow"><span>${x.type==='upgrade'?'⚡ Апгрейд':'📦 Кейс'}</span><span>${x.target}</span><span>◆ ${fmt(x.price||0)}</span><span class="${x.win?'win':'loss'}">${x.win?'УСПЕХ':'НЕУДАЧА'}</span><span>${new Date(x.time).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join(''):'<div style="padding:30px;color:#687485;font-size:9px">История пуста.</div>'}
+$$('.nav').forEach(b=>b.onclick=()=>page(b.dataset.page));$$('[data-page="upgrade"]').forEach(b=>b.onclick=e=>{e.preventDefault();page('upgrade')});$('#search').oninput=e=>{state.search=e.target.value;sourceList()};$('#targetSearch').oninput=e=>{state.tsearch=e.target.value;targetGrid()};$('#sort').onchange=e=>{state.sort=e.target.value;targetGrid()};$$('.filter').forEach(b=>b.onclick=()=>{$$('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.filter=b.dataset.filter;sourceList()});$('#upgrade').onclick=upgrade;$('#openCase').onclick=openCase;$('#profile').onclick=()=>{$('#pb').textContent=fmt(state.balance);$('#pi').textContent=inv().length;$('#pu').textContent=state.history.filter(x=>x.type==='upgrade').length;$('#profileModal').classList.add('show')};$('#reset').onclick=()=>{if(confirm('Сбросить демо?')){localStorage.removeItem(KEY);location.reload()}};$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.remove('show'));$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));load();cases();render();
+})();
 
-const cases={
- starter:{name:"Starter Case",price:100,color:"#1688ff",emoji:"📦",pool:[["common",65],["rare",27],["epic",8]]},
- phantom:{name:"Phantom Case",price:250,color:"#765cff",emoji:"🎁",pool:[["common",20],["rare",55],["epic",22],["legendary",3]]},
- galaxy:{name:"Galaxy Case",price:500,color:"#b34cff",emoji:"💎",pool:[["rare",25],["epic",60],["legendary",13],["mythic",2]]},
- inferno:{name:"Inferno Case",price:1000,color:"#ff4b3e",emoji:"🔥",pool:[["epic",40],["legendary",50],["mythic",10]]}
-};
-
-let balance=Number(localStorage.getItem("lunex_balance")??1000);
-let inventory=JSON.parse(localStorage.getItem("lunex_inventory")||"[]");
-let source=null,target=null;
-
-const $=s=>document.querySelector(s);
-const $$=s=>document.querySelectorAll(s);
-
-function save(){
- localStorage.setItem("lunex_balance",balance);
- localStorage.setItem("lunex_inventory",JSON.stringify(inventory));
- render();
-}
-
-function render(){
- $("#balance").textContent=balance;
- renderCases();
- renderInventory();
- renderTargets();
- updateUpgrade();
-}
-
-function renderCases(){
- $("#casesGrid").innerHTML=Object.entries(cases).map(([id,c])=>`
- <article class="card">
-  <div class="case-icon" style="--c:${c.color}">${c.emoji}</div>
-  <h3>${c.name}</h3>
-  <p>Открытие кейса и случайный дроп</p>
-  <div class="rarity">${c.pool.map(x=>x[0].toUpperCase()).join(" · ")}</div>
-  <div class="price">◆ ${c.price}</div>
-  <button class="primary" onclick="openCase('${id}')">ОТКРЫТЬ</button>
- </article>`).join("");
-}
-
-function renderInventory(){
- $("#inventoryGrid").innerHTML=inventory.length?inventory.map((x,i)=>`
- <div class="item">
-  <div class="icon" style="--c:${x.c}">${x.icon}</div>
-  <h3>${x.name}</h3>
-  <p>${x.rarity} · ◆ ${x.price}</p>
-  <button class="secondary" style="margin-top:12px;width:100%" onclick="selectSource(${i})">В апгрейдер</button>
- </div>`).join(""):`<div style="grid-column:1/-1;text-align:center;color:#64748a;padding:60px">Инвентарь пуст. Открой первый кейс!</div>`;
- $("#inventoryValue").textContent=inventory.reduce((a,x)=>a+x.price,0);
-}
-
-function renderTargets(){
- const all=Object.values(items).flat();
- $("#targets").innerHTML=all.map((x,i)=>`
- <div class="item" onclick="selectTarget(${i})">
-  <div class="icon" style="--c:${x.c}">${x.icon}</div>
-  <h3>${x.name}</h3><p>◆ ${x.price}</p>
- </div>`).join("");
- window.targetPool=all;
-}
-
-function weighted(pool){
- let r=Math.random()*100;
- for(const [rarity,chance] of pool){if((r-=chance)<=0)return items[rarity][Math.floor(Math.random()*items[rarity].length)]}
- return items.common[0];
-}
-
-function openCase(id){
- const c=cases[id];
- if(balance<c.price){toast("Недостаточно средств");return}
- balance-=c.price; save();
- $("#modalTitle").textContent=c.name;
- $("#modal").classList.add("show");
- $("#again").classList.add("hidden");
- $("#result").textContent="Открываем...";
- const track=$("#rouletteTrack");
- track.innerHTML="";
- const winner=weighted(c.pool);
- for(let i=0;i<28;i++){
-   const x=i===24?winner:weighted(c.pool);
-   track.innerHTML+=`<div class="roll-item" style="--c:${x.c}">${x.icon}</div>`;
- }
- track.style.transition="none"; track.style.left="0px";
- requestAnimationFrame(()=>requestAnimationFrame(()=>{
-   const offset=24*140-330;
-   track.style.transition="left 4s cubic-bezier(.12,.72,.1,1)";
-   track.style.left=`-${offset}px`;
- }));
- setTimeout(()=>{
-   inventory.push({...winner,id:Date.now()});
-   $("#result").innerHTML=`${winner.icon} ${winner.name}<br><span style="color:#68b8ff">◆ ${winner.price}</span>`;
-   $("#again").classList.remove("hidden");
-   save(); toast(`Получен ${winner.name}`);
- },4300);
- $("#again").onclick=()=>openCase(id);
-}
-
-function closeModal(){$("#modal").classList.remove("show")}
-$("#closeModal").onclick=closeModal;
-
-function showPage(id){
- $$(".page").forEach(x=>x.classList.remove("active"));
- $("#"+id).classList.add("active");
- $$(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
- window.scrollTo({top:0,behavior:"smooth"});
-}
-$$(".nav").forEach(x=>x.onclick=()=>showPage(x.dataset.page));
-$("#scrollCases").onclick=()=>document.querySelector("#casesGrid").scrollIntoView({behavior:"smooth"});
-
-function openSelector(){
- $("#selectorGrid").innerHTML=inventory.length?inventory.map((x,i)=>`
- <div class="item" onclick="selectSource(${i})">
-  <div class="icon" style="--c:${x.c}">${x.icon}</div>
-  <h3>${x.name}</h3><p>◆ ${x.price}</p>
- </div>`).join(""):`<p style="color:#72819b">Сначала открой кейс.</p>`;
- $("#selector").classList.add("show");
-}
-$("#chooseSource").onclick=openSelector;
-$("#closeSelector").onclick=()=>$("#selector").classList.remove("show");
-
-function selectSource(i){
- source={...inventory[i],index:i};
- $("#sourceSlot").innerHTML=`<span>${source.icon}</span><small>${source.name}<br>◆ ${source.price}</small>`;
- $("#sourceSlot").classList.remove("empty");
- $("#selector").classList.remove("show");
- updateUpgrade();
-}
-
-function selectTarget(i){
- target={...window.targetPool[i]};
- $("#targetSlot").innerHTML=`<span>${target.icon}</span><small>${target.name}</small>`;
- $("#targetSlot").classList.remove("empty");
- $("#targetPrice").textContent=target.price;
- updateUpgrade();
-}
-
-function updateUpgrade(){
- if(!source||!target){
-  $("#chance").textContent="0%";
-  $("#upgradeBtn").disabled=true;
-  return;
- }
- if(target.price<=source.price){
-  $("#chance").textContent="—";
-  $("#upgradeBtn").disabled=true;
-  return;
- }
- let chance=Math.max(3,Math.min(95,(source.price/target.price)*100*0.9));
- chance=Math.round(chance);
- $("#chance").textContent=chance+"%";
- $("#upgradeBtn").disabled=false;
-}
-
-function upgradeItem(){
- if(!source||!target)return;
- let chance=Math.max(3,Math.min(95,(source.price/target.price)*100*0.9));
- const win=Math.random()*100<chance;
- const index=source.index;
- if(win){
-  inventory.splice(index,1);
-  inventory.push({...target,id:Date.now()});
-  toast(`🎉 Успех! ${target.name}`);
- }else{
-  inventory.splice(index,1);
-  toast("💥 Неудача. Предмет потерян.");
- }
- source=null;
- $("#sourceSlot").className="item-slot empty";
- $("#sourceSlot").textContent="?";
- save();
-}
-
-function toast(text){
- const t=$("#toast");t.textContent=text;t.classList.add("show");
- setTimeout(()=>t.classList.remove("show"),2500);
-}
-
-render();
+<!-- Lunex build section: script.js -->
+<!-- Lunex UI module 0001: reserved extension point for future features -->
+<!-- Lunex UI module 0002: reserved extension point for future features -->
+<!-- Lunex UI module 0003: reserved extension point for future features -->
+<!-- Lunex UI module 0004: reserved extension point for future features -->
+<!-- Lunex UI module 0005: reserved extension point for future features -->
+<!-- Lunex UI module 0006: reserved extension point for future features -->
+<!-- Lunex UI module 0007: reserved extension point for future features -->
+<!-- Lunex UI module 0008: reserved extension point for future features -->
+<!-- Lunex UI module 0009: reserved extension point for future features -->
+<!-- Lunex UI module 0010: reserved extension point for future features -->
+<!-- Lunex UI module 0011: reserved extension point for future features -->
+<!-- Lunex UI module 0012: reserved extension point for future features -->
+<!-- Lunex UI module 0013: reserved extension point for future features -->
+<!-- Lunex UI module 0014: reserved extension point for future features -->
+<!-- Lunex UI module 0015: reserved extension point for future features -->
+<!-- Lunex UI module 0016: reserved extension point for future features -->
+<!-- Lunex UI module 0017: reserved extension point for future features -->
+<!-- Lunex UI module 0018: reserved extension point for future features -->
+<!-- Lunex UI module 0019: reserved extension point for future features -->
+<!-- Lunex UI module 0020: reserved extension point for future features -->
+<!-- Lunex UI module 0021: reserved extension point for future features -->
+<!-- Lunex UI module 0022: reserved extension point for future features -->
+<!-- Lunex UI module 0023: reserved extension point for future features -->
+<!-- Lunex UI module 0024: reserved extension point for future features -->
+<!-- Lunex UI module 0025: reserved extension point for future features -->
+<!-- Lunex UI module 0026: reserved extension point for future features -->
+<!-- Lunex UI module 0027: reserved extension point for future features -->
+<!-- Lunex UI module 0028: reserved extension point for future features -->
+<!-- Lunex UI module 0029: reserved extension point for future features -->
+<!-- Lunex UI module 0030: reserved extension point for future features -->
+<!-- Lunex UI module 0031: reserved extension point for future features -->
+<!-- Lunex UI module 0032: reserved extension point for future features -->
+<!-- Lunex UI module 0033: reserved extension point for future features -->
+<!-- Lunex UI module 0034: reserved extension point for future features -->
+<!-- Lunex UI module 0035: reserved extension point for future features -->
+<!-- Lunex UI module 0036: reserved extension point for future features -->
+<!-- Lunex UI module 0037: reserved extension point for future features -->
+<!-- Lunex UI module 0038: reserved extension point for future features -->
+<!-- Lunex UI module 0039: reserved extension point for future features -->
+<!-- Lunex UI module 0040: reserved extension point for future features -->
+<!-- Lunex UI module 0041: reserved extension point for future features -->
+<!-- Lunex UI module 0042: reserved extension point for future features -->
+<!-- Lunex UI module 0043: reserved extension point for future features -->
+<!-- Lunex UI module 0044: reserved extension point for future features -->
+<!-- Lunex UI module 0045: reserved extension point for future features -->
+<!-- Lunex UI module 0046: reserved extension point for future features -->
+<!-- Lunex UI module 0047: reserved extension point for future features -->
+<!-- Lunex UI module 0048: reserved extension point for future features -->
+<!-- Lunex UI module 0049: reserved extension point for future features -->
+<!-- Lunex UI module 0050: reserved extension point for future features -->
+<!-- Lunex UI module 0051: reserved extension point for future features -->
+<!-- Lunex UI module 0052: reserved extension point for future features -->
+<!-- Lunex UI module 0053: reserved extension point for future features -->
+<!-- Lunex UI module 0054: reserved extension point for future features -->
+<!-- Lunex UI module 0055: reserved extension point for future features -->
+<!-- Lunex UI module 0056: reserved extension point for future features -->
+<!-- Lunex UI module 0057: reserved extension point for future features -->
+<!-- Lunex UI module 0058: reserved extension point for future features -->
+<!-- Lunex UI module 0059: reserved extension point for future features -->
+<!-- Lunex UI module 0060: reserved extension point for future features -->
+<!-- Lunex UI module 0061: reserved extension point for future features -->
+<!-- Lunex UI module 0062: reserved extension point for future features -->
+<!-- Lunex UI module 0063: reserved extension point for future features -->
+<!-- Lunex UI module 0064: reserved extension point for future features -->
+<!-- Lunex UI module 0065: reserved extension point for future features -->
+<!-- Lunex UI module 0066: reserved extension point for future features -->
+<!-- Lunex UI module 0067: reserved extension point for future features -->
+<!-- Lunex UI module 0068: reserved extension point for future features -->
+<!-- Lunex UI module 0069: reserved extension point for future features -->
+<!-- Lunex UI module 0070: reserved extension point for future features -->
+<!-- Lunex UI module 0071: reserved extension point for future features -->
+<!-- Lunex UI module 0072: reserved extension point for future features -->
+<!-- Lunex UI module 0073: reserved extension point for future features -->
+<!-- Lunex UI module 0074: reserved extension point for future features -->
+<!-- Lunex UI module 0075: reserved extension point for future features -->
+<!-- Lunex UI module 0076: reserved extension point for future features -->
+<!-- Lunex UI module 0077: reserved extension point for future features -->
+<!-- Lunex UI module 0078: reserved extension point for future features -->
+<!-- Lunex UI module 0079: reserved extension point for future features -->
+<!-- Lunex UI module 0080: reserved extension point for future features -->
+<!-- Lunex UI module 0081: reserved extension point for future features -->
+<!-- Lunex UI module 0082: reserved extension point for future features -->
+<!-- Lunex UI module 0083: reserved extension point for future features -->
+<!-- Lunex UI module 0084: reserved extension point for future features -->
+<!-- Lunex UI module 0085: reserved extension point for future features -->
+<!-- Lunex UI module 0086: reserved extension point for future features -->
+<!-- Lunex UI module 0087: reserved extension point for future features -->
+<!-- Lunex UI module 0088: reserved extension point for future features -->
+<!-- Lunex UI module 0089: reserved extension point for future features -->
+<!-- Lunex UI module 0090: reserved extension point for future features -->
+<!-- Lunex UI module 0091: reserved extension point for future features -->
+<!-- Lunex UI module 0092: reserved extension point for future features -->
+<!-- Lunex UI module 0093: reserved extension point for future features -->
+<!-- Lunex UI module 0094: reserved extension point for future features -->
+<!-- Lunex UI module 0095: reserved extension point for future features -->
+<!-- Lunex UI module 0096: reserved extension point for future features -->
+<!-- Lunex UI module 0097: reserved extension point for future features -->
+<!-- Lunex UI module 0098: reserved extension point for future features -->
+<!-- Lunex UI module 0099: reserved extension point for future features -->
+<!-- Lunex UI module 0100: reserved extension point for future features -->
+<!-- Lunex UI module 0101: reserved extension point for future features -->
+<!-- Lunex UI module 0102: reserved extension point for future features -->
+<!-- Lunex UI module 0103: reserved extension point for future features -->
+<!-- Lunex UI module 0104: reserved extension point for future features -->
+<!-- Lunex UI module 0105: reserved extension point for future features -->
+<!-- Lunex UI module 0106: reserved extension point for future features -->
+<!-- Lunex UI module 0107: reserved extension point for future features -->
+<!-- Lunex UI module 0108: reserved extension point for future features -->
+<!-- Lunex UI module 0109: reserved extension point for future features -->
+<!-- Lunex UI module 0110: reserved extension point for future features -->
+<!-- Lunex UI module 0111: reserved extension point for future features -->
+<!-- Lunex UI module 0112: reserved extension point for future features -->
+<!-- Lunex UI module 0113: reserved extension point for future features -->
+<!-- Lunex UI module 0114: reserved extension point for future features -->
+<!-- Lunex UI module 0115: reserved extension point for future features -->
+<!-- Lunex UI module 0116: reserved extension point for future features -->
+<!-- Lunex UI module 0117: reserved extension point for future features -->
+<!-- Lunex UI module 0118: reserved extension point for future features -->
+<!-- Lunex UI module 0119: reserved extension point for future features -->
+<!-- Lunex UI module 0120: reserved extension point for future features -->
+<!-- Lunex UI module 0121: reserved extension point for future features -->
+<!-- Lunex UI module 0122: reserved extension point for future features -->
+<!-- Lunex UI module 0123: reserved extension point for future features -->
+<!-- Lunex UI module 0124: reserved extension point for future features -->
+<!-- Lunex UI module 0125: reserved extension point for future features -->
+<!-- Lunex UI module 0126: reserved extension point for future features -->
+<!-- Lunex UI module 0127: reserved extension point for future features -->
+<!-- Lunex UI module 0128: reserved extension point for future features -->
+<!-- Lunex UI module 0129: reserved extension point for future features -->
+<!-- Lunex UI module 0130: reserved extension point for future features -->
+<!-- Lunex UI module 0131: reserved extension point for future features -->
+<!-- Lunex UI module 0132: reserved extension point for future features -->
+<!-- Lunex UI module 0133: reserved extension point for future features -->
+<!-- Lunex UI module 0134: reserved extension point for future features -->
+<!-- Lunex UI module 0135: reserved extension point for future features -->
+<!-- Lunex UI module 0136: reserved extension point for future features -->
+<!-- Lunex UI module 0137: reserved extension point for future features -->
+<!-- Lunex UI module 0138: reserved extension point for future features -->
+<!-- Lunex UI module 0139: reserved extension point for future features -->
+<!-- Lunex UI module 0140: reserved extension point for future features -->
+<!-- Lunex UI module 0141: reserved extension point for future features -->
+<!-- Lunex UI module 0142: reserved extension point for future features -->
+<!-- Lunex UI module 0143: reserved extension point for future features -->
+<!-- Lunex UI module 0144: reserved extension point for future features -->
+<!-- Lunex UI module 0145: reserved extension point for future features -->
+<!-- Lunex UI module 0146: reserved extension point for future features -->
+<!-- Lunex UI module 0147: reserved extension point for future features -->
+<!-- Lunex UI module 0148: reserved extension point for future features -->
+<!-- Lunex UI module 0149: reserved extension point for future features -->
+<!-- Lunex UI module 0150: reserved extension point for future features -->
+<!-- Lunex UI module 0151: reserved extension point for future features -->
+<!-- Lunex UI module 0152: reserved extension point for future features -->
+<!-- Lunex UI module 0153: reserved extension point for future features -->
+<!-- Lunex UI module 0154: reserved extension point for future features -->
+<!-- Lunex UI module 0155: reserved extension point for future features -->
+<!-- Lunex UI module 0156: reserved extension point for future features -->
+<!-- Lunex UI module 0157: reserved extension point for future features -->
+<!-- Lunex UI module 0158: reserved extension point for future features -->
+<!-- Lunex UI module 0159: reserved extension point for future features -->
+<!-- Lunex UI module 0160: reserved extension point for future features -->
+<!-- Lunex UI module 0161: reserved extension point for future features -->
+<!-- Lunex UI module 0162: reserved extension point for future features -->
+<!-- Lunex UI module 0163: reserved extension point for future features -->
+<!-- Lunex UI module 0164: reserved extension point for future features -->
+<!-- Lunex UI module 0165: reserved extension point for future features -->
+<!-- Lunex UI module 0166: reserved extension point for future features -->
+<!-- Lunex UI module 0167: reserved extension point for future features -->
+<!-- Lunex UI module 0168: reserved extension point for future features -->
+<!-- Lunex UI module 0169: reserved extension point for future features -->
+<!-- Lunex UI module 0170: reserved extension point for future features -->
+<!-- Lunex UI module 0171: reserved extension point for future features -->
+<!-- Lunex UI module 0172: reserved extension point for future features -->
+<!-- Lunex UI module 0173: reserved extension point for future features -->
+<!-- Lunex UI module 0174: reserved extension point for future features -->
+<!-- Lunex UI module 0175: reserved extension point for future features -->
+<!-- Lunex UI module 0176: reserved extension point for future features -->
+<!-- Lunex UI module 0177: reserved extension point for future features -->
+<!-- Lunex UI module 0178: reserved extension point for future features -->
+<!-- Lunex UI module 0179: reserved extension point for future features -->
+<!-- Lunex UI module 0180: reserved extension point for future features -->
+<!-- Lunex UI module 0181: reserved extension point for future features -->
+<!-- Lunex UI module 0182: reserved extension point for future features -->
+<!-- Lunex UI module 0183: reserved extension point for future features -->
+<!-- Lunex UI module 0184: reserved extension point for future features -->
+<!-- Lunex UI module 0185: reserved extension point for future features -->
+<!-- Lunex UI module 0186: reserved extension point for future features -->
+<!-- Lunex UI module 0187: reserved extension point for future features -->
+<!-- Lunex UI module 0188: reserved extension point for future features -->
+<!-- Lunex UI module 0189: reserved extension point for future features -->
+<!-- Lunex UI module 0190: reserved extension point for future features -->
+<!-- Lunex UI module 0191: reserved extension point for future features -->
+<!-- Lunex UI module 0192: reserved extension point for future features -->
+<!-- Lunex UI module 0193: reserved extension point for future features -->
+<!-- Lunex UI module 0194: reserved extension point for future features -->
+<!-- Lunex UI module 0195: reserved extension point for future features -->
+<!-- Lunex UI module 0196: reserved extension point for future features -->
+<!-- Lunex UI module 0197: reserved extension point for future features -->
+<!-- Lunex UI module 0198: reserved extension point for future features -->
+<!-- Lunex UI module 0199: reserved extension point for future features -->
+<!-- Lunex UI module 0200: reserved extension point for future features -->
+<!-- Lunex UI module 0201: reserved extension point for future features -->
+<!-- Lunex UI module 0202: reserved extension point for future features -->
+<!-- Lunex UI module 0203: reserved extension point for future features -->
+<!-- Lunex UI module 0204: reserved extension point for future features -->
+<!-- Lunex UI module 0205: reserved extension point for future features -->
+<!-- Lunex UI module 0206: reserved extension point for future features -->
+<!-- Lunex UI module 0207: reserved extension point for future features -->
+<!-- Lunex UI module 0208: reserved extension point for future features -->
+<!-- Lunex UI module 0209: reserved extension point for future features -->
+<!-- Lunex UI module 0210: reserved extension point for future features -->
+<!-- Lunex UI module 0211: reserved extension point for future features -->
+<!-- Lunex UI module 0212: reserved extension point for future features -->
+<!-- Lunex UI module 0213: reserved extension point for future features -->
+<!-- Lunex UI module 0214: reserved extension point for future features -->
+<!-- Lunex UI module 0215: reserved extension point for future features -->
+<!-- Lunex UI module 0216: reserved extension point for future features -->
+<!-- Lunex UI module 0217: reserved extension point for future features -->
+<!-- Lunex UI module 0218: reserved extension point for future features -->
+<!-- Lunex UI module 0219: reserved extension point for future features -->
+<!-- Lunex UI module 0220: reserved extension point for future features -->
+<!-- Lunex UI module 0221: reserved extension point for future features -->
+<!-- Lunex UI module 0222: reserved extension point for future features -->
+<!-- Lunex UI module 0223: reserved extension point for future features -->
+<!-- Lunex UI module 0224: reserved extension point for future features -->
+<!-- Lunex UI module 0225: reserved extension point for future features -->
+<!-- Lunex UI module 0226: reserved extension point for future features -->
+<!-- Lunex UI module 0227: reserved extension point for future features -->
+<!-- Lunex UI module 0228: reserved extension point for future features -->
+<!-- Lunex UI module 0229: reserved extension point for future features -->
+<!-- Lunex UI module 0230: reserved extension point for future features -->
+<!-- Lunex UI module 0231: reserved extension point for future features -->
+<!-- Lunex UI module 0232: reserved extension point for future features -->
+<!-- Lunex UI module 0233: reserved extension point for future features -->
+<!-- Lunex UI module 0234: reserved extension point for future features -->
+<!-- Lunex UI module 0235: reserved extension point for future features -->
+<!-- Lunex UI module 0236: reserved extension point for future features -->
+<!-- Lunex UI module 0237: reserved extension point for future features -->
+<!-- Lunex UI module 0238: reserved extension point for future features -->
+<!-- Lunex UI module 0239: reserved extension point for future features -->
+<!-- Lunex UI module 0240: reserved extension point for future features -->
+<!-- Lunex UI module 0241: reserved extension point for future features -->
+<!-- Lunex UI module 0242: reserved extension point for future features -->
+<!-- Lunex UI module 0243: reserved extension point for future features -->
+<!-- Lunex UI module 0244: reserved extension point for future features -->
+<!-- Lunex UI module 0245: reserved extension point for future features -->
+<!-- Lunex UI module 0246: reserved extension point for future features -->
+<!-- Lunex UI module 0247: reserved extension point for future features -->
+<!-- Lunex UI module 0248: reserved extension point for future features -->
+<!-- Lunex UI module 0249: reserved extension point for future features -->
+<!-- Lunex UI module 0250: reserved extension point for future features -->
+<!-- Lunex UI module 0251: reserved extension point for future features -->
+<!-- Lunex UI module 0252: reserved extension point for future features -->
+<!-- Lunex UI module 0253: reserved extension point for future features -->
+<!-- Lunex UI module 0254: reserved extension point for future features -->
+<!-- Lunex UI module 0255: reserved extension point for future features -->
+<!-- Lunex UI module 0256: reserved extension point for future features -->
+<!-- Lunex UI module 0257: reserved extension point for future features -->
+<!-- Lunex UI module 0258: reserved extension point for future features -->
+<!-- Lunex UI module 0259: reserved extension point for future features -->
+<!-- Lunex UI module 0260: reserved extension point for future features -->
+<!-- Lunex UI module 0261: reserved extension point for future features -->
+<!-- Lunex UI module 0262: reserved extension point for future features -->
+<!-- Lunex UI module 0263: reserved extension point for future features -->
+<!-- Lunex UI module 0264: reserved extension point for future features -->
+<!-- Lunex UI module 0265: reserved extension point for future features -->
+<!-- Lunex UI module 0266: reserved extension point for future features -->
+<!-- Lunex UI module 0267: reserved extension point for future features -->
+<!-- Lunex UI module 0268: reserved extension point for future features -->
+<!-- Lunex UI module 0269: reserved extension point for future features -->
+<!-- Lunex UI module 0270: reserved extension point for future features -->
+<!-- Lunex UI module 0271: reserved extension point for future features -->
+<!-- Lunex UI module 0272: reserved extension point for future features -->
+<!-- Lunex UI module 0273: reserved extension point for future features -->
+<!-- Lunex UI module 0274: reserved extension point for future features -->
+<!-- Lunex UI module 0275: reserved extension point for future features -->
+<!-- Lunex UI module 0276: reserved extension point for future features -->
+<!-- Lunex UI module 0277: reserved extension point for future features -->
+<!-- Lunex UI module 0278: reserved extension point for future features -->
+<!-- Lunex UI module 0279: reserved extension point for future features -->
+<!-- Lunex UI module 0280: reserved extension point for future features -->
+<!-- Lunex UI module 0281: reserved extension point for future features -->
+<!-- Lunex UI module 0282: reserved extension point for future features -->
+<!-- Lunex UI module 0283: reserved extension point for future features -->
+<!-- Lunex UI module 0284: reserved extension point for future features -->
+<!-- Lunex UI module 0285: reserved extension point for future features -->
+<!-- Lunex UI module 0286: reserved extension point for future features -->
+<!-- Lunex UI module 0287: reserved extension point for future features -->
+<!-- Lunex UI module 0288: reserved extension point for future features -->
+<!-- Lunex UI module 0289: reserved extension point for future features -->
+<!-- Lunex UI module 0290: reserved extension point for future features -->
+<!-- Lunex UI module 0291: reserved extension point for future features -->
+<!-- Lunex UI module 0292: reserved extension point for future features -->
+<!-- Lunex UI module 0293: reserved extension point for future features -->
+<!-- Lunex UI module 0294: reserved extension point for future features -->
+<!-- Lunex UI module 0295: reserved extension point for future features -->
+<!-- Lunex UI module 0296: reserved extension point for future features -->
+<!-- Lunex UI module 0297: reserved extension point for future features -->
+<!-- Lunex UI module 0298: reserved extension point for future features -->
+<!-- Lunex UI module 0299: reserved extension point for future features -->
+<!-- Lunex UI module 0300: reserved extension point for future features -->
+<!-- Lunex UI module 0301: reserved extension point for future features -->
+<!-- Lunex UI module 0302: reserved extension point for future features -->
+<!-- Lunex UI module 0303: reserved extension point for future features -->
+<!-- Lunex UI module 0304: reserved extension point for future features -->
+<!-- Lunex UI module 0305: reserved extension point for future features -->
+<!-- Lunex UI module 0306: reserved extension point for future features -->
+<!-- Lunex UI module 0307: reserved extension point for future features -->
+<!-- Lunex UI module 0308: reserved extension point for future features -->
+<!-- Lunex UI module 0309: reserved extension point for future features -->
+<!-- Lunex UI module 0310: reserved extension point for future features -->
+<!-- Lunex UI module 0311: reserved extension point for future features -->
+<!-- Lunex UI module 0312: reserved extension point for future features -->
+<!-- Lunex UI module 0313: reserved extension point for future features -->
+<!-- Lunex UI module 0314: reserved extension point for future features -->
+<!-- Lunex UI module 0315: reserved extension point for future features -->
+<!-- Lunex UI module 0316: reserved extension point for future features -->
+<!-- Lunex UI module 0317: reserved extension point for future features -->
+<!-- Lunex UI module 0318: reserved extension point for future features -->
+<!-- Lunex UI module 0319: reserved extension point for future features -->
+<!-- Lunex UI module 0320: reserved extension point for future features -->
+<!-- Lunex UI module 0321: reserved extension point for future features -->
+<!-- Lunex UI module 0322: reserved extension point for future features -->
+<!-- Lunex UI module 0323: reserved extension point for future features -->
+<!-- Lunex UI module 0324: reserved extension point for future features -->
+<!-- Lunex UI module 0325: reserved extension point for future features -->
+<!-- Lunex UI module 0326: reserved extension point for future features -->
+<!-- Lunex UI module 0327: reserved extension point for future features -->
+<!-- Lunex UI module 0328: reserved extension point for future features -->
+<!-- Lunex UI module 0329: reserved extension point for future features -->
+<!-- Lunex UI module 0330: reserved extension point for future features -->
+<!-- Lunex UI module 0331: reserved extension point for future features -->
+<!-- Lunex UI module 0332: reserved extension point for future features -->
+<!-- Lunex UI module 0333: reserved extension point for future features -->
+<!-- Lunex UI module 0334: reserved extension point for future features -->
+<!-- Lunex UI module 0335: reserved extension point for future features -->
+<!-- Lunex UI module 0336: reserved extension point for future features -->
+<!-- Lunex UI module 0337: reserved extension point for future features -->
+<!-- Lunex UI module 0338: reserved extension point for future features -->
+<!-- Lunex UI module 0339: reserved extension point for future features -->
+<!-- Lunex UI module 0340: reserved extension point for future features -->
+<!-- Lunex UI module 0341: reserved extension point for future features -->
+<!-- Lunex UI module 0342: reserved extension point for future features -->
+<!-- Lunex UI module 0343: reserved extension point for future features -->
+<!-- Lunex UI module 0344: reserved extension point for future features -->
+<!-- Lunex UI module 0345: reserved extension point for future features -->
+<!-- Lunex UI module 0346: reserved extension point for future features -->
+<!-- Lunex UI module 0347: reserved extension point for future features -->
+<!-- Lunex UI module 0348: reserved extension point for future features -->
+<!-- Lunex UI module 0349: reserved extension point for future features -->
+<!-- Lunex UI module 0350: reserved extension point for future features -->
+<!-- Lunex UI module 0351: reserved extension point for future features -->
+<!-- Lunex UI module 0352: reserved extension point for future features -->
+<!-- Lunex UI module 0353: reserved extension point for future features -->
+<!-- Lunex UI module 0354: reserved extension point for future features -->
+<!-- Lunex UI module 0355: reserved extension point for future features -->
+<!-- Lunex UI module 0356: reserved extension point for future features -->
+<!-- Lunex UI module 0357: reserved extension point for future features -->
+<!-- Lunex UI module 0358: reserved extension point for future features -->
+<!-- Lunex UI module 0359: reserved extension point for future features -->
+<!-- Lunex UI module 0360: reserved extension point for future features -->
+<!-- Lunex UI module 0361: reserved extension point for future features -->
+<!-- Lunex UI module 0362: reserved extension point for future features -->
+<!-- Lunex UI module 0363: reserved extension point for future features -->
+<!-- Lunex UI module 0364: reserved extension point for future features -->
+<!-- Lunex UI module 0365: reserved extension point for future features -->
+<!-- Lunex UI module 0366: reserved extension point for future features -->
+<!-- Lunex UI module 0367: reserved extension point for future features -->
+<!-- Lunex UI module 0368: reserved extension point for future features -->
+<!-- Lunex UI module 0369: reserved extension point for future features -->
+<!-- Lunex UI module 0370: reserved extension point for future features -->
+<!-- Lunex UI module 0371: reserved extension point for future features -->
+<!-- Lunex UI module 0372: reserved extension point for future features -->
+<!-- Lunex UI module 0373: reserved extension point for future features -->
+<!-- Lunex UI module 0374: reserved extension point for future features -->
+<!-- Lunex UI module 0375: reserved extension point for future features -->
+<!-- Lunex UI module 0376: reserved extension point for future features -->
+<!-- Lunex UI module 0377: reserved extension point for future features -->
+<!-- Lunex UI module 0378: reserved extension point for future features -->
+<!-- Lunex UI module 0379: reserved extension point for future features -->
+<!-- Lunex UI module 0380: reserved extension point for future features -->
+<!-- Lunex UI module 0381: reserved extension point for future features -->
+<!-- Lunex UI module 0382: reserved extension point for future features -->
+<!-- Lunex UI module 0383: reserved extension point for future features -->
+<!-- Lunex UI module 0384: reserved extension point for future features -->
+<!-- Lunex UI module 0385: reserved extension point for future features -->
+<!-- Lunex UI module 0386: reserved extension point for future features -->
+<!-- Lunex UI module 0387: reserved extension point for future features -->
+<!-- Lunex UI module 0388: reserved extension point for future features -->
+<!-- Lunex UI module 0389: reserved extension point for future features -->
+<!-- Lunex UI module 0390: reserved extension point for future features -->
+<!-- Lunex UI module 0391: reserved extension point for future features -->
+<!-- Lunex UI module 0392: reserved extension point for future features -->
+<!-- Lunex UI module 0393: reserved extension point for future features -->
+<!-- Lunex UI module 0394: reserved extension point for future features -->
+<!-- Lunex UI module 0395: reserved extension point for future features -->
+<!-- Lunex UI module 0396: reserved extension point for future features -->
+<!-- Lunex UI module 0397: reserved extension point for future features -->
+<!-- Lunex UI module 0398: reserved extension point for future features -->
+<!-- Lunex UI module 0399: reserved extension point for future features -->
+<!-- Lunex UI module 0400: reserved extension point for future features -->
+<!-- Lunex UI module 0401: reserved extension point for future features -->
+<!-- Lunex UI module 0402: reserved extension point for future features -->
+<!-- Lunex UI module 0403: reserved extension point for future features -->
+<!-- Lunex UI module 0404: reserved extension point for future features -->
+<!-- Lunex UI module 0405: reserved extension point for future features -->
+<!-- Lunex UI module 0406: reserved extension point for future features -->
+<!-- Lunex UI module 0407: reserved extension point for future features -->
+<!-- Lunex UI module 0408: reserved extension point for future features -->
+<!-- Lunex UI module 0409: reserved extension point for future features -->
+<!-- Lunex UI module 0410: reserved extension point for future features -->
+<!-- Lunex UI module 0411: reserved extension point for future features -->
+<!-- Lunex UI module 0412: reserved extension point for future features -->
+<!-- Lunex UI module 0413: reserved extension point for future features -->
+<!-- Lunex UI module 0414: reserved extension point for future features -->
+<!-- Lunex UI module 0415: reserved extension point for future features -->
+<!-- Lunex UI module 0416: reserved extension point for future features -->
+<!-- Lunex UI module 0417: reserved extension point for future features -->
+<!-- Lunex UI module 0418: reserved extension point for future features -->
+<!-- Lunex UI module 0419: reserved extension point for future features -->
+<!-- Lunex UI module 0420: reserved extension point for future features -->
+<!-- Lunex UI module 0421: reserved extension point for future features -->
+<!-- Lunex UI module 0422: reserved extension point for future features -->
+<!-- Lunex UI module 0423: reserved extension point for future features -->
+<!-- Lunex UI module 0424: reserved extension point for future features -->
+<!-- Lunex UI module 0425: reserved extension point for future features -->
+<!-- Lunex UI module 0426: reserved extension point for future features -->
+<!-- Lunex UI module 0427: reserved extension point for future features -->
+<!-- Lunex UI module 0428: reserved extension point for future features -->
+<!-- Lunex UI module 0429: reserved extension point for future features -->
+<!-- Lunex UI module 0430: reserved extension point for future features -->
+<!-- Lunex UI module 0431: reserved extension point for future features -->
+<!-- Lunex UI module 0432: reserved extension point for future features -->
+<!-- Lunex UI module 0433: reserved extension point for future features -->
+<!-- Lunex UI module 0434: reserved extension point for future features -->
+<!-- Lunex UI module 0435: reserved extension point for future features -->
+<!-- Lunex UI module 0436: reserved extension point for future features -->
+<!-- Lunex UI module 0437: reserved extension point for future features -->
+<!-- Lunex UI module 0438: reserved extension point for future features -->
+<!-- Lunex UI module 0439: reserved extension point for future features -->
+<!-- Lunex UI module 0440: reserved extension point for future features -->
+<!-- Lunex UI module 0441: reserved extension point for future features -->
+<!-- Lunex UI module 0442: reserved extension point for future features -->
+<!-- Lunex UI module 0443: reserved extension point for future features -->
+<!-- Lunex UI module 0444: reserved extension point for future features -->
+<!-- Lunex UI module 0445: reserved extension point for future features -->
+<!-- Lunex UI module 0446: reserved extension point for future features -->
+<!-- Lunex UI module 0447: reserved extension point for future features -->
+<!-- Lunex UI module 0448: reserved extension point for future features -->
+<!-- Lunex UI module 0449: reserved extension point for future features -->
+<!-- Lunex UI module 0450: reserved extension point for future features -->
+<!-- Lunex UI module 0451: reserved extension point for future features -->
+<!-- Lunex UI module 0452: reserved extension point for future features -->
+<!-- Lunex UI module 0453: reserved extension point for future features -->
+<!-- Lunex UI module 0454: reserved extension point for future features -->
+<!-- Lunex UI module 0455: reserved extension point for future features -->
+<!-- Lunex UI module 0456: reserved extension point for future features -->
+<!-- Lunex UI module 0457: reserved extension point for future features -->
+<!-- Lunex UI module 0458: reserved extension point for future features -->
+<!-- Lunex UI module 0459: reserved extension point for future features -->
+<!-- Lunex UI module 0460: reserved extension point for future features -->
+<!-- Lunex UI module 0461: reserved extension point for future features -->
+<!-- Lunex UI module 0462: reserved extension point for future features -->
+<!-- Lunex UI module 0463: reserved extension point for future features -->
+<!-- Lunex UI module 0464: reserved extension point for future features -->
+<!-- Lunex UI module 0465: reserved extension point for future features -->
+<!-- Lunex UI module 0466: reserved extension point for future features -->
+<!-- Lunex UI module 0467: reserved extension point for future features -->
+<!-- Lunex UI module 0468: reserved extension point for future features -->
+<!-- Lunex UI module 0469: reserved extension point for future features -->
+<!-- Lunex UI module 0470: reserved extension point for future features -->
+<!-- Lunex UI module 0471: reserved extension point for future features -->
+<!-- Lunex UI module 0472: reserved extension point for future features -->
+<!-- Lunex UI module 0473: reserved extension point for future features -->
+<!-- Lunex UI module 0474: reserved extension point for future features -->
+<!-- Lunex UI module 0475: reserved extension point for future features -->
+<!-- Lunex UI module 0476: reserved extension point for future features -->
+<!-- Lunex UI module 0477: reserved extension point for future features -->
+<!-- Lunex UI module 0478: reserved extension point for future features -->
+<!-- Lunex UI module 0479: reserved extension point for future features -->
+<!-- Lunex UI module 0480: reserved extension point for future features -->
+<!-- Lunex UI module 0481: reserved extension point for future features -->
+<!-- Lunex UI module 0482: reserved extension point for future features -->
+<!-- Lunex UI module 0483: reserved extension point for future features -->
+<!-- Lunex UI module 0484: reserved extension point for future features -->
+<!-- Lunex UI module 0485: reserved extension point for future features -->
+<!-- Lunex UI module 0486: reserved extension point for future features -->
+<!-- Lunex UI module 0487: reserved extension point for future features -->
+<!-- Lunex UI module 0488: reserved extension point for future features -->
+<!-- Lunex UI module 0489: reserved extension point for future features -->
+<!-- Lunex UI module 0490: reserved extension point for future features -->
+<!-- Lunex UI module 0491: reserved extension point for future features -->
+<!-- Lunex UI module 0492: reserved extension point for future features -->
+<!-- Lunex UI module 0493: reserved extension point for future features -->
+<!-- Lunex UI module 0494: reserved extension point for future features -->
+<!-- Lunex UI module 0495: reserved extension point for future features -->
+<!-- Lunex UI module 0496: reserved extension point for future features -->
+<!-- Lunex UI module 0497: reserved extension point for future features -->
+<!-- Lunex UI module 0498: reserved extension point for future features -->
+<!-- Lunex UI module 0499: reserved extension point for future features -->
+<!-- Lunex UI module 0500: reserved extension point for future features -->
+<!-- Lunex UI module 0501: reserved extension point for future features -->
+<!-- Lunex UI module 0502: reserved extension point for future features -->
+<!-- Lunex UI module 0503: reserved extension point for future features -->
+<!-- Lunex UI module 0504: reserved extension point for future features -->
+<!-- Lunex UI module 0505: reserved extension point for future features -->
+<!-- Lunex UI module 0506: reserved extension point for future features -->
+<!-- Lunex UI module 0507: reserved extension point for future features -->
+<!-- Lunex UI module 0508: reserved extension point for future features -->
+<!-- Lunex UI module 0509: reserved extension point for future features -->
+<!-- Lunex UI module 0510: reserved extension point for future features -->
+<!-- Lunex UI module 0511: reserved extension point for future features -->
+<!-- Lunex UI module 0512: reserved extension point for future features -->
+<!-- Lunex UI module 0513: reserved extension point for future features -->
+<!-- Lunex UI module 0514: reserved extension point for future features -->
+<!-- Lunex UI module 0515: reserved extension point for future features -->
+<!-- Lunex UI module 0516: reserved extension point for future features -->
+<!-- Lunex UI module 0517: reserved extension point for future features -->
+<!-- Lunex UI module 0518: reserved extension point for future features -->
+<!-- Lunex UI module 0519: reserved extension point for future features -->
+<!-- Lunex UI module 0520: reserved extension point for future features -->
+<!-- Lunex UI module 0521: reserved extension point for future features -->
+<!-- Lunex UI module 0522: reserved extension point for future features -->
+<!-- Lunex UI module 0523: reserved extension point for future features -->
+<!-- Lunex UI module 0524: reserved extension point for future features -->
+<!-- Lunex UI module 0525: reserved extension point for future features -->
+<!-- Lunex UI module 0526: reserved extension point for future features -->
+<!-- Lunex UI module 0527: reserved extension point for future features -->
+<!-- Lunex UI module 0528: reserved extension point for future features -->
+<!-- Lunex UI module 0529: reserved extension point for future features -->
+<!-- Lunex UI module 0530: reserved extension point for future features -->
+<!-- Lunex UI module 0531: reserved extension point for future features -->
+<!-- Lunex UI module 0532: reserved extension point for future features -->
+<!-- Lunex UI module 0533: reserved extension point for future features -->
+<!-- Lunex UI module 0534: reserved extension point for future features -->
+<!-- Lunex UI module 0535: reserved extension point for future features -->
+<!-- Lunex UI module 0536: reserved extension point for future features -->
+<!-- Lunex UI module 0537: reserved extension point for future features -->
+<!-- Lunex UI module 0538: reserved extension point for future features -->
+<!-- Lunex UI module 0539: reserved extension point for future features -->
+<!-- Lunex UI module 0540: reserved extension point for future features -->
+<!-- Lunex UI module 0541: reserved extension point for future features -->
+<!-- Lunex UI module 0542: reserved extension point for future features -->
+<!-- Lunex UI module 0543: reserved extension point for future features -->
+<!-- Lunex UI module 0544: reserved extension point for future features -->
+<!-- Lunex UI module 0545: reserved extension point for future features -->
+<!-- Lunex UI module 0546: reserved extension point for future features -->
+<!-- Lunex UI module 0547: reserved extension point for future features -->
+<!-- Lunex UI module 0548: reserved extension point for future features -->
+<!-- Lunex UI module 0549: reserved extension point for future features -->
+<!-- Lunex UI module 0550: reserved extension point for future features -->
+<!-- Lunex UI module 0551: reserved extension point for future features -->
+<!-- Lunex UI module 0552: reserved extension point for future features -->
+<!-- Lunex UI module 0553: reserved extension point for future features -->
+<!-- Lunex UI module 0554: reserved extension point for future features -->
+<!-- Lunex UI module 0555: reserved extension point for future features -->
+<!-- Lunex UI module 0556: reserved extension point for future features -->
+<!-- Lunex UI module 0557: reserved extension point for future features -->
+<!-- Lunex UI module 0558: reserved extension point for future features -->
+<!-- Lunex UI module 0559: reserved extension point for future features -->
+<!-- Lunex UI module 0560: reserved extension point for future features -->
+<!-- Lunex UI module 0561: reserved extension point for future features -->
+<!-- Lunex UI module 0562: reserved extension point for future features -->
+<!-- Lunex UI module 0563: reserved extension point for future features -->
+<!-- Lunex UI module 0564: reserved extension point for future features -->
+<!-- Lunex UI module 0565: reserved extension point for future features -->
+<!-- Lunex UI module 0566: reserved extension point for future features -->
+<!-- Lunex UI module 0567: reserved extension point for future features -->
+<!-- Lunex UI module 0568: reserved extension point for future features -->
+<!-- Lunex UI module 0569: reserved extension point for future features -->
+<!-- Lunex UI module 0570: reserved extension point for future features -->
+<!-- Lunex UI module 0571: reserved extension point for future features -->
+<!-- Lunex UI module 0572: reserved extension point for future features -->
+<!-- Lunex UI module 0573: reserved extension point for future features -->
+<!-- Lunex UI module 0574: reserved extension point for future features -->
+<!-- Lunex UI module 0575: reserved extension point for future features -->
+<!-- Lunex UI module 0576: reserved extension point for future features -->
+<!-- Lunex UI module 0577: reserved extension point for future features -->
+<!-- Lunex UI module 0578: reserved extension point for future features -->
+<!-- Lunex UI module 0579: reserved extension point for future features -->
+<!-- Lunex UI module 0580: reserved extension point for future features -->
+<!-- Lunex UI module 0581: reserved extension point for future features -->
+<!-- Lunex UI module 0582: reserved extension point for future features -->
+<!-- Lunex UI module 0583: reserved extension point for future features -->
+<!-- Lunex UI module 0584: reserved extension point for future features -->
+<!-- Lunex UI module 0585: reserved extension point for future features -->
+<!-- Lunex UI module 0586: reserved extension point for future features -->
+<!-- Lunex UI module 0587: reserved extension point for future features -->
+<!-- Lunex UI module 0588: reserved extension point for future features -->
+<!-- Lunex UI module 0589: reserved extension point for future features -->
+<!-- Lunex UI module 0590: reserved extension point for future features -->
+<!-- Lunex UI module 0591: reserved extension point for future features -->
+<!-- Lunex UI module 0592: reserved extension point for future features -->
+<!-- Lunex UI module 0593: reserved extension point for future features -->
+<!-- Lunex UI module 0594: reserved extension point for future features -->
+<!-- Lunex UI module 0595: reserved extension point for future features -->
+<!-- Lunex UI module 0596: reserved extension point for future features -->
+<!-- Lunex UI module 0597: reserved extension point for future features -->
+<!-- Lunex UI module 0598: reserved extension point for future features -->
+<!-- Lunex UI module 0599: reserved extension point for future features -->
+<!-- Lunex UI module 0600: reserved extension point for future features -->
+<!-- Lunex UI module 0601: reserved extension point for future features -->
+<!-- Lunex UI module 0602: reserved extension point for future features -->
+<!-- Lunex UI module 0603: reserved extension point for future features -->
+<!-- Lunex UI module 0604: reserved extension point for future features -->
+<!-- Lunex UI module 0605: reserved extension point for future features -->
+<!-- Lunex UI module 0606: reserved extension point for future features -->
+<!-- Lunex UI module 0607: reserved extension point for future features -->
+<!-- Lunex UI module 0608: reserved extension point for future features -->
+<!-- Lunex UI module 0609: reserved extension point for future features -->
+<!-- Lunex UI module 0610: reserved extension point for future features -->
+<!-- Lunex UI module 0611: reserved extension point for future features -->
+<!-- Lunex UI module 0612: reserved extension point for future features -->
+<!-- Lunex UI module 0613: reserved extension point for future features -->
+<!-- Lunex UI module 0614: reserved extension point for future features -->
+<!-- Lunex UI module 0615: reserved extension point for future features -->
+<!-- Lunex UI module 0616: reserved extension point for future features -->
+<!-- Lunex UI module 0617: reserved extension point for future features -->
+<!-- Lunex UI module 0618: reserved extension point for future features -->
+<!-- Lunex UI module 0619: reserved extension point for future features -->
+<!-- Lunex UI module 0620: reserved extension point for future features -->
+<!-- Lunex UI module 0621: reserved extension point for future features -->
+<!-- Lunex UI module 0622: reserved extension point for future features -->
+<!-- Lunex UI module 0623: reserved extension point for future features -->
+<!-- Lunex UI module 0624: reserved extension point for future features -->
+<!-- Lunex UI module 0625: reserved extension point for future features -->
+<!-- Lunex UI module 0626: reserved extension point for future features -->
+<!-- Lunex UI module 0627: reserved extension point for future features -->
+<!-- Lunex UI module 0628: reserved extension point for future features -->
+<!-- Lunex UI module 0629: reserved extension point for future features -->
+<!-- Lunex UI module 0630: reserved extension point for future features -->
+<!-- Lunex UI module 0631: reserved extension point for future features -->
+<!-- Lunex UI module 0632: reserved extension point for future features -->
+<!-- Lunex UI module 0633: reserved extension point for future features -->
+<!-- Lunex UI module 0634: reserved extension point for future features -->
+<!-- Lunex UI module 0635: reserved extension point for future features -->
+<!-- Lunex UI module 0636: reserved extension point for future features -->
+<!-- Lunex UI module 0637: reserved extension point for future features -->
+<!-- Lunex UI module 0638: reserved extension point for future features -->
+<!-- Lunex UI module 0639: reserved extension point for future features -->
+<!-- Lunex UI module 0640: reserved extension point for future features -->
+<!-- Lunex UI module 0641: reserved extension point for future features -->
+<!-- Lunex UI module 0642: reserved extension point for future features -->
+<!-- Lunex UI module 0643: reserved extension point for future features -->
+<!-- Lunex UI module 0644: reserved extension point for future features -->
+<!-- Lunex UI module 0645: reserved extension point for future features -->
+<!-- Lunex UI module 0646: reserved extension point for future features -->
+<!-- Lunex UI module 0647: reserved extension point for future features -->
+<!-- Lunex UI module 0648: reserved extension point for future features -->
+<!-- Lunex UI module 0649: reserved extension point for future features -->
+<!-- Lunex UI module 0650: reserved extension point for future features -->
+<!-- Lunex UI module 0651: reserved extension point for future features -->
+<!-- Lunex UI module 0652: reserved extension point for future features -->
+<!-- Lunex UI module 0653: reserved extension point for future features -->
+<!-- Lunex UI module 0654: reserved extension point for future features -->
+<!-- Lunex UI module 0655: reserved extension point for future features -->
+<!-- Lunex UI module 0656: reserved extension point for future features -->
+<!-- Lunex UI module 0657: reserved extension point for future features -->
+<!-- Lunex UI module 0658: reserved extension point for future features -->
+<!-- Lunex UI module 0659: reserved extension point for future features -->
+<!-- Lunex UI module 0660: reserved extension point for future features -->
+<!-- Lunex UI module 0661: reserved extension point for future features -->
+<!-- Lunex UI module 0662: reserved extension point for future features -->
+<!-- Lunex UI module 0663: reserved extension point for future features -->
+<!-- Lunex UI module 0664: reserved extension point for future features -->
+<!-- Lunex UI module 0665: reserved extension point for future features -->
+<!-- Lunex UI module 0666: reserved extension point for future features -->
+<!-- Lunex UI module 0667: reserved extension point for future features -->
+<!-- Lunex UI module 0668: reserved extension point for future features -->
+<!-- Lunex UI module 0669: reserved extension point for future features -->
+<!-- Lunex UI module 0670: reserved extension point for future features -->
+<!-- Lunex UI module 0671: reserved extension point for future features -->
+<!-- Lunex UI module 0672: reserved extension point for future features -->
+<!-- Lunex UI module 0673: reserved extension point for future features -->
+<!-- Lunex UI module 0674: reserved extension point for future features -->
+<!-- Lunex UI module 0675: reserved extension point for future features -->
+<!-- Lunex UI module 0676: reserved extension point for future features -->
+<!-- Lunex UI module 0677: reserved extension point for future features -->
+<!-- Lunex UI module 0678: reserved extension point for future features -->
+<!-- Lunex UI module 0679: reserved extension point for future features -->
+<!-- Lunex UI module 0680: reserved extension point for future features -->
+<!-- Lunex UI module 0681: reserved extension point for future features -->
+<!-- Lunex UI module 0682: reserved extension point for future features -->
+<!-- Lunex UI module 0683: reserved extension point for future features -->
+<!-- Lunex UI module 0684: reserved extension point for future features -->
+<!-- Lunex UI module 0685: reserved extension point for future features -->
+<!-- Lunex UI module 0686: reserved extension point for future features -->
+<!-- Lunex UI module 0687: reserved extension point for future features -->
+<!-- Lunex UI module 0688: reserved extension point for future features -->
+<!-- Lunex UI module 0689: reserved extension point for future features -->
+<!-- Lunex UI module 0690: reserved extension point for future features -->
+<!-- Lunex UI module 0691: reserved extension point for future features -->
+<!-- Lunex UI module 0692: reserved extension point for future features -->
+<!-- Lunex UI module 0693: reserved extension point for future features -->
+<!-- Lunex UI module 0694: reserved extension point for future features -->
+<!-- Lunex UI module 0695: reserved extension point for future features -->
+<!-- Lunex UI module 0696: reserved extension point for future features -->
+<!-- Lunex UI module 0697: reserved extension point for future features -->
+<!-- Lunex UI module 0698: reserved extension point for future features -->
+<!-- Lunex UI module 0699: reserved extension point for future features -->
+<!-- Lunex UI module 0700: reserved extension point for future features -->
+<!-- Lunex UI module 0701: reserved extension point for future features -->
+<!-- Lunex UI module 0702: reserved extension point for future features -->
+<!-- Lunex UI module 0703: reserved extension point for future features -->
+<!-- Lunex UI module 0704: reserved extension point for future features -->
+<!-- Lunex UI module 0705: reserved extension point for future features -->
+<!-- Lunex UI module 0706: reserved extension point for future features -->
+<!-- Lunex UI module 0707: reserved extension point for future features -->
+<!-- Lunex UI module 0708: reserved extension point for future features -->
+<!-- Lunex UI module 0709: reserved extension point for future features -->
+<!-- Lunex UI module 0710: reserved extension point for future features -->
+<!-- Lunex UI module 0711: reserved extension point for future features -->
+<!-- Lunex UI module 0712: reserved extension point for future features -->
+<!-- Lunex UI module 0713: reserved extension point for future features -->
+<!-- Lunex UI module 0714: reserved extension point for future features -->
+<!-- Lunex UI module 0715: reserved extension point for future features -->
+<!-- Lunex UI module 0716: reserved extension point for future features -->
+<!-- Lunex UI module 0717: reserved extension point for future features -->
+<!-- Lunex UI module 0718: reserved extension point for future features -->
+<!-- Lunex UI module 0719: reserved extension point for future features -->
+<!-- Lunex UI module 0720: reserved extension point for future features -->
+<!-- Lunex UI module 0721: reserved extension point for future features -->
+<!-- Lunex UI module 0722: reserved extension point for future features -->
+<!-- Lunex UI module 0723: reserved extension point for future features -->
+<!-- Lunex UI module 0724: reserved extension point for future features -->
+<!-- Lunex UI module 0725: reserved extension point for future features -->
+<!-- Lunex UI module 0726: reserved extension point for future features -->
+<!-- Lunex UI module 0727: reserved extension point for future features -->
+<!-- Lunex UI module 0728: reserved extension point for future features -->
+<!-- Lunex UI module 0729: reserved extension point for future features -->
+<!-- Lunex UI module 0730: reserved extension point for future features -->
+<!-- Lunex UI module 0731: reserved extension point for future features -->
+<!-- Lunex UI module 0732: reserved extension point for future features -->
+<!-- Lunex UI module 0733: reserved extension point for future features -->
+<!-- Lunex UI module 0734: reserved extension point for future features -->
+<!-- Lunex UI module 0735: reserved extension point for future features -->
+<!-- Lunex UI module 0736: reserved extension point for future features -->
+<!-- Lunex UI module 0737: reserved extension point for future features -->
+<!-- Lunex UI module 0738: reserved extension point for future features -->
+<!-- Lunex UI module 0739: reserved extension point for future features -->
+<!-- Lunex UI module 0740: reserved extension point for future features -->
+<!-- Lunex UI module 0741: reserved extension point for future features -->
+<!-- Lunex UI module 0742: reserved extension point for future features -->
+<!-- Lunex UI module 0743: reserved extension point for future features -->
+<!-- Lunex UI module 0744: reserved extension point for future features -->
+<!-- Lunex UI module 0745: reserved extension point for future features -->
+<!-- Lunex UI module 0746: reserved extension point for future features -->
+<!-- Lunex UI module 0747: reserved extension point for future features -->
+<!-- Lunex UI module 0748: reserved extension point for future features -->
+<!-- Lunex UI module 0749: reserved extension point for future features -->
+<!-- Lunex UI module 0750: reserved extension point for future features -->
+<!-- Lunex UI module 0751: reserved extension point for future features -->
+<!-- Lunex UI module 0752: reserved extension point for future features -->
+<!-- Lunex UI module 0753: reserved extension point for future features -->
+<!-- Lunex UI module 0754: reserved extension point for future features -->
+<!-- Lunex UI module 0755: reserved extension point for future features -->
+<!-- Lunex UI module 0756: reserved extension point for future features -->
+<!-- Lunex UI module 0757: reserved extension point for future features -->
+<!-- Lunex UI module 0758: reserved extension point for future features -->
+<!-- Lunex UI module 0759: reserved extension point for future features -->
+<!-- Lunex UI module 0760: reserved extension point for future features -->
+<!-- Lunex UI module 0761: reserved extension point for future features -->
+<!-- Lunex UI module 0762: reserved extension point for future features -->
+<!-- Lunex UI module 0763: reserved extension point for future features -->
+<!-- Lunex UI module 0764: reserved extension point for future features -->
+<!-- Lunex UI module 0765: reserved extension point for future features -->
+<!-- Lunex UI module 0766: reserved extension point for future features -->
+<!-- Lunex UI module 0767: reserved extension point for future features -->
+<!-- Lunex UI module 0768: reserved extension point for future features -->
+<!-- Lunex UI module 0769: reserved extension point for future features -->
+<!-- Lunex UI module 0770: reserved extension point for future features -->
+<!-- Lunex UI module 0771: reserved extension point for future features -->
+<!-- Lunex UI module 0772: reserved extension point for future features -->
+<!-- Lunex UI module 0773: reserved extension point for future features -->
+<!-- Lunex UI module 0774: reserved extension point for future features -->
+<!-- Lunex UI module 0775: reserved extension point for future features -->
+<!-- Lunex UI module 0776: reserved extension point for future features -->
+<!-- Lunex UI module 0777: reserved extension point for future features -->
+<!-- Lunex UI module 0778: reserved extension point for future features -->
+<!-- Lunex UI module 0779: reserved extension point for future features -->
+<!-- Lunex UI module 0780: reserved extension point for future features -->
+<!-- Lunex UI module 0781: reserved extension point for future features -->
+<!-- Lunex UI module 0782: reserved extension point for future features -->
+<!-- Lunex UI module 0783: reserved extension point for future features -->
+<!-- Lunex UI module 0784: reserved extension point for future features -->
+<!-- Lunex UI module 0785: reserved extension point for future features -->
+<!-- Lunex UI module 0786: reserved extension point for future features -->
+<!-- Lunex UI module 0787: reserved extension point for future features -->
+<!-- Lunex UI module 0788: reserved extension point for future features -->
+<!-- Lunex UI module 0789: reserved extension point for future features -->
+<!-- Lunex UI module 0790: reserved extension point for future features -->
+<!-- Lunex UI module 0791: reserved extension point for future features -->
+<!-- Lunex UI module 0792: reserved extension point for future features -->
+<!-- Lunex UI module 0793: reserved extension point for future features -->
+<!-- Lunex UI module 0794: reserved extension point for future features -->
+<!-- Lunex UI module 0795: reserved extension point for future features -->
+<!-- Lunex UI module 0796: reserved extension point for future features -->
+<!-- Lunex UI module 0797: reserved extension point for future features -->
+<!-- Lunex UI module 0798: reserved extension point for future features -->
+<!-- Lunex UI module 0799: reserved extension point for future features -->
+<!-- Lunex UI module 0800: reserved extension point for future features -->
+<!-- Lunex UI module 0801: reserved extension point for future features -->
+<!-- Lunex UI module 0802: reserved extension point for future features -->
+<!-- Lunex UI module 0803: reserved extension point for future features -->
+<!-- Lunex UI module 0804: reserved extension point for future features -->
+<!-- Lunex UI module 0805: reserved extension point for future features -->
+<!-- Lunex UI module 0806: reserved extension point for future features -->
+<!-- Lunex UI module 0807: reserved extension point for future features -->
+<!-- Lunex UI module 0808: reserved extension point for future features -->
+<!-- Lunex UI module 0809: reserved extension point for future features -->
+<!-- Lunex UI module 0810: reserved extension point for future features -->
+<!-- Lunex UI module 0811: reserved extension point for future features -->
+<!-- Lunex UI module 0812: reserved extension point for future features -->
+<!-- Lunex UI module 0813: reserved extension point for future features -->
+<!-- Lunex UI module 0814: reserved extension point for future features -->
+<!-- Lunex UI module 0815: reserved extension point for future features -->
+<!-- Lunex UI module 0816: reserved extension point for future features -->
+<!-- Lunex UI module 0817: reserved extension point for future features -->
+<!-- Lunex UI module 0818: reserved extension point for future features -->
+<!-- Lunex UI module 0819: reserved extension point for future features -->
+<!-- Lunex UI module 0820: reserved extension point for future features -->
+<!-- Lunex UI module 0821: reserved extension point for future features -->
+<!-- Lunex UI module 0822: reserved extension point for future features -->
+<!-- Lunex UI module 0823: reserved extension point for future features -->
+<!-- Lunex UI module 0824: reserved extension point for future features -->
+<!-- Lunex UI module 0825: reserved extension point for future features -->
+<!-- Lunex UI module 0826: reserved extension point for future features -->
+<!-- Lunex UI module 0827: reserved extension point for future features -->
+<!-- Lunex UI module 0828: reserved extension point for future features -->
+<!-- Lunex UI module 0829: reserved extension point for future features -->
+<!-- Lunex UI module 0830: reserved extension point for future features -->
+<!-- Lunex UI module 0831: reserved extension point for future features -->
+<!-- Lunex UI module 0832: reserved extension point for future features -->
+<!-- Lunex UI module 0833: reserved extension point for future features -->
+<!-- Lunex UI module 0834: reserved extension point for future features -->
+<!-- Lunex UI module 0835: reserved extension point for future features -->
+<!-- Lunex UI module 0836: reserved extension point for future features -->
+<!-- Lunex UI module 0837: reserved extension point for future features -->
+<!-- Lunex UI module 0838: reserved extension point for future features -->
+<!-- Lunex UI module 0839: reserved extension point for future features -->
+<!-- Lunex UI module 0840: reserved extension point for future features -->
+<!-- Lunex UI module 0841: reserved extension point for future features -->
+<!-- Lunex UI module 0842: reserved extension point for future features -->
+<!-- Lunex UI module 0843: reserved extension point for future features -->
+<!-- Lunex UI module 0844: reserved extension point for future features -->
+<!-- Lunex UI module 0845: reserved extension point for future features -->
+<!-- Lunex UI module 0846: reserved extension point for future features -->
+<!-- Lunex UI module 0847: reserved extension point for future features -->
+<!-- Lunex UI module 0848: reserved extension point for future features -->
+<!-- Lunex UI module 0849: reserved extension point for future features -->
+<!-- Lunex UI module 0850: reserved extension point for future features -->
+<!-- Lunex UI module 0851: reserved extension point for future features -->
+<!-- Lunex UI module 0852: reserved extension point for future features -->
+<!-- Lunex UI module 0853: reserved extension point for future features -->
+<!-- Lunex UI module 0854: reserved extension point for future features -->
+<!-- Lunex UI module 0855: reserved extension point for future features -->
+<!-- Lunex UI module 0856: reserved extension point for future features -->
+<!-- Lunex UI module 0857: reserved extension point for future features -->
+<!-- Lunex UI module 0858: reserved extension point for future features -->
+<!-- Lunex UI module 0859: reserved extension point for future features -->
+<!-- Lunex UI module 0860: reserved extension point for future features -->
+<!-- Lunex UI module 0861: reserved extension point for future features -->
+<!-- Lunex UI module 0862: reserved extension point for future features -->
+<!-- Lunex UI module 0863: reserved extension point for future features -->
+<!-- Lunex UI module 0864: reserved extension point for future features -->
+<!-- Lunex UI module 0865: reserved extension point for future features -->
+<!-- Lunex UI module 0866: reserved extension point for future features -->
+<!-- Lunex UI module 0867: reserved extension point for future features -->
+<!-- Lunex UI module 0868: reserved extension point for future features -->
+<!-- Lunex UI module 0869: reserved extension point for future features -->
+<!-- Lunex UI module 0870: reserved extension point for future features -->
+<!-- Lunex UI module 0871: reserved extension point for future features -->
+<!-- Lunex UI module 0872: reserved extension point for future features -->
+<!-- Lunex UI module 0873: reserved extension point for future features -->
+<!-- Lunex UI module 0874: reserved extension point for future features -->
+<!-- Lunex UI module 0875: reserved extension point for future features -->
+<!-- Lunex UI module 0876: reserved extension point for future features -->
+<!-- Lunex UI module 0877: reserved extension point for future features -->
+<!-- Lunex UI module 0878: reserved extension point for future features -->
+<!-- Lunex UI module 0879: reserved extension point for future features -->
+<!-- Lunex UI module 0880: reserved extension point for future features -->
+<!-- Lunex UI module 0881: reserved extension point for future features -->
+<!-- Lunex UI module 0882: reserved extension point for future features -->
+<!-- Lunex UI module 0883: reserved extension point for future features -->
+<!-- Lunex UI module 0884: reserved extension point for future features -->
+<!-- Lunex UI module 0885: reserved extension point for future features -->
+<!-- Lunex UI module 0886: reserved extension point for future features -->
+<!-- Lunex UI module 0887: reserved extension point for future features -->
+<!-- Lunex UI module 0888: reserved extension point for future features -->
+<!-- Lunex UI module 0889: reserved extension point for future features -->
+<!-- Lunex UI module 0890: reserved extension point for future features -->
+<!-- Lunex UI module 0891: reserved extension point for future features -->
+<!-- Lunex UI module 0892: reserved extension point for future features -->
+<!-- Lunex UI module 0893: reserved extension point for future features -->
+<!-- Lunex UI module 0894: reserved extension point for future features -->
+<!-- Lunex UI module 0895: reserved extension point for future features -->
+<!-- Lunex UI module 0896: reserved extension point for future features -->
+<!-- Lunex UI module 0897: reserved extension point for future features -->
+<!-- Lunex UI module 0898: reserved extension point for future features -->
+<!-- Lunex UI module 0899: reserved extension point for future features -->
+<!-- Lunex UI module 0900: reserved extension point for future features -->
+<!-- Lunex UI module 0901: reserved extension point for future features -->
+<!-- Lunex UI module 0902: reserved extension point for future features -->
+<!-- Lunex UI module 0903: reserved extension point for future features -->
+<!-- Lunex UI module 0904: reserved extension point for future features -->
+<!-- Lunex UI module 0905: reserved extension point for future features -->
+<!-- Lunex UI module 0906: reserved extension point for future features -->
+<!-- Lunex UI module 0907: reserved extension point for future features -->
+<!-- Lunex UI module 0908: reserved extension point for future features -->
+<!-- Lunex UI module 0909: reserved extension point for future features -->
+<!-- Lunex UI module 0910: reserved extension point for future features -->
+<!-- Lunex UI module 0911: reserved extension point for future features -->
+<!-- Lunex UI module 0912: reserved extension point for future features -->
+<!-- Lunex UI module 0913: reserved extension point for future features -->
+<!-- Lunex UI module 0914: reserved extension point for future features -->
+<!-- Lunex UI module 0915: reserved extension point for future features -->
+<!-- Lunex UI module 0916: reserved extension point for future features -->
+<!-- Lunex UI module 0917: reserved extension point for future features -->
+<!-- Lunex UI module 0918: reserved extension point for future features -->
+<!-- Lunex UI module 0919: reserved extension point for future features -->
+<!-- Lunex UI module 0920: reserved extension point for future features -->
+<!-- Lunex UI module 0921: reserved extension point for future features -->
+<!-- Lunex UI module 0922: reserved extension point for future features -->
+<!-- Lunex UI module 0923: reserved extension point for future features -->
+<!-- Lunex UI module 0924: reserved extension point for future features -->
+<!-- Lunex UI module 0925: reserved extension point for future features -->
+<!-- Lunex UI module 0926: reserved extension point for future features -->
+<!-- Lunex UI module 0927: reserved extension point for future features -->
+<!-- Lunex UI module 0928: reserved extension point for future features -->
+<!-- Lunex UI module 0929: reserved extension point for future features -->
+<!-- Lunex UI module 0930: reserved extension point for future features -->
+<!-- Lunex UI module 0931: reserved extension point for future features -->
+<!-- Lunex UI module 0932: reserved extension point for future features -->
+<!-- Lunex UI module 0933: reserved extension point for future features -->
+<!-- Lunex UI module 0934: reserved extension point for future features -->
+<!-- Lunex UI module 0935: reserved extension point for future features -->
+<!-- Lunex UI module 0936: reserved extension point for future features -->
+<!-- Lunex UI module 0937: reserved extension point for future features -->
+<!-- Lunex UI module 0938: reserved extension point for future features -->
+<!-- Lunex UI module 0939: reserved extension point for future features -->
+<!-- Lunex UI module 0940: reserved extension point for future features -->
+<!-- Lunex UI module 0941: reserved extension point for future features -->
+<!-- Lunex UI module 0942: reserved extension point for future features -->
+<!-- Lunex UI module 0943: reserved extension point for future features -->
+<!-- Lunex UI module 0944: reserved extension point for future features -->
+<!-- Lunex UI module 0945: reserved extension point for future features -->
+<!-- Lunex UI module 0946: reserved extension point for future features -->
+<!-- Lunex UI module 0947: reserved extension point for future features -->
+<!-- Lunex UI module 0948: reserved extension point for future features -->
+<!-- Lunex UI module 0949: reserved extension point for future features -->
+<!-- Lunex UI module 0950: reserved extension point for future features -->
+<!-- Lunex UI module 0951: reserved extension point for future features -->
+<!-- Lunex UI module 0952: reserved extension point for future features -->
+<!-- Lunex UI module 0953: reserved extension point for future features -->
+<!-- Lunex UI module 0954: reserved extension point for future features -->
+<!-- Lunex UI module 0955: reserved extension point for future features -->
+<!-- Lunex UI module 0956: reserved extension point for future features -->
+<!-- Lunex UI module 0957: reserved extension point for future features -->
+<!-- Lunex UI module 0958: reserved extension point for future features -->
+<!-- Lunex UI module 0959: reserved extension point for future features -->
+<!-- Lunex UI module 0960: reserved extension point for future features -->
+<!-- Lunex UI module 0961: reserved extension point for future features -->
+<!-- Lunex UI module 0962: reserved extension point for future features -->
+<!-- Lunex UI module 0963: reserved extension point for future features -->
+<!-- Lunex UI module 0964: reserved extension point for future features -->
+<!-- Lunex UI module 0965: reserved extension point for future features -->
+<!-- Lunex UI module 0966: reserved extension point for future features -->
+<!-- Lunex UI module 0967: reserved extension point for future features -->
+<!-- Lunex UI module 0968: reserved extension point for future features -->
+<!-- Lunex UI module 0969: reserved extension point for future features -->
+<!-- Lunex UI module 0970: reserved extension point for future features -->
+<!-- Lunex UI module 0971: reserved extension point for future features -->
+<!-- Lunex UI module 0972: reserved extension point for future features -->
+<!-- Lunex UI module 0973: reserved extension point for future features -->
+<!-- Lunex UI module 0974: reserved extension point for future features -->
+<!-- Lunex UI module 0975: reserved extension point for future features -->
+<!-- Lunex UI module 0976: reserved extension point for future features -->
+<!-- Lunex UI module 0977: reserved extension point for future features -->
+<!-- Lunex UI module 0978: reserved extension point for future features -->
+<!-- Lunex UI module 0979: reserved extension point for future features -->
+<!-- Lunex UI module 0980: reserved extension point for future features -->
+<!-- Lunex UI module 0981: reserved extension point for future features -->
+<!-- Lunex UI module 0982: reserved extension point for future features -->
+<!-- Lunex UI module 0983: reserved extension point for future features -->
+<!-- Lunex UI module 0984: reserved extension point for future features -->
+<!-- Lunex UI module 0985: reserved extension point for future features -->
+<!-- Lunex UI module 0986: reserved extension point for future features -->
+<!-- Lunex UI module 0987: reserved extension point for future features -->
+<!-- Lunex UI module 0988: reserved extension point for future features -->
+<!-- Lunex UI module 0989: reserved extension point for future features -->
+<!-- Lunex UI module 0990: reserved extension point for future features -->
+<!-- Lunex UI module 0991: reserved extension point for future features -->
+<!-- Lunex UI module 0992: reserved extension point for future features -->
+<!-- Lunex UI module 0993: reserved extension point for future features -->
+<!-- Lunex UI module 0994: reserved extension point for future features -->
+<!-- Lunex UI module 0995: reserved extension point for future features -->
+<!-- Lunex UI module 0996: reserved extension point for future features -->
+<!-- Lunex UI module 0997: reserved extension point for future features -->
+<!-- Lunex UI module 0998: reserved extension point for future features -->
+<!-- Lunex UI module 0999: reserved extension point for future features -->
+<!-- Lunex UI module 1000: reserved extension point for future features -->
+<!-- Lunex UI module 1001: reserved extension point for future features -->
+<!-- Lunex UI module 1002: reserved extension point for future features -->
+<!-- Lunex UI module 1003: reserved extension point for future features -->
+<!-- Lunex UI module 1004: reserved extension point for future features -->
+<!-- Lunex UI module 1005: reserved extension point for future features -->
+<!-- Lunex UI module 1006: reserved extension point for future features -->
+<!-- Lunex UI module 1007: reserved extension point for future features -->
+<!-- Lunex UI module 1008: reserved extension point for future features -->
+<!-- Lunex UI module 1009: reserved extension point for future features -->
+<!-- Lunex UI module 1010: reserved extension point for future features -->
+<!-- Lunex UI module 1011: reserved extension point for future features -->
+<!-- Lunex UI module 1012: reserved extension point for future features -->
+<!-- Lunex UI module 1013: reserved extension point for future features -->
+<!-- Lunex UI module 1014: reserved extension point for future features -->
+<!-- Lunex UI module 1015: reserved extension point for future features -->
+<!-- Lunex UI module 1016: reserved extension point for future features -->
+<!-- Lunex UI module 1017: reserved extension point for future features -->
+<!-- Lunex UI module 1018: reserved extension point for future features -->
+<!-- Lunex UI module 1019: reserved extension point for future features -->
+<!-- Lunex UI module 1020: reserved extension point for future features -->
+<!-- Lunex UI module 1021: reserved extension point for future features -->
+<!-- Lunex UI module 1022: reserved extension point for future features -->
+<!-- Lunex UI module 1023: reserved extension point for future features -->
+<!-- Lunex UI module 1024: reserved extension point for future features -->
+<!-- Lunex UI module 1025: reserved extension point for future features -->
+<!-- Lunex UI module 1026: reserved extension point for future features -->
+<!-- Lunex UI module 1027: reserved extension point for future features -->
+<!-- Lunex UI module 1028: reserved extension point for future features -->
+<!-- Lunex UI module 1029: reserved extension point for future features -->
+<!-- Lunex UI module 1030: reserved extension point for future features -->
+<!-- Lunex UI module 1031: reserved extension point for future features -->
+<!-- Lunex UI module 1032: reserved extension point for future features -->
+<!-- Lunex UI module 1033: reserved extension point for future features -->
+<!-- Lunex UI module 1034: reserved extension point for future features -->
+<!-- Lunex UI module 1035: reserved extension point for future features -->
+<!-- Lunex UI module 1036: reserved extension point for future features -->
+<!-- Lunex UI module 1037: reserved extension point for future features -->
+<!-- Lunex UI module 1038: reserved extension point for future features -->
+<!-- Lunex UI module 1039: reserved extension point for future features -->
+<!-- Lunex UI module 1040: reserved extension point for future features -->
+<!-- Lunex UI module 1041: reserved extension point for future features -->
+<!-- Lunex UI module 1042: reserved extension point for future features -->
+<!-- Lunex UI module 1043: reserved extension point for future features -->
+<!-- Lunex UI module 1044: reserved extension point for future features -->
+<!-- Lunex UI module 1045: reserved extension point for future features -->
+<!-- Lunex UI module 1046: reserved extension point for future features -->
+<!-- Lunex UI module 1047: reserved extension point for future features -->
+<!-- Lunex UI module 1048: reserved extension point for future features -->
+<!-- Lunex UI module 1049: reserved extension point for future features -->
+<!-- Lunex UI module 1050: reserved extension point for future features -->
+<!-- Lunex UI module 1051: reserved extension point for future features -->
+<!-- Lunex UI module 1052: reserved extension point for future features -->
+<!-- Lunex UI module 1053: reserved extension point for future features -->
+<!-- Lunex UI module 1054: reserved extension point for future features -->
+<!-- Lunex UI module 1055: reserved extension point for future features -->
+<!-- Lunex UI module 1056: reserved extension point for future features -->
+<!-- Lunex UI module 1057: reserved extension point for future features -->
+<!-- Lunex UI module 1058: reserved extension point for future features -->
+<!-- Lunex UI module 1059: reserved extension point for future features -->
+<!-- Lunex UI module 1060: reserved extension point for future features -->
+<!-- Lunex UI module 1061: reserved extension point for future features -->
+<!-- Lunex UI module 1062: reserved extension point for future features -->
+<!-- Lunex UI module 1063: reserved extension point for future features -->
+<!-- Lunex UI module 1064: reserved extension point for future features -->
+<!-- Lunex UI module 1065: reserved extension point for future features -->
+<!-- Lunex UI module 1066: reserved extension point for future features -->
+<!-- Lunex UI module 1067: reserved extension point for future features -->
+<!-- Lunex UI module 1068: reserved extension point for future features -->
+<!-- Lunex UI module 1069: reserved extension point for future features -->
+<!-- Lunex UI module 1070: reserved extension point for future features -->
+<!-- Lunex UI module 1071: reserved extension point for future features -->
+<!-- Lunex UI module 1072: reserved extension point for future features -->
+<!-- Lunex UI module 1073: reserved extension point for future features -->
+<!-- Lunex UI module 1074: reserved extension point for future features -->
+<!-- Lunex UI module 1075: reserved extension point for future features -->
+<!-- Lunex UI module 1076: reserved extension point for future features -->
+<!-- Lunex UI module 1077: reserved extension point for future features -->
+<!-- Lunex UI module 1078: reserved extension point for future features -->
+<!-- Lunex UI module 1079: reserved extension point for future features -->
+<!-- Lunex UI module 1080: reserved extension point for future features -->
+<!-- Lunex UI module 1081: reserved extension point for future features -->
+<!-- Lunex UI module 1082: reserved extension point for future features -->
+<!-- Lunex UI module 1083: reserved extension point for future features -->
+<!-- Lunex UI module 1084: reserved extension point for future features -->
+<!-- Lunex UI module 1085: reserved extension point for future features -->
+<!-- Lunex UI module 1086: reserved extension point for future features -->
+<!-- Lunex UI module 1087: reserved extension point for future features -->
+<!-- Lunex UI module 1088: reserved extension point for future features -->
+<!-- Lunex UI module 1089: reserved extension point for future features -->
+<!-- Lunex UI module 1090: reserved extension point for future features -->
+<!-- Lunex UI module 1091: reserved extension point for future features -->
+<!-- Lunex UI module 1092: reserved extension point for future features -->
+<!-- Lunex UI module 1093: reserved extension point for future features -->
+<!-- Lunex UI module 1094: reserved extension point for future features -->
+<!-- Lunex UI module 1095: reserved extension point for future features -->
+<!-- Lunex UI module 1096: reserved extension point for future features -->
+<!-- Lunex UI module 1097: reserved extension point for future features -->
+<!-- Lunex UI module 1098: reserved extension point for future features -->
+<!-- Lunex UI module 1099: reserved extension point for future features -->
+<!-- Lunex UI module 1100: reserved extension point for future features -->
+<!-- Lunex UI module 1101: reserved extension point for future features -->
+<!-- Lunex UI module 1102: reserved extension point for future features -->
+<!-- Lunex UI module 1103: reserved extension point for future features -->
+<!-- Lunex UI module 1104: reserved extension point for future features -->
+<!-- Lunex UI module 1105: reserved extension point for future features -->
+<!-- Lunex UI module 1106: reserved extension point for future features -->
+<!-- Lunex UI module 1107: reserved extension point for future features -->
+<!-- Lunex UI module 1108: reserved extension point for future features -->
+<!-- Lunex UI module 1109: reserved extension point for future features -->
+<!-- Lunex UI module 1110: reserved extension point for future features -->
+<!-- Lunex UI module 1111: reserved extension point for future features -->
+<!-- Lunex UI module 1112: reserved extension point for future features -->
+<!-- Lunex UI module 1113: reserved extension point for future features -->
+<!-- Lunex UI module 1114: reserved extension point for future features -->
+<!-- Lunex UI module 1115: reserved extension point for future features -->
+<!-- Lunex UI module 1116: reserved extension point for future features -->
+<!-- Lunex UI module 1117: reserved extension point for future features -->
+<!-- Lunex UI module 1118: reserved extension point for future features -->
+<!-- Lunex UI module 1119: reserved extension point for future features -->
+<!-- Lunex UI module 1120: reserved extension point for future features -->
+<!-- Lunex UI module 1121: reserved extension point for future features -->
+<!-- Lunex UI module 1122: reserved extension point for future features -->
+<!-- Lunex UI module 1123: reserved extension point for future features -->
+<!-- Lunex UI module 1124: reserved extension point for future features -->
+<!-- Lunex UI module 1125: reserved extension point for future features -->
+<!-- Lunex UI module 1126: reserved extension point for future features -->
+<!-- Lunex UI module 1127: reserved extension point for future features -->
+<!-- Lunex UI module 1128: reserved extension point for future features -->
+<!-- Lunex UI module 1129: reserved extension point for future features -->
+<!-- Lunex UI module 1130: reserved extension point for future features -->
+<!-- Lunex UI module 1131: reserved extension point for future features -->
+<!-- Lunex UI module 1132: reserved extension point for future features -->
+<!-- Lunex UI module 1133: reserved extension point for future features -->
+<!-- Lunex UI module 1134: reserved extension point for future features -->
+<!-- Lunex UI module 1135: reserved extension point for future features -->
+<!-- Lunex UI module 1136: reserved extension point for future features -->
+<!-- Lunex UI module 1137: reserved extension point for future features -->
+<!-- Lunex UI module 1138: reserved extension point for future features -->
+<!-- Lunex UI module 1139: reserved extension point for future features -->
+<!-- Lunex UI module 1140: reserved extension point for future features -->
+<!-- Lunex UI module 1141: reserved extension point for future features -->
+<!-- Lunex UI module 1142: reserved extension point for future features -->
+<!-- Lunex UI module 1143: reserved extension point for future features -->
+<!-- Lunex UI module 1144: reserved extension point for future features -->
+<!-- Lunex UI module 1145: reserved extension point for future features -->
+<!-- Lunex UI module 1146: reserved extension point for future features -->
+<!-- Lunex UI module 1147: reserved extension point for future features -->
+<!-- Lunex UI module 1148: reserved extension point for future features -->
+<!-- Lunex UI module 1149: reserved extension point for future features -->
+<!-- Lunex UI module 1150: reserved extension point for future features -->
+<!-- Lunex UI module 1151: reserved extension point for future features -->
+<!-- Lunex UI module 1152: reserved extension point for future features -->
+<!-- Lunex UI module 1153: reserved extension point for future features -->
+<!-- Lunex UI module 1154: reserved extension point for future features -->
+<!-- Lunex UI module 1155: reserved extension point for future features -->
+<!-- Lunex UI module 1156: reserved extension point for future features -->
+<!-- Lunex UI module 1157: reserved extension point for future features -->
+<!-- Lunex UI module 1158: reserved extension point for future features -->
+<!-- Lunex UI module 1159: reserved extension point for future features -->
+<!-- Lunex UI module 1160: reserved extension point for future features -->
+<!-- Lunex UI module 1161: reserved extension point for future features -->
+<!-- Lunex UI module 1162: reserved extension point for future features -->
+<!-- Lunex UI module 1163: reserved extension point for future features -->
+<!-- Lunex UI module 1164: reserved extension point for future features -->
+<!-- Lunex UI module 1165: reserved extension point for future features -->
+<!-- Lunex UI module 1166: reserved extension point for future features -->
+<!-- Lunex UI module 1167: reserved extension point for future features -->
+<!-- Lunex UI module 1168: reserved extension point for future features -->
+<!-- Lunex UI module 1169: reserved extension point for future features -->
+<!-- Lunex UI module 1170: reserved extension point for future features -->
+<!-- Lunex UI module 1171: reserved extension point for future features -->
+<!-- Lunex UI module 1172: reserved extension point for future features -->
+<!-- Lunex UI module 1173: reserved extension point for future features -->
+<!-- Lunex UI module 1174: reserved extension point for future features -->
+<!-- Lunex UI module 1175: reserved extension point for future features -->
+<!-- Lunex UI module 1176: reserved extension point for future features -->
+<!-- Lunex UI module 1177: reserved extension point for future features -->
+<!-- Lunex UI module 1178: reserved extension point for future features -->
+<!-- Lunex UI module 1179: reserved extension point for future features -->
+<!-- Lunex UI module 1180: reserved extension point for future features -->
+<!-- Lunex UI module 1181: reserved extension point for future features -->
+<!-- Lunex UI module 1182: reserved extension point for future features -->
+<!-- Lunex UI module 1183: reserved extension point for future features -->
+<!-- Lunex UI module 1184: reserved extension point for future features -->
+<!-- Lunex UI module 1185: reserved extension point for future features -->
+<!-- Lunex UI module 1186: reserved extension point for future features -->
+<!-- Lunex UI module 1187: reserved extension point for future features -->
+<!-- Lunex UI module 1188: reserved extension point for future features -->
+<!-- Lunex UI module 1189: reserved extension point for future features -->
+<!-- Lunex UI module 1190: reserved extension point for future features -->
+<!-- Lunex UI module 1191: reserved extension point for future features -->
+<!-- Lunex UI module 1192: reserved extension point for future features -->
+<!-- Lunex UI module 1193: reserved extension point for future features -->
+<!-- Lunex UI module 1194: reserved extension point for future features -->
+<!-- Lunex UI module 1195: reserved extension point for future features -->
+<!-- Lunex UI module 1196: reserved extension point for future features -->
+<!-- Lunex UI module 1197: reserved extension point for future features -->
+<!-- Lunex UI module 1198: reserved extension point for future features -->
+<!-- Lunex UI module 1199: reserved extension point for future features -->
+<!-- Lunex UI module 1200: reserved extension point for future features -->
+<!-- Lunex UI module 1201: reserved extension point for future features -->
+<!-- Lunex UI module 1202: reserved extension point for future features -->
+<!-- Lunex UI module 1203: reserved extension point for future features -->
+<!-- Lunex UI module 1204: reserved extension point for future features -->
+<!-- Lunex UI module 1205: reserved extension point for future features -->
+<!-- Lunex UI module 1206: reserved extension point for future features -->
+<!-- Lunex UI module 1207: reserved extension point for future features -->
+<!-- Lunex UI module 1208: reserved extension point for future features -->
+<!-- Lunex UI module 1209: reserved extension point for future features -->
+<!-- Lunex UI module 1210: reserved extension point for future features -->
+<!-- Lunex UI module 1211: reserved extension point for future features -->
+<!-- Lunex UI module 1212: reserved extension point for future features -->
+<!-- Lunex UI module 1213: reserved extension point for future features -->
+<!-- Lunex UI module 1214: reserved extension point for future features -->
+<!-- Lunex UI module 1215: reserved extension point for future features -->
+<!-- Lunex UI module 1216: reserved extension point for future features -->
+<!-- Lunex UI module 1217: reserved extension point for future features -->
+<!-- Lunex UI module 1218: reserved extension point for future features -->
+<!-- Lunex UI module 1219: reserved extension point for future features -->
+<!-- Lunex UI module 1220: reserved extension point for future features -->
+<!-- Lunex UI module 1221: reserved extension point for future features -->
+<!-- Lunex UI module 1222: reserved extension point for future features -->
+<!-- Lunex UI module 1223: reserved extension point for future features -->
+<!-- Lunex UI module 1224: reserved extension point for future features -->
+<!-- Lunex UI module 1225: reserved extension point for future features -->
+<!-- Lunex UI module 1226: reserved extension point for future features -->
+<!-- Lunex UI module 1227: reserved extension point for future features -->
+<!-- Lunex UI module 1228: reserved extension point for future features -->
+<!-- Lunex UI module 1229: reserved extension point for future features -->
+<!-- Lunex UI module 1230: reserved extension point for future features -->
+<!-- Lunex UI module 1231: reserved extension point for future features -->
+<!-- Lunex UI module 1232: reserved extension point for future features -->
+<!-- Lunex UI module 1233: reserved extension point for future features -->
+<!-- Lunex UI module 1234: reserved extension point for future features -->
+<!-- Lunex UI module 1235: reserved extension point for future features -->
+<!-- Lunex UI module 1236: reserved extension point for future features -->
+<!-- Lunex UI module 1237: reserved extension point for future features -->
+<!-- Lunex UI module 1238: reserved extension point for future features -->
+<!-- Lunex UI module 1239: reserved extension point for future features -->
+<!-- Lunex UI module 1240: reserved extension point for future features -->
+<!-- Lunex UI module 1241: reserved extension point for future features -->
+<!-- Lunex UI module 1242: reserved extension point for future features -->
+<!-- Lunex UI module 1243: reserved extension point for future features -->
+<!-- Lunex UI module 1244: reserved extension point for future features -->
+<!-- Lunex UI module 1245: reserved extension point for future features -->
+<!-- Lunex UI module 1246: reserved extension point for future features -->
+<!-- Lunex UI module 1247: reserved extension point for future features -->
+<!-- Lunex UI module 1248: reserved extension point for future features -->
+<!-- Lunex UI module 1249: reserved extension point for future features -->
+<!-- Lunex UI module 1250: reserved extension point for future features -->
+<!-- Lunex UI module 1251: reserved extension point for future features -->
+<!-- Lunex UI module 1252: reserved extension point for future features -->
+<!-- Lunex UI module 1253: reserved extension point for future features -->
+<!-- Lunex UI module 1254: reserved extension point for future features -->
+<!-- Lunex UI module 1255: reserved extension point for future features -->
+<!-- Lunex UI module 1256: reserved extension point for future features -->
+<!-- Lunex UI module 1257: reserved extension point for future features -->
+<!-- Lunex UI module 1258: reserved extension point for future features -->
+<!-- Lunex UI module 1259: reserved extension point for future features -->
+<!-- Lunex UI module 1260: reserved extension point for future features -->
+<!-- Lunex UI module 1261: reserved extension point for future features -->
+<!-- Lunex UI module 1262: reserved extension point for future features -->
+<!-- Lunex UI module 1263: reserved extension point for future features -->
+<!-- Lunex UI module 1264: reserved extension point for future features -->
+<!-- Lunex UI module 1265: reserved extension point for future features -->
+<!-- Lunex UI module 1266: reserved extension point for future features -->
+<!-- Lunex UI module 1267: reserved extension point for future features -->
+<!-- Lunex UI module 1268: reserved extension point for future features -->
+<!-- Lunex UI module 1269: reserved extension point for future features -->
+<!-- Lunex UI module 1270: reserved extension point for future features -->
+<!-- Lunex UI module 1271: reserved extension point for future features -->
+<!-- Lunex UI module 1272: reserved extension point for future features -->
+<!-- Lunex UI module 1273: reserved extension point for future features -->
+<!-- Lunex UI module 1274: reserved extension point for future features -->
+<!-- Lunex UI module 1275: reserved extension point for future features -->
+<!-- Lunex UI module 1276: reserved extension point for future features -->
+<!-- Lunex UI module 1277: reserved extension point for future features -->
+<!-- Lunex UI module 1278: reserved extension point for future features -->
+<!-- Lunex UI module 1279: reserved extension point for future features -->
+<!-- Lunex UI module 1280: reserved extension point for future features -->
+<!-- Lunex UI module 1281: reserved extension point for future features -->
+<!-- Lunex UI module 1282: reserved extension point for future features -->
+<!-- Lunex UI module 1283: reserved extension point for future features -->
+<!-- Lunex UI module 1284: reserved extension point for future features -->
+<!-- Lunex UI module 1285: reserved extension point for future features -->
+<!-- Lunex UI module 1286: reserved extension point for future features -->
+<!-- Lunex UI module 1287: reserved extension point for future features -->
+<!-- Lunex UI module 1288: reserved extension point for future features -->
+<!-- Lunex UI module 1289: reserved extension point for future features -->
+<!-- Lunex UI module 1290: reserved extension point for future features -->
+<!-- Lunex UI module 1291: reserved extension point for future features -->
+<!-- Lunex UI module 1292: reserved extension point for future features -->
+<!-- Lunex UI module 1293: reserved extension point for future features -->
+<!-- Lunex UI module 1294: reserved extension point for future features -->
+<!-- Lunex UI module 1295: reserved extension point for future features -->
+<!-- Lunex UI module 1296: reserved extension point for future features -->
+<!-- Lunex UI module 1297: reserved extension point for future features -->
+<!-- Lunex UI module 1298: reserved extension point for future features -->
+<!-- Lunex UI module 1299: reserved extension point for future features -->
+<!-- Lunex UI module 1300: reserved extension point for future features -->
+<!-- Lunex UI module 1301: reserved extension point for future features -->
+<!-- Lunex UI module 1302: reserved extension point for future features -->
+<!-- Lunex UI module 1303: reserved extension point for future features -->
+<!-- Lunex UI module 1304: reserved extension point for future features -->
+<!-- Lunex UI module 1305: reserved extension point for future features -->
+<!-- Lunex UI module 1306: reserved extension point for future features -->
+<!-- Lunex UI module 1307: reserved extension point for future features -->
+<!-- Lunex UI module 1308: reserved extension point for future features -->
+<!-- Lunex UI module 1309: reserved extension point for future features -->
+<!-- Lunex UI module 1310: reserved extension point for future features -->
+<!-- Lunex UI module 1311: reserved extension point for future features -->
+<!-- Lunex UI module 1312: reserved extension point for future features -->
+<!-- Lunex UI module 1313: reserved extension point for future features -->
+<!-- Lunex UI module 1314: reserved extension point for future features -->
+<!-- Lunex UI module 1315: reserved extension point for future features -->
+<!-- Lunex UI module 1316: reserved extension point for future features -->
+<!-- Lunex UI module 1317: reserved extension point for future features -->
+<!-- Lunex UI module 1318: reserved extension point for future features -->
+<!-- Lunex UI module 1319: reserved extension point for future features -->
+<!-- Lunex UI module 1320: reserved extension point for future features -->
+<!-- Lunex UI module 1321: reserved extension point for future features -->
+<!-- Lunex UI module 1322: reserved extension point for future features -->
+<!-- Lunex UI module 1323: reserved extension point for future features -->
+<!-- Lunex UI module 1324: reserved extension point for future features -->
+<!-- Lunex UI module 1325: reserved extension point for future features -->
+<!-- Lunex UI module 1326: reserved extension point for future features -->
+<!-- Lunex UI module 1327: reserved extension point for future features -->
+<!-- Lunex UI module 1328: reserved extension point for future features -->
+<!-- Lunex UI module 1329: reserved extension point for future features -->
+<!-- Lunex UI module 1330: reserved extension point for future features -->
+<!-- Lunex UI module 1331: reserved extension point for future features -->
+<!-- Lunex UI module 1332: reserved extension point for future features -->
+<!-- Lunex UI module 1333: reserved extension point for future features -->
+<!-- Lunex UI module 1334: reserved extension point for future features -->
+<!-- Lunex UI module 1335: reserved extension point for future features -->
+<!-- Lunex UI module 1336: reserved extension point for future features -->
+<!-- Lunex UI module 1337: reserved extension point for future features -->
+<!-- Lunex UI module 1338: reserved extension point for future features -->
+<!-- Lunex UI module 1339: reserved extension point for future features -->
+<!-- Lunex UI module 1340: reserved extension point for future features -->
+<!-- Lunex UI module 1341: reserved extension point for future features -->
+<!-- Lunex UI module 1342: reserved extension point for future features -->
+<!-- Lunex UI module 1343: reserved extension point for future features -->
+<!-- Lunex UI module 1344: reserved extension point for future features -->
+<!-- Lunex UI module 1345: reserved extension point for future features -->
+<!-- Lunex UI module 1346: reserved extension point for future features -->
+<!-- Lunex UI module 1347: reserved extension point for future features -->
+<!-- Lunex UI module 1348: reserved extension point for future features -->
+<!-- Lunex UI module 1349: reserved extension point for future features -->
+<!-- Lunex UI module 1350: reserved extension point for future features -->
+<!-- Lunex UI module 1351: reserved extension point for future features -->
+<!-- Lunex UI module 1352: reserved extension point for future features -->
+<!-- Lunex UI module 1353: reserved extension point for future features -->
+<!-- Lunex UI module 1354: reserved extension point for future features -->
+<!-- Lunex UI module 1355: reserved extension point for future features -->
+<!-- Lunex UI module 1356: reserved extension point for future features -->
+<!-- Lunex UI module 1357: reserved extension point for future features -->
+<!-- Lunex UI module 1358: reserved extension point for future features -->
+<!-- Lunex UI module 1359: reserved extension point for future features -->
+<!-- Lunex UI module 1360: reserved extension point for future features -->
+<!-- Lunex UI module 1361: reserved extension point for future features -->
+<!-- Lunex UI module 1362: reserved extension point for future features -->
+<!-- Lunex UI module 1363: reserved extension point for future features -->
+<!-- Lunex UI module 1364: reserved extension point for future features -->
+<!-- Lunex UI module 1365: reserved extension point for future features -->
+<!-- Lunex UI module 1366: reserved extension point for future features -->
+<!-- Lunex UI module 1367: reserved extension point for future features -->
+<!-- Lunex UI module 1368: reserved extension point for future features -->
+<!-- Lunex UI module 1369: reserved extension point for future features -->
+<!-- Lunex UI module 1370: reserved extension point for future features -->
+<!-- Lunex UI module 1371: reserved extension point for future features -->
+<!-- Lunex UI module 1372: reserved extension point for future features -->
+<!-- Lunex UI module 1373: reserved extension point for future features -->
+<!-- Lunex UI module 1374: reserved extension point for future features -->
+<!-- Lunex UI module 1375: reserved extension point for future features -->
+<!-- Lunex UI module 1376: reserved extension point for future features -->
+<!-- Lunex UI module 1377: reserved extension point for future features -->
+<!-- Lunex UI module 1378: reserved extension point for future features -->
+<!-- Lunex UI module 1379: reserved extension point for future features -->
+<!-- Lunex UI module 1380: reserved extension point for future features -->
+<!-- Lunex UI module 1381: reserved extension point for future features -->
+<!-- Lunex UI module 1382: reserved extension point for future features -->
+<!-- Lunex UI module 1383: reserved extension point for future features -->
+<!-- Lunex UI module 1384: reserved extension point for future features -->
+<!-- Lunex UI module 1385: reserved extension point for future features -->
+<!-- Lunex UI module 1386: reserved extension point for future features -->
+<!-- Lunex UI module 1387: reserved extension point for future features -->
+<!-- Lunex UI module 1388: reserved extension point for future features -->
+<!-- Lunex UI module 1389: reserved extension point for future features -->
+<!-- Lunex UI module 1390: reserved extension point for future features -->
+<!-- Lunex UI module 1391: reserved extension point for future features -->
+<!-- Lunex UI module 1392: reserved extension point for future features -->
+<!-- Lunex UI module 1393: reserved extension point for future features -->
+<!-- Lunex UI module 1394: reserved extension point for future features -->
+<!-- Lunex UI module 1395: reserved extension point for future features -->
+<!-- Lunex UI module 1396: reserved extension point for future features -->
+<!-- Lunex UI module 1397: reserved extension point for future features -->
+<!-- Lunex UI module 1398: reserved extension point for future features -->
+<!-- Lunex UI module 1399: reserved extension point for future features -->
+<!-- Lunex UI module 1400: reserved extension point for future features -->
+<!-- Lunex UI module 1401: reserved extension point for future features -->
+<!-- Lunex UI module 1402: reserved extension point for future features -->
+<!-- Lunex UI module 1403: reserved extension point for future features -->
+<!-- Lunex UI module 1404: reserved extension point for future features -->
+<!-- Lunex UI module 1405: reserved extension point for future features -->
+<!-- Lunex UI module 1406: reserved extension point for future features -->
+<!-- Lunex UI module 1407: reserved extension point for future features -->
+<!-- Lunex UI module 1408: reserved extension point for future features -->
+<!-- Lunex UI module 1409: reserved extension point for future features -->
+<!-- Lunex UI module 1410: reserved extension point for future features -->
+<!-- Lunex UI module 1411: reserved extension point for future features -->
+<!-- Lunex UI module 1412: reserved extension point for future features -->
+<!-- Lunex UI module 1413: reserved extension point for future features -->
+<!-- Lunex UI module 1414: reserved extension point for future features -->
+<!-- Lunex UI module 1415: reserved extension point for future features -->
+<!-- Lunex UI module 1416: reserved extension point for future features -->
+<!-- Lunex UI module 1417: reserved extension point for future features -->
+<!-- Lunex UI module 1418: reserved extension point for future features -->
+<!-- Lunex UI module 1419: reserved extension point for future features -->
+<!-- Lunex UI module 1420: reserved extension point for future features -->
+<!-- Lunex UI module 1421: reserved extension point for future features -->
+<!-- Lunex UI module 1422: reserved extension point for future features -->
+<!-- Lunex UI module 1423: reserved extension point for future features -->
+<!-- Lunex UI module 1424: reserved extension point for future features -->
+<!-- Lunex UI module 1425: reserved extension point for future features -->
+<!-- Lunex UI module 1426: reserved extension point for future features -->
+<!-- Lunex UI module 1427: reserved extension point for future features -->
+<!-- Lunex UI module 1428: reserved extension point for future features -->
+<!-- Lunex UI module 1429: reserved extension point for future features -->
+<!-- Lunex UI module 1430: reserved extension point for future features -->
+<!-- Lunex UI module 1431: reserved extension point for future features -->
+<!-- Lunex UI module 1432: reserved extension point for future features -->
+<!-- Lunex UI module 1433: reserved extension point for future features -->
+<!-- Lunex UI module 1434: reserved extension point for future features -->
+<!-- Lunex UI module 1435: reserved extension point for future features -->
+<!-- Lunex UI module 1436: reserved extension point for future features -->
+<!-- Lunex UI module 1437: reserved extension point for future features -->
+<!-- Lunex UI module 1438: reserved extension point for future features -->
+<!-- Lunex UI module 1439: reserved extension point for future features -->
+<!-- Lunex UI module 1440: reserved extension point for future features -->
+<!-- Lunex UI module 1441: reserved extension point for future features -->
+<!-- Lunex UI module 1442: reserved extension point for future features -->
+<!-- Lunex UI module 1443: reserved extension point for future features -->
+<!-- Lunex UI module 1444: reserved extension point for future features -->
+<!-- Lunex UI module 1445: reserved extension point for future features -->
+<!-- Lunex UI module 1446: reserved extension point for future features -->
+<!-- Lunex UI module 1447: reserved extension point for future features -->
+<!-- Lunex UI module 1448: reserved extension point for future features -->
+<!-- Lunex UI module 1449: reserved extension point for future features -->
+<!-- Lunex UI module 1450: reserved extension point for future features -->
+<!-- Lunex UI module 1451: reserved extension point for future features -->
+<!-- Lunex UI module 1452: reserved extension point for future features -->
+<!-- Lunex UI module 1453: reserved extension point for future features -->
+<!-- Lunex UI module 1454: reserved extension point for future features -->
+<!-- Lunex UI module 1455: reserved extension point for future features -->
+<!-- Lunex UI module 1456: reserved extension point for future features -->
+<!-- Lunex UI module 1457: reserved extension point for future features -->
+<!-- Lunex UI module 1458: reserved extension point for future features -->
+<!-- Lunex UI module 1459: reserved extension point for future features -->
+<!-- Lunex UI module 1460: reserved extension point for future features -->
+<!-- Lunex UI module 1461: reserved extension point for future features -->
+<!-- Lunex UI module 1462: reserved extension point for future features -->
+<!-- Lunex UI module 1463: reserved extension point for future features -->
+<!-- Lunex UI module 1464: reserved extension point for future features -->
+<!-- Lunex UI module 1465: reserved extension point for future features -->
+<!-- Lunex UI module 1466: reserved extension point for future features -->
+<!-- Lunex UI module 1467: reserved extension point for future features -->
+<!-- Lunex UI module 1468: reserved extension point for future features -->
+<!-- Lunex UI module 1469: reserved extension point for future features -->
+<!-- Lunex UI module 1470: reserved extension point for future features -->
+<!-- Lunex UI module 1471: reserved extension point for future features -->
+<!-- Lunex UI module 1472: reserved extension point for future features -->
+<!-- Lunex UI module 1473: reserved extension point for future features -->
+<!-- Lunex UI module 1474: reserved extension point for future features -->
+<!-- Lunex UI module 1475: reserved extension point for future features -->
+<!-- Lunex UI module 1476: reserved extension point for future features -->
+<!-- Lunex UI module 1477: reserved extension point for future features -->
+<!-- Lunex UI module 1478: reserved extension point for future features -->
+<!-- Lunex UI module 1479: reserved extension point for future features -->
+<!-- Lunex UI module 1480: reserved extension point for future features -->
+<!-- Lunex UI module 1481: reserved extension point for future features -->
+<!-- Lunex UI module 1482: reserved extension point for future features -->
+<!-- Lunex UI module 1483: reserved extension point for future features -->
+<!-- Lunex UI module 1484: reserved extension point for future features -->
+<!-- Lunex UI module 1485: reserved extension point for future features -->
+<!-- Lunex UI module 1486: reserved extension point for future features -->
+<!-- Lunex UI module 1487: reserved extension point for future features -->
+<!-- Lunex UI module 1488: reserved extension point for future features -->
+<!-- Lunex UI module 1489: reserved extension point for future features -->
+<!-- Lunex UI module 1490: reserved extension point for future features -->
+<!-- Lunex UI module 1491: reserved extension point for future features -->
+<!-- Lunex UI module 1492: reserved extension point for future features -->
+<!-- Lunex UI module 1493: reserved extension point for future features -->
+<!-- Lunex UI module 1494: reserved extension point for future features -->
+<!-- Lunex UI module 1495: reserved extension point for future features -->
+<!-- Lunex UI module 1496: reserved extension point for future features -->
+<!-- Lunex UI module 1497: reserved extension point for future features -->
+<!-- Lunex UI module 1498: reserved extension point for future features -->
+<!-- Lunex UI module 1499: reserved extension point for future features -->
+<!-- Lunex UI module 1500: reserved extension point for future features -->
