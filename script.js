@@ -1,1 +1,204 @@
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,Arial,sans-serif;background:#050811;color:#f5f8ff;min-height:100vh}button{font:inherit;cursor:pointer;border:0}.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 15% 10%,#0d3e78 0,transparent 28%),radial-gradient(circle at 90% 80%,#29105f 0,transparent 30%),linear-gradient(120deg,#050811,#080d19)}.bg:after{content:"";position:absolute;inset:0;opacity:.12;background-image:linear-gradient(#2d6ca422 1px,transparent 1px),linear-gradient(90deg,#2d6ca422 1px,transparent 1px);background-size:55px 55px}header{height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 6%;border-bottom:1px solid #ffffff12;background:#050811cc;backdrop-filter:blur(18px);position:sticky;top:0;z-index:10}.logo{display:grid;grid-template-columns:42px auto;grid-template-rows:23px 15px;column-gap:10px;align-items:center}.logo span{grid-row:1/3;width:42px;height:42px;display:grid;place-items:center;background:linear-gradient(135deg,#2188ff,#1745bb);border-radius:12px;font-size:25px;box-shadow:0 0 25px #2588ff55}.logo b{letter-spacing:3px}.logo small{font-size:8px;color:#67b5ff;letter-spacing:4px}nav{display:flex;gap:5px}.nav{padding:10px 15px;border-radius:9px;color:#8190ab;background:transparent}.nav:hover,.nav.active{background:#2588ff12;color:#fff}.account{background:#1680ff12;border:1px solid #318fff2b;padding:10px 14px;border-radius:10px;color:#70baff}main{width:88%;max-width:1400px;margin:auto}.page{display:none}.page.active{display:block}.hero{min-height:500px;display:flex;align-items:center;justify-content:space-between}.badge{font-size:10px;font-weight:800;letter-spacing:2.5px;color:#68b8ff;margin-bottom:16px}.hero h1,.title h1{font-size:clamp(48px,7vw,88px);line-height:.95;letter-spacing:-4px}.hero em{font-style:normal;background:linear-gradient(90deg,#45aaff,#9574ff);color:transparent;background-clip:text}.hero p,.title p{color:#8390a9;line-height:1.7;max-width:530px;margin:22px 0}.primary,.secondary{padding:13px 20px;border-radius:11px;font-weight:800}.primary{color:white;background:linear-gradient(135deg,#2789ff,#174fc8);box-shadow:0 10px 30px #1d72df30}.secondary{color:#a9d4ff;background:#237fe612;border:1px solid #3b91ed33}.orb{width:270px;height:270px;border-radius:50%;display:grid;place-items:center;font-size:110px;color:#b9ddff;background:radial-gradient(circle,#2876d9,#09162d 65%);box-shadow:0 0 100px #2588ff44,inset 0 0 50px #8bcaff22;animation:float 4s ease-in-out infinite}@keyframes float{50%{transform:translateY(-14px)}}.section-head{margin:25px 0}.section-head small{color:#68b8ff;letter-spacing:3px}.section-head h2{font-size:34px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding-bottom:70px}.card,.item{background:linear-gradient(145deg,#111c32e8,#080e1ce8);border:1px solid #ffffff10;border-radius:18px;padding:20px;transition:.25s}.card:hover,.item:hover{transform:translateY(-5px);border-color:#3e9bff55;box-shadow:0 20px 50px #0006}.case-icon{height:190px;border-radius:14px;display:grid;place-items:center;font-size:75px;background:radial-gradient(circle at 50% 45%,var(--c),transparent 55%),#0b1323;margin-bottom:18px}.card h3{font-size:21px}.card p{color:#7787a3;margin:7px 0 15px;font-size:13px}.rarity{font-size:9px;letter-spacing:1px;color:#83a2ca;display:flex;gap:5px;margin-bottom:15px}.price{color:#65b5ff;font-weight:800}.card .primary{width:100%;margin-top:15px}.title{padding:65px 0 25px}.upgrade-box{display:grid;grid-template-columns:1fr 180px 1fr;gap:30px;align-items:center;background:#0b1322cc;border:1px solid #ffffff10;border-radius:22px;padding:30px}.slot label{display:block;color:#6f83a5;font-size:10px;letter-spacing:2px;margin-bottom:10px}.item-slot{height:190px;border:1px dashed #3b73a555;border-radius:16px;display:grid;place-items:center;background:#08101e;margin-bottom:12px;font-size:48px}.item-slot.empty{color:#40516d}.upgrade-center{text-align:center}.upgrade-center #chance{font-size:27px;font-weight:900;color:#69b8ff}.arrow{font-size:45px;margin:10px}.upgrade{width:100%}.upgrade:disabled{opacity:.35;cursor:not-allowed}.upgrade-center small{display:block;color:#65738b;font-size:10px;margin-top:10px}.target-price{color:#6dbbff;text-align:center}.sub{margin:35px 0 15px}.items{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;padding-bottom:70px}.item{text-align:center}.item .icon{height:120px;display:grid;place-items:center;font-size:55px;border-radius:12px;background:radial-gradient(circle,var(--c),transparent 65%),#0b1424}.item h3{font-size:14px;margin:12px 0 5px}.item p{color:#68b8ff;font-size:12px}.inventory-stat{float:right;margin-top:-65px;color:#7890b2}.modal{position:fixed;inset:0;background:#02050bd9;backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:30;padding:20px}.modal.show{display:flex}.modal-card{width:min(800px,100%);background:#0b1323;border:1px solid #ffffff15;border-radius:22px;padding:30px;position:relative;box-shadow:0 30px 100px #000}.modal-card h2{text-align:center;font-size:30px;margin-bottom:22px}.close{position:absolute;right:18px;top:15px;background:transparent;color:#8090aa;font-size:30px}.roulette{height:170px;overflow:hidden;border:1px solid #ffffff12;border-radius:15px;background:#070d18;position:relative}.pointer{position:absolute;z-index:2;top:0;bottom:0;left:50%;width:2px;background:#62b8ff;box-shadow:0 0 20px #319dff}.roulette #rouletteTrack{height:100%;display:flex;align-items:center;gap:10px;position:absolute;left:0}.roll-item{width:130px;height:125px;flex:0 0 130px;border-radius:12px;display:grid;place-items:center;font-size:45px;background:radial-gradient(circle,var(--c),transparent 65%),#0c1525;border:1px solid #ffffff12}.result{text-align:center;min-height:70px;padding:18px;font-weight:900;font-size:20px}.hidden{display:none}.selector{max-height:85vh;overflow:auto}.toast{position:fixed;right:20px;bottom:20px;background:#10223b;border:1px solid #318fff55;padding:14px 18px;border-radius:12px;transform:translateY(100px);opacity:0;transition:.3s;z-index:50}.toast.show{transform:translateY(0);opacity:1}footer{text-align:center;color:#50617d;padding:25px;border-top:1px solid #ffffff0d;font-size:12px}@media(max-width:1000px){.grid,.items{grid-template-columns:repeat(2,1fr)}.hero{min-height:420px}.orb{width:200px;height:200px;font-size:80px}.upgrade-box{grid-template-columns:1fr}.upgrade-center{order:3}}@media(max-width:650px){header{padding:0 4%;height:auto;min-height:70px;flex-wrap:wrap;gap:8px;padding-top:10px;padding-bottom:10px}nav{order:3;width:100%;overflow:auto}.nav{flex:1;white-space:nowrap;font-size:12px}main{width:92%}.hero{min-height:520px}.orb{display:none}.hero h1,.title h1{letter-spacing:-2px}.grid,.items{grid-template-columns:1fr}.section-head{margin-top:20px}.inventory-stat{float:none;margin:0 0 20px}.upgrade-box{padding:18px}.modal-card{padding:22px 15px}.roulette{height:140px}.roll-item{width:100px;flex-basis:100px;height:105px}.hero p{font-size:14px}}
+const items={
+ common:[
+  {name:"Blue Shard",price:35,icon:"🔷",c:"#1688ff",rarity:"COMMON"},
+  {name:"Neon Coin",price:55,icon:"🪙",c:"#1688ff",rarity:"COMMON"},
+  {name:"Lunar Stone",price:80,icon:"🌑",c:"#1688ff",rarity:"COMMON"}
+ ],
+ rare:[
+  {name:"Phantom Blade",price:150,icon:"🗡️",c:"#6c5cff",rarity:"RARE"},
+  {name:"Void Crystal",price:220,icon:"💠",c:"#6c5cff",rarity:"RARE"},
+  {name:"Cyber Mask",price:300,icon:"🎭",c:"#6c5cff",rarity:"RARE"}
+ ],
+ epic:[
+  {name:"Galaxy Orb",price:550,icon:"🔮",c:"#b34cff",rarity:"EPIC"},
+  {name:"Lunex Core",price:750,icon:"💎",c:"#b34cff",rarity:"EPIC"},
+  {name:"Astral Sword",price:950,icon:"⚔️",c:"#b34cff",rarity:"EPIC"}
+ ],
+ legendary:[
+  {name:"Solar Crown",price:1600,icon:"👑",c:"#ffc42e",rarity:"LEGENDARY"},
+  {name:"Dragon Core",price:2400,icon:"🐉",c:"#ffc42e",rarity:"LEGENDARY"}
+ ],
+ mythic:[
+  {name:"Lunex Star",price:5000,icon:"⭐",c:"#ff4d88",rarity:"MYTHIC"},
+  {name:"Eternal Moon",price:9000,icon:"🌙",c:"#ff4d88",rarity:"MYTHIC"}
+ ]
+};
+
+const cases={
+ starter:{name:"Starter Case",price:100,color:"#1688ff",emoji:"📦",pool:[["common",65],["rare",27],["epic",8]]},
+ phantom:{name:"Phantom Case",price:250,color:"#765cff",emoji:"🎁",pool:[["common",20],["rare",55],["epic",22],["legendary",3]]},
+ galaxy:{name:"Galaxy Case",price:500,color:"#b34cff",emoji:"💎",pool:[["rare",25],["epic",60],["legendary",13],["mythic",2]]},
+ inferno:{name:"Inferno Case",price:1000,color:"#ff4b3e",emoji:"🔥",pool:[["epic",40],["legendary",50],["mythic",10]]}
+};
+
+let balance=Number(localStorage.getItem("lunex_balance")??1000);
+let inventory=JSON.parse(localStorage.getItem("lunex_inventory")||"[]");
+let source=null,target=null;
+
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+
+function save(){
+ localStorage.setItem("lunex_balance",balance);
+ localStorage.setItem("lunex_inventory",JSON.stringify(inventory));
+ render();
+}
+
+function render(){
+ $("#balance").textContent=balance;
+ renderCases();
+ renderInventory();
+ renderTargets();
+ updateUpgrade();
+}
+
+function renderCases(){
+ $("#casesGrid").innerHTML=Object.entries(cases).map(([id,c])=>`
+ <article class="card">
+  <div class="case-icon" style="--c:${c.color}">${c.emoji}</div>
+  <h3>${c.name}</h3>
+  <p>Открытие кейса и случайный дроп</p>
+  <div class="rarity">${c.pool.map(x=>x[0].toUpperCase()).join(" · ")}</div>
+  <div class="price">◆ ${c.price}</div>
+  <button class="primary" onclick="openCase('${id}')">ОТКРЫТЬ</button>
+ </article>`).join("");
+}
+
+function renderInventory(){
+ $("#inventoryGrid").innerHTML=inventory.length?inventory.map((x,i)=>`
+ <div class="item">
+  <div class="icon" style="--c:${x.c}">${x.icon}</div>
+  <h3>${x.name}</h3>
+  <p>${x.rarity} · ◆ ${x.price}</p>
+  <button class="secondary" style="margin-top:12px;width:100%" onclick="selectSource(${i})">В апгрейдер</button>
+ </div>`).join(""):`<div style="grid-column:1/-1;text-align:center;color:#64748a;padding:60px">Инвентарь пуст. Открой первый кейс!</div>`;
+ $("#inventoryValue").textContent=inventory.reduce((a,x)=>a+x.price,0);
+}
+
+function renderTargets(){
+ const all=Object.values(items).flat();
+ $("#targets").innerHTML=all.map((x,i)=>`
+ <div class="item" onclick="selectTarget(${i})">
+  <div class="icon" style="--c:${x.c}">${x.icon}</div>
+  <h3>${x.name}</h3><p>◆ ${x.price}</p>
+ </div>`).join("");
+ window.targetPool=all;
+}
+
+function weighted(pool){
+ let r=Math.random()*100;
+ for(const [rarity,chance] of pool){if((r-=chance)<=0)return items[rarity][Math.floor(Math.random()*items[rarity].length)]}
+ return items.common[0];
+}
+
+function openCase(id){
+ const c=cases[id];
+ if(balance<c.price){toast("Недостаточно средств");return}
+ balance-=c.price; save();
+ $("#modalTitle").textContent=c.name;
+ $("#modal").classList.add("show");
+ $("#again").classList.add("hidden");
+ $("#result").textContent="Открываем...";
+ const track=$("#rouletteTrack");
+ track.innerHTML="";
+ const winner=weighted(c.pool);
+ for(let i=0;i<28;i++){
+   const x=i===24?winner:weighted(c.pool);
+   track.innerHTML+=`<div class="roll-item" style="--c:${x.c}">${x.icon}</div>`;
+ }
+ track.style.transition="none"; track.style.left="0px";
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   const offset=24*140-330;
+   track.style.transition="left 4s cubic-bezier(.12,.72,.1,1)";
+   track.style.left=`-${offset}px`;
+ }));
+ setTimeout(()=>{
+   inventory.push({...winner,id:Date.now()});
+   $("#result").innerHTML=`${winner.icon} ${winner.name}<br><span style="color:#68b8ff">◆ ${winner.price}</span>`;
+   $("#again").classList.remove("hidden");
+   save(); toast(`Получен ${winner.name}`);
+ },4300);
+ $("#again").onclick=()=>openCase(id);
+}
+
+function closeModal(){$("#modal").classList.remove("show")}
+$("#closeModal").onclick=closeModal;
+
+function showPage(id){
+ $$(".page").forEach(x=>x.classList.remove("active"));
+ $("#"+id).classList.add("active");
+ $$(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+$$(".nav").forEach(x=>x.onclick=()=>showPage(x.dataset.page));
+$("#scrollCases").onclick=()=>document.querySelector("#casesGrid").scrollIntoView({behavior:"smooth"});
+
+function openSelector(){
+ $("#selectorGrid").innerHTML=inventory.length?inventory.map((x,i)=>`
+ <div class="item" onclick="selectSource(${i})">
+  <div class="icon" style="--c:${x.c}">${x.icon}</div>
+  <h3>${x.name}</h3><p>◆ ${x.price}</p>
+ </div>`).join(""):`<p style="color:#72819b">Сначала открой кейс.</p>`;
+ $("#selector").classList.add("show");
+}
+$("#chooseSource").onclick=openSelector;
+$("#closeSelector").onclick=()=>$("#selector").classList.remove("show");
+
+function selectSource(i){
+ source={...inventory[i],index:i};
+ $("#sourceSlot").innerHTML=`<span>${source.icon}</span><small>${source.name}<br>◆ ${source.price}</small>`;
+ $("#sourceSlot").classList.remove("empty");
+ $("#selector").classList.remove("show");
+ updateUpgrade();
+}
+
+function selectTarget(i){
+ target={...window.targetPool[i]};
+ $("#targetSlot").innerHTML=`<span>${target.icon}</span><small>${target.name}</small>`;
+ $("#targetSlot").classList.remove("empty");
+ $("#targetPrice").textContent=target.price;
+ updateUpgrade();
+}
+
+function updateUpgrade(){
+ if(!source||!target){
+  $("#chance").textContent="0%";
+  $("#upgradeBtn").disabled=true;
+  return;
+ }
+ if(target.price<=source.price){
+  $("#chance").textContent="—";
+  $("#upgradeBtn").disabled=true;
+  return;
+ }
+ let chance=Math.max(3,Math.min(95,(source.price/target.price)*100*0.9));
+ chance=Math.round(chance);
+ $("#chance").textContent=chance+"%";
+ $("#upgradeBtn").disabled=false;
+}
+
+function upgradeItem(){
+ if(!source||!target)return;
+ let chance=Math.max(3,Math.min(95,(source.price/target.price)*100*0.9));
+ const win=Math.random()*100<chance;
+ const index=source.index;
+ if(win){
+  inventory.splice(index,1);
+  inventory.push({...target,id:Date.now()});
+  toast(`🎉 Успех! ${target.name}`);
+ }else{
+  inventory.splice(index,1);
+  toast("💥 Неудача. Предмет потерян.");
+ }
+ source=null;
+ $("#sourceSlot").className="item-slot empty";
+ $("#sourceSlot").textContent="?";
+ save();
+}
+
+function toast(text){
+ const t=$("#toast");t.textContent=text;t.classList.add("show");
+ setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+render();
