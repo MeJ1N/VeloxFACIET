@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/30991599/README.md)
+[README.md](https://github.com/user-attachments/files/30992289/README.md)
 # Lunex CS2 Upgrader — обновлённая demo-версия
 
 ## Что изменено
@@ -30,3 +30,6 @@
 5. Откройте выданный GitHub Pages URL.
 
 Для реального проекта понадобятся backend, авторизация Steam, безопасная серверная логика, база данных и отдельная система цен.
+
+
+FIX: renamed the upgrade page and upgrade button IDs so the JavaScript no longer selects the wrong element.
