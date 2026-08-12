@@ -147,8 +147,8 @@ function renderStats(){
   $("#chance2").textContent=Math.round(c.chance)+"%";
   const deg=c.chance*3.6;
   $("#ring").style.setProperty("--deg",deg+"deg");
-  $("#upgrade").disabled=!(state.source&&state.target&&state.target.price>state.source.price);
-  $("#upgrade small").textContent=state.source&&state.target?("WIN CHANCE "+Math.round(c.chance)+"%"):"SELECT SOURCE + TARGET";
+  $("#upgradeButton").disabled=!(state.source&&state.target&&state.target.price>state.source.price);
+  $("#upgradeButton small").textContent=state.source&&state.target?("WIN CHANCE "+Math.round(c.chance)+"%"):"SELECT SOURCE + TARGET";
 }
 
 function renderAll(){
@@ -157,7 +157,7 @@ function renderAll(){
 
 function upgrade(){
   if(!state.source||!state.target)return toast("Select source and target");
-  const src=state.source,tar=state.target,c=calc(),button=$("#upgrade");
+  const src=state.source,tar=state.target,c=calc(),button=$("#upgradeButton");
   button.disabled=true;
   button.innerHTML="<b>ROLLING...</b><small>GOOD LUCK</small>";
   let start=performance.now();
@@ -262,7 +262,7 @@ $$(".nav").forEach(b=>b.onclick=()=>setPage(b.dataset.page));
 $$("[data-page]").forEach(b=>b.addEventListener("click",e=>{if(b.dataset.page)setPage(b.dataset.page);}));
 $$("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
 ["resultModal","caseModal","profileModal"].forEach(idv=>$("#"+idv).addEventListener("click",e=>{if(e.target.id===idv)closeModal(idv);}));
-$("#upgrade").onclick=upgrade;
+$("#upgradeButton").onclick=upgrade;
 $("#openCase").onclick=openCase;
 $("#profile").onclick=()=>{renderBalance();$("#profileModal").classList.add("show");};
 $("#sound").onclick=()=>{state.sound=!state.sound;$("#sound").textContent=state.sound?"◉":"○";save();toast(state.sound?"Sound enabled":"Sound disabled");};
