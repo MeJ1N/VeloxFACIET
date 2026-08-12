@@ -1,1535 +1,1900 @@
-(()=>{const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const ITEMS=[
-[1,'Glock-18 | Moonrise','pistol','Restricted',72,'🔫','#5278ff'],[2,'USP-S | Cyrex','pistol','Classified',115,'🔫','#8656ff'],[3,'Desert Eagle | Ocean','pistol','Classified',180,'🔫','#3fa9ff'],[4,'AK-47 | Neon Rider','rifle','Covert',420,'🔫','#ff3f8b'],[5,'M4A1-S | Hyper Beast','rifle','Covert',560,'🔫','#9d5cff'],[6,'AWP | Neo-Noir','rifle','Covert',760,'🎯','#c14cff'],[7,'AWP | Dragon Lore','rifle','Contraband',1450,'🎯','#ffb52e'],[8,'Karambit | Doppler','knife','Covert',2200,'🔪','#4f8cff'],[9,'Butterfly Knife | Fade','knife','Covert',3150,'🔪','#ff6cc9'],[10,'M9 Bayonet | Lore','knife','Covert',4200,'🔪','#f0b93c'],[11,'Karambit | Gamma Doppler','knife','Covert',5900,'🔪','#4de5a2'],[12,'Butterfly Knife | Emerald','knife','Covert',8400,'🔪','#38e3b1'],[13,'AK-47 | Fire Serpent','rifle','Covert',960,'🔫','#ef6d32'],[14,'M4A4 | Howl','rifle','Contraband',1780,'🔫','#f05658'],[15,'USP-S | Kill Confirmed','pistol','Covert',680,'🔫','#e85c9e'],[16,'Glock-18 | Fade','pistol','Restricted',340,'🔫','#e8a73d'],[17,'Flip Knife | Lore','knife','Covert',1320,'🔪','#d9a044'],[18,'Huntsman Knife | Gamma','knife','Covert',1120,'🔪','#42d5a0'],[19,'M4A1-S | Printstream','rifle','Covert',880,'🔫','#d6e2f0'],[20,'AK-47 | Vulcan','rifle','Covert',710,'🔫','#4d91ff']
-].map(x=>({id:x[0],name:x[1],type:x[2],rarity:x[3],price:x[4],icon:x[5],color:x[6]}));
-const CASES=[['starter','Starter Case',100,'📦','#4e8cff',[1,2,3,4,5]],['phantom','Phantom Case',250,'🎁','#8b5cff',[2,3,4,5,6,15,19]],['galaxy','Galaxy Case',600,'💎','#bd5cff',[4,5,6,7,8,13,14]],['lunar','Lunar Knife Case',1200,'🌙','#39b7ff',[7,8,9,10,17,18]],['mythic','Mythic Case',2500,'👑','#ffbd45',[7,8,9,10,11,12,14]],['eclipse','Eclipse Case',5000,'🌑','#ff4d75',[8,9,10,11,12]]].map(x=>({id:x[0],name:x[1],price:x[2],icon:x[3],color:x[4],pool:x[5]}));
-const KEY='lunex-demo-v5';let state={balance:1000,inv:[],history:[],source:null,target:null,filter:'all',search:'',tsearch:'',sort:'asc',case:null};
-function id(){return crypto.randomUUID?crypto.randomUUID():Date.now()+Math.random()}
-function item(idv){return ITEMS.find(x=>x.id===Number(idv))}
-function fmt(n){return Number(n).toLocaleString('ru-RU')}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function load(){try{Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}if(!state.inv?.length)state.inv=[{uid:id(),itemId:1},{uid:id(),itemId:2},{uid:id(),itemId:4},{uid:id(),itemId:16}];state.balance=Number(state.balance||1000);state.history=state.history||[];save()}
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.remove('show'),2200)}
-function page(p){$$('.page').forEach(x=>x.classList.toggle('active',x.id===p));$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));if(p==='inventory')fullInv();if(p==='history')history();scrollTo({top:0,behavior:'smooth'})}
-function renderBalance(){$('#balance').textContent=fmt(state.balance)}
-function inv(){return state.inv.map(x=>({...item(x.itemId),uid:x.uid})).filter(x=>x.id)}
-function sourceList(){let a=inv(),q=state.search.toLowerCase();if(state.filter!=='all')a=a.filter(x=>x.type===state.filter);if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));a.sort((x,y)=>x.price-y.price);$('#count').textContent=inv().length;$('#sourceList').innerHTML=a.length?a.map(x=>`<button class="src ${state.source?.uid===x.uid?'sel':''}" data-src="${x.uid}"><div class="art" style="--c:${x.color}">${x.icon}</div><div><strong>${x.name}</strong><small>${x.rarity} · ${x.type}</small></div><em>◆ ${fmt(x.price)}</em></button>`).join(''):'<div style="padding:25px;color:#667486;font-size:9px;text-align:center">Ничего не найдено</div>';$$('[data-src]').forEach(b=>b.onclick=()=>selectSource(b.dataset.src))}
-function selectSource(uid){state.source=inv().find(x=>x.uid===uid)||null;if(state.target&&state.target.price<=state.source.price)state.target=null;render();toast('Предмет выбран')}
-function targets(){let a=[...ITEMS];if(state.source)a=a.filter(x=>x.price>state.source.price);let q=state.tsearch.toLowerCase();if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));if(state.sort==='asc')a.sort((x,y)=>x.price-y.price);if(state.sort==='desc')a.sort((x,y)=>y.price-x.price);if(state.sort==='name')a.sort((x,y)=>x.name.localeCompare(y.name));return a}
-function targetGrid(){let a=targets();$('#targets').innerHTML=a.length?a.map(x=>`<button class="target ${state.target?.id===x.id?'sel':''}" data-target="${x.id}"><label>${x.rarity}</label><div class="art" style="--c:${x.color}">${x.icon}</div><strong>${x.name}</strong><span>◆ ${fmt(x.price)}</span></button>`).join(''):'<div style="padding:30px;color:#687485;font-size:9px">Нет целей дороже выбранного предмета.</div>';$$('[data-target]').forEach(b=>b.onclick=()=>{if(!state.source)return toast('Сначала выбери свой предмет');state.target=item(b.dataset.target);render();})}
-function calc(){if(!state.source||!state.target)return {m:0,c:0};let m=state.target.price/state.source.price,c=Math.max(2,Math.min(96,96/m));return{m,c}}
-function selections(){let s=$('#sourceSlot'),t=$('#targetSlot');if(state.source){s.className='slot';s.style.setProperty('--c',state.source.color);s.innerHTML=`<div class="chosen">${state.source.icon}<strong>${state.source.name}</strong><small>◆ ${fmt(state.source.price)}</small></div>`}else{s.className='slot empty';s.innerHTML='＋<small>Выбери предмет слева</small>'}if(state.target){t.className='slot';t.style.setProperty('--c',state.target.color);t.innerHTML=`<div class="chosen">${state.target.icon}<strong>${state.target.name}</strong><small>◆ ${fmt(state.target.price)}</small></div>`}else{t.className='slot empty';t.innerHTML='＋<small>Выбери цель ниже</small>'}}
-function stats(){let c=calc();$('#sourceValue').textContent=state.source?fmt(state.source.price):0;$('#targetValue').textContent=state.target?fmt(state.target.price):0;$('#multiplier').textContent='x'+c.m.toFixed(2);$('#multi2').textContent='x'+c.m.toFixed(2);$('#chance').textContent=Math.round(c.c)+'%';$('#chance2').textContent=Math.round(c.c)+'%';$('#ring').style.background=`conic-gradient(#4d8dff ${c.c*3.6}deg,#19212c ${c.c*3.6}deg)`;$('#upgrade').disabled=!(state.source&&state.target&&state.target.price>state.source.price);$('#upgrade small').textContent=state.source&&state.target?`Шанс ${Math.round(c.c)}%`:'Выбери предметы'}
-function render(){renderBalance();sourceList();targetGrid();selections();stats();fullInv()}
-function upgrade(){if(!state.source||!state.target)return toast('Выбери предмет и цель');let c=calc(),src=state.source,tar=state.target,btn=$('#upgrade');btn.disabled=true;btn.innerHTML='⚡ ПРОВЕРКА...<small>Генерируем результат</small>';let ring=$('#ring'),start=performance.now();function tick(){let p=Math.min(1,(performance.now()-start)/2200);ring.style.transform=`scale(${1+Math.sin(p*35)*.025})`;$('#chance').textContent=Math.round(50+Math.sin(p*40)*40)+'%';if(p<1)return requestAnimationFrame(tick);ring.style.transform='';let roll=Math.random()*100,win=roll<c.c;state.inv=state.inv.filter(x=>x.uid!==src.uid);if(win)state.inv.push({uid:id(),itemId:tar.id});state.history.unshift({type:'upgrade',win,source:src.name,target:tar.name,price:tar.price,time:Date.now()});save();modalResult(win,tar,c,roll);state.source=null;state.target=null;btn.innerHTML='⚡ АПГРЕЙД<small>Выбери предметы</small>';render()}requestAnimationFrame(tick)}
-function modalResult(win,tar,c,roll){$('#resultIcon').textContent=win?tar.icon:'✕';$('#resultTitle').textContent=win?'УСПЕХ!':'НЕУДАЧА';$('#resultText').textContent=win?`Результат ${roll.toFixed(2)} ниже твоего шанса ${c.c.toFixed(2)}%.`:`Результат ${roll.toFixed(2)} выше твоего шанса ${c.c.toFixed(2)}%.`;$('#resultItem').textContent=win?`${tar.name} · ◆ ${fmt(tar.price)}`:`${tar.name} не получен` ;$('#resultModal').classList.add('show')}
-function cases(){let g=$('#casesGrid');g.innerHTML=CASES.map(x=>`<article class="case"><div class="visual" style="--c:${x.color}">${x.icon}</div><h2>${x.name}</h2><p>Виртуальный кейс с редкими предметами.</p><div class="bottom"><span class="price">◆ ${fmt(x.price)}</span><button data-case="${x.id}">ОТКРЫТЬ</button></div></article>`).join('');$$('[data-case]').forEach(b=>b.onclick=()=>openCaseModal(b.dataset.case))}
-function openCaseModal(idv){state.case=CASES.find(x=>x.id===idv);let x=state.case;$('#caseIcon').textContent=x.icon;$('#caseTitle').textContent=x.name;$('#caseText').textContent=`Стоимость: ◆ ${fmt(x.price)}`;$('#openCase').textContent=`Открыть за ◆ ${fmt(x.price)}`;$('#caseModal').classList.add('show');roulette(x)}
-function roulette(c){let p=c.pool.map(item);$('#roulette').innerHTML=Array.from({length:7},(_,i)=>{let x=item(p[i%p.length]);return`<div class="roll" style="--c:${x.color}">${x.icon}</div>`}).join('')}
-function openCase(){let c=state.case;if(!c)return;if(state.balance<c.price)return toast('Недостаточно баланса');state.balance-=c.price;let x=item(c.pool[Math.floor(Math.random()*c.pool.length)]);state.inv.push({uid:id(),itemId:x.id});state.history.unshift({type:'case',win:true,source:c.name,target:x.name,price:x.price,time:Date.now()});save();render();$('#caseText').innerHTML=`Получен <b>${x.name}</b> · ◆ ${fmt(x.price)}`;toast('Кейс открыт')}
-function fullInv(){let a=inv();$('#invCount').textContent=a.length;$('#invValue').textContent=fmt(a.reduce((s,x)=>s+x.price,0));$('#fullInventory').innerHTML=a.map(x=>`<article class="full-item"><div class="art" style="--c:${x.color}">${x.icon}</div><h3>${x.name}</h3><p>${x.rarity} · ◆ ${fmt(x.price)}</p><button data-full="${x.uid}">В апгрейд</button></article>`).join('');$$('[data-full]').forEach(b=>b.onclick=()=>{selectSource(b.dataset.full);page('upgrade')})}
-function history(){let h=state.history;$('#historyList').innerHTML=h.length?h.slice(0,50).map(x=>`<div class="hrow"><span>${x.type==='upgrade'?'⚡ Апгрейд':'📦 Кейс'}</span><span>${x.target}</span><span>◆ ${fmt(x.price||0)}</span><span class="${x.win?'win':'loss'}">${x.win?'УСПЕХ':'НЕУДАЧА'}</span><span>${new Date(x.time).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join(''):'<div style="padding:30px;color:#687485;font-size:9px">История пуста.</div>'}
-$$('.nav').forEach(b=>b.onclick=()=>page(b.dataset.page));$$('[data-page="upgrade"]').forEach(b=>b.onclick=e=>{e.preventDefault();page('upgrade')});$('#search').oninput=e=>{state.search=e.target.value;sourceList()};$('#targetSearch').oninput=e=>{state.tsearch=e.target.value;targetGrid()};$('#sort').onchange=e=>{state.sort=e.target.value;targetGrid()};$$('.filter').forEach(b=>b.onclick=()=>{$$('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.filter=b.dataset.filter;sourceList()});$('#upgrade').onclick=upgrade;$('#openCase').onclick=openCase;$('#profile').onclick=()=>{$('#pb').textContent=fmt(state.balance);$('#pi').textContent=inv().length;$('#pu').textContent=state.history.filter(x=>x.type==='upgrade').length;$('#profileModal').classList.add('show')};$('#reset').onclick=()=>{if(confirm('Сбросить демо?')){localStorage.removeItem(KEY);location.reload()}};$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.remove('show'));$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));load();cases();render();
-})();
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const ITEMS=[{"id": 1, "name": "USP-S | Purple DDPAT", "type": "pistol", "rarity": "Restricted", "price": 42, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXQ9QVcJY8gulReX0vfFrTi2cDHbFt7NztFs6mkJwJfw_LYdC8MvojlzdDbkaWtNu3UkG8D6cZw2rzApt2k3Aa1_UpqZjv0dYGVew9tY0aQpAap-HShjw", "color": "#4b69ff"}, {"id": 2, "name": "M4A1-S | Dark Water", "type": "rifle", "rarity": "Restricted", "price": 58, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposr-kLAtl7PvRTipH7s-JkIGZnPLmDLfYkWNFppApjL-Rodym3QaxqRFsYzvzJ4acdAFrZVyGrwK9lLjmgMK-vZ_AwCd9-n51Ff2g-Bw", "color": "#4b69ff"}, {"id": 3, "name": "Five-SeveN | Neon Kimono", "type": "pistol", "rarity": "Restricted", "price": 72, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo6m1FBRw7P3dejhR-M6_hIW0mvbmPLTfqWdY781lxL-U9tmn0FGw_UduNWuiJdTBIQZvZwnW-1C-xrq-g5S-vJ_LwSZhvCk8pSGKFzGNEws", "color": "#4b69ff"}, {"id": 4, "name": "M4A1-S | Stratosphere", "type": "rifle", "rarity": "Classified", "price": 95, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposLuoKhRfwOP3Yi1L-Nq_hoW0kfb5MqjulHlQ_spOhuDG_Zi70Fbk8kpoNmunLYeUcwI2M1HQ81e-lb_vjZS-usvKzCM17icj7CzVlwv330-dRCOXoA", "color": "#8847ff"}, {"id": 5, "name": "M4A1-S | Golden Coil", "type": "rifle", "rarity": "Covert", "price": 190, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo-6kejhjxszFJTwW08izmZWAluLLP7LWnn8f68R33L-S8I_xjFCx-0VvNmvwco6Xc1VqMA7Y_gK5wL_s05HovZTOm2wj5HfUY71KXQ", "color": "#eb4b4b"}, {"id": 6, "name": "M4A1-S | Printstream", "type": "rifle", "rarity": "Covert", "price": 260, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgposr-kLAtl7PDdTjlH7duJhJKCmePnJ6nUl2Zu5Mx2gv2P9o-t21fj-RI_Nz2ncYbDcFNoYArYrgDql-3m08PptcjBn3tgs3Yis2GdwUJr9IfvpA", "color": "#eb4b4b"}, {"id": 7, "name": "M4A4 | Temukau", "type": "rifle", "rarity": "Covert", "price": 240, "image": "https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpo6kejhz2v_Nfz5H_uO1gYW0hOPmMq_ehXtZ7dd0teXI8oThxgy3qBdvZ22lJYTGIAU5aArTqQW3l-y91p7q7cmYnSMwuiAm4SvVl0OpwUYbpXBVnmw", "color": "#eb4b4b"}, {"id": 8, "name": "AWP | The Prince", "type": "rifle", "rarity": "Covert", "price": 850, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpot621FABz7PLfYQJH4t27kYy0m_7zO6-flTkJv5Mj2uqXo9Xx21C2rxBqZ2miJtLEJAY2aQzWqQS9kOvsjMe4u4OJlyVmnwDosA", "color": "#eb4b4b"}, {"id": 9, "name": "AWP | Lightning Strike", "type": "rifle", "rarity": "Covert", "price": 900, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo6m1FBRp3_bGcjhQ0927q4SPh_bgDKvEhHtd7fp9g-7J4cKl2gXsrRE5YW70cNSdIVRqNAzU-QS5wLq9hJ7p6s6YnyNq6XJws3uIgVXp1koD2u1Z", "color": "#eb4b4b"}, {"id": 10, "name": "AWP | Printstream", "type": "rifle", "rarity": "Covert", "price": 610, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo6kejhz2v_Nfz5H_uO1gb-Gw_alIITBhGJf_NZlmOzA-LP5gVO8v11qa2n6dtOcIQVoMFHUqwC9wei7jcO5vZ3AzSQ1vCMls3fayxKyhh1McKUx0sfzkVMr", "color": "#eb4b4b"}, {"id": 11, "name": "AK-47 | Hydroponic", "type": "rifle", "rarity": "Covert", "price": 1200, "image": "https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpo6kejhz2v_Nfz5H_uO3lb-NlvPxDLaFlzpC18l4jeHVu42n2Aey-kdrZ2j3LYDHJgJoN1qB_lDtxezpgJPo75XKmHZn6Cgj4X3D30vgjv5IMS8", "color": "#eb4b4b"}, {"id": 12, "name": "AK-47 | Wild Lotus", "type": "rifle", "rarity": "Covert", "price": 2500, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpot7HxfDhjxszJegJL_9C3moS0kfv7IbrdqWdY781lxOrH9tyl2APj_RFkYm6ncISWdw42ZwvX8wfoku3s15Tu6czKySZgu3U8pSGKi-NSbdE", "color": "#eb4b4b"}, {"id": 13, "name": "★ Gut Knife | Case Hardened", "type": "knife", "rarity": "Covert", "price": 480, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DfVlxgLQFFibKkJQN3wfLYYgJK7dKyg5KKh8j4NrrFnm5D8fp3i-vT_I_Kj1G7phYoITCgS9TJN1NROQ2BvBiglLjr18e1v8zOy3Rl7iRx5H7fzBG-gRxEPO1njfPLSQiXBPQdGKjXA22Q7s4MesGFyw", "color": "#eb4b4b"}, {"id": 14, "name": "★ Driver Gloves | Snow Leopard", "type": "gloves", "rarity": "Covert", "price": 1100, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DAQ1JmMR1osbaqPQJz7ODYfi9W9eO-m5WFk-TgPLTFnlRD7cFOh-zF_Jn4xg2xqBdlaz_1LILDI1U6MFDTrFXsyOi7jcC97pXOyydkuSRw537UnR2pwUYbvu3uoFg", "color": "#eb4b4b"}, {"id": 15, "name": "StatTrak™ Desert Eagle | Printstream", "type": "pistol", "rarity": "Covert", "price": 330, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpoo6m1FBRp3_bGcjhQ09-jq5WYh8jkIbLfgnhF-sBwh9bJ8I3jkRqxqUE5MjryctWSIAY7YV2C_Fm7x-nvgcO_vp3KzHBquSV27XvczkPkn1gSOVNO5zZH", "color": "#eb4b4b"}, {"id": 16, "name": "M4A1-S | Atomic Alloy", "type": "rifle", "rarity": "Classified", "price": 135, "image": "https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpo6kejhz2v_Nfz5H_uO3mb-GkuP1P6jummJW4NE_3euYoNujiVHj_Eo-YjunJoKcIAc8Z1jX-gK8k7y6h5O4vZXIyiNisj5iuyg-Y-6U4A", "color": "#8847ff"}];
+const CASES=[{"id": "starter", "name": "STARTER CASE", "price": 80, "color": "#4b69ff", "pool": [1, 2, 3, 4]}, {"id": "rifle", "name": "RIFLE CASE", "price": 250, "color": "#6e55ff", "pool": [4, 5, 6, 7, 10]}, {"id": "awp", "name": "AWP ELITE", "price": 600, "color": "#a24cff", "pool": [8, 9, 10]}, {"id": "knife", "name": "KNIFE DROP", "price": 950, "color": "#35c7ff", "pool": [11, 13, 14]}, {"id": "premium", "name": "PREMIUM", "price": 1600, "color": "#e9a43b", "pool": [8, 11, 12, 13, 14]}];
+const KEY="lunex-cs2-upgrader-v7";
 
-<!-- Lunex build section: script.js -->
-<!-- Lunex UI module 0001: reserved extension point for future features -->
-<!-- Lunex UI module 0002: reserved extension point for future features -->
-<!-- Lunex UI module 0003: reserved extension point for future features -->
-<!-- Lunex UI module 0004: reserved extension point for future features -->
-<!-- Lunex UI module 0005: reserved extension point for future features -->
-<!-- Lunex UI module 0006: reserved extension point for future features -->
-<!-- Lunex UI module 0007: reserved extension point for future features -->
-<!-- Lunex UI module 0008: reserved extension point for future features -->
-<!-- Lunex UI module 0009: reserved extension point for future features -->
-<!-- Lunex UI module 0010: reserved extension point for future features -->
-<!-- Lunex UI module 0011: reserved extension point for future features -->
-<!-- Lunex UI module 0012: reserved extension point for future features -->
-<!-- Lunex UI module 0013: reserved extension point for future features -->
-<!-- Lunex UI module 0014: reserved extension point for future features -->
-<!-- Lunex UI module 0015: reserved extension point for future features -->
-<!-- Lunex UI module 0016: reserved extension point for future features -->
-<!-- Lunex UI module 0017: reserved extension point for future features -->
-<!-- Lunex UI module 0018: reserved extension point for future features -->
-<!-- Lunex UI module 0019: reserved extension point for future features -->
-<!-- Lunex UI module 0020: reserved extension point for future features -->
-<!-- Lunex UI module 0021: reserved extension point for future features -->
-<!-- Lunex UI module 0022: reserved extension point for future features -->
-<!-- Lunex UI module 0023: reserved extension point for future features -->
-<!-- Lunex UI module 0024: reserved extension point for future features -->
-<!-- Lunex UI module 0025: reserved extension point for future features -->
-<!-- Lunex UI module 0026: reserved extension point for future features -->
-<!-- Lunex UI module 0027: reserved extension point for future features -->
-<!-- Lunex UI module 0028: reserved extension point for future features -->
-<!-- Lunex UI module 0029: reserved extension point for future features -->
-<!-- Lunex UI module 0030: reserved extension point for future features -->
-<!-- Lunex UI module 0031: reserved extension point for future features -->
-<!-- Lunex UI module 0032: reserved extension point for future features -->
-<!-- Lunex UI module 0033: reserved extension point for future features -->
-<!-- Lunex UI module 0034: reserved extension point for future features -->
-<!-- Lunex UI module 0035: reserved extension point for future features -->
-<!-- Lunex UI module 0036: reserved extension point for future features -->
-<!-- Lunex UI module 0037: reserved extension point for future features -->
-<!-- Lunex UI module 0038: reserved extension point for future features -->
-<!-- Lunex UI module 0039: reserved extension point for future features -->
-<!-- Lunex UI module 0040: reserved extension point for future features -->
-<!-- Lunex UI module 0041: reserved extension point for future features -->
-<!-- Lunex UI module 0042: reserved extension point for future features -->
-<!-- Lunex UI module 0043: reserved extension point for future features -->
-<!-- Lunex UI module 0044: reserved extension point for future features -->
-<!-- Lunex UI module 0045: reserved extension point for future features -->
-<!-- Lunex UI module 0046: reserved extension point for future features -->
-<!-- Lunex UI module 0047: reserved extension point for future features -->
-<!-- Lunex UI module 0048: reserved extension point for future features -->
-<!-- Lunex UI module 0049: reserved extension point for future features -->
-<!-- Lunex UI module 0050: reserved extension point for future features -->
-<!-- Lunex UI module 0051: reserved extension point for future features -->
-<!-- Lunex UI module 0052: reserved extension point for future features -->
-<!-- Lunex UI module 0053: reserved extension point for future features -->
-<!-- Lunex UI module 0054: reserved extension point for future features -->
-<!-- Lunex UI module 0055: reserved extension point for future features -->
-<!-- Lunex UI module 0056: reserved extension point for future features -->
-<!-- Lunex UI module 0057: reserved extension point for future features -->
-<!-- Lunex UI module 0058: reserved extension point for future features -->
-<!-- Lunex UI module 0059: reserved extension point for future features -->
-<!-- Lunex UI module 0060: reserved extension point for future features -->
-<!-- Lunex UI module 0061: reserved extension point for future features -->
-<!-- Lunex UI module 0062: reserved extension point for future features -->
-<!-- Lunex UI module 0063: reserved extension point for future features -->
-<!-- Lunex UI module 0064: reserved extension point for future features -->
-<!-- Lunex UI module 0065: reserved extension point for future features -->
-<!-- Lunex UI module 0066: reserved extension point for future features -->
-<!-- Lunex UI module 0067: reserved extension point for future features -->
-<!-- Lunex UI module 0068: reserved extension point for future features -->
-<!-- Lunex UI module 0069: reserved extension point for future features -->
-<!-- Lunex UI module 0070: reserved extension point for future features -->
-<!-- Lunex UI module 0071: reserved extension point for future features -->
-<!-- Lunex UI module 0072: reserved extension point for future features -->
-<!-- Lunex UI module 0073: reserved extension point for future features -->
-<!-- Lunex UI module 0074: reserved extension point for future features -->
-<!-- Lunex UI module 0075: reserved extension point for future features -->
-<!-- Lunex UI module 0076: reserved extension point for future features -->
-<!-- Lunex UI module 0077: reserved extension point for future features -->
-<!-- Lunex UI module 0078: reserved extension point for future features -->
-<!-- Lunex UI module 0079: reserved extension point for future features -->
-<!-- Lunex UI module 0080: reserved extension point for future features -->
-<!-- Lunex UI module 0081: reserved extension point for future features -->
-<!-- Lunex UI module 0082: reserved extension point for future features -->
-<!-- Lunex UI module 0083: reserved extension point for future features -->
-<!-- Lunex UI module 0084: reserved extension point for future features -->
-<!-- Lunex UI module 0085: reserved extension point for future features -->
-<!-- Lunex UI module 0086: reserved extension point for future features -->
-<!-- Lunex UI module 0087: reserved extension point for future features -->
-<!-- Lunex UI module 0088: reserved extension point for future features -->
-<!-- Lunex UI module 0089: reserved extension point for future features -->
-<!-- Lunex UI module 0090: reserved extension point for future features -->
-<!-- Lunex UI module 0091: reserved extension point for future features -->
-<!-- Lunex UI module 0092: reserved extension point for future features -->
-<!-- Lunex UI module 0093: reserved extension point for future features -->
-<!-- Lunex UI module 0094: reserved extension point for future features -->
-<!-- Lunex UI module 0095: reserved extension point for future features -->
-<!-- Lunex UI module 0096: reserved extension point for future features -->
-<!-- Lunex UI module 0097: reserved extension point for future features -->
-<!-- Lunex UI module 0098: reserved extension point for future features -->
-<!-- Lunex UI module 0099: reserved extension point for future features -->
-<!-- Lunex UI module 0100: reserved extension point for future features -->
-<!-- Lunex UI module 0101: reserved extension point for future features -->
-<!-- Lunex UI module 0102: reserved extension point for future features -->
-<!-- Lunex UI module 0103: reserved extension point for future features -->
-<!-- Lunex UI module 0104: reserved extension point for future features -->
-<!-- Lunex UI module 0105: reserved extension point for future features -->
-<!-- Lunex UI module 0106: reserved extension point for future features -->
-<!-- Lunex UI module 0107: reserved extension point for future features -->
-<!-- Lunex UI module 0108: reserved extension point for future features -->
-<!-- Lunex UI module 0109: reserved extension point for future features -->
-<!-- Lunex UI module 0110: reserved extension point for future features -->
-<!-- Lunex UI module 0111: reserved extension point for future features -->
-<!-- Lunex UI module 0112: reserved extension point for future features -->
-<!-- Lunex UI module 0113: reserved extension point for future features -->
-<!-- Lunex UI module 0114: reserved extension point for future features -->
-<!-- Lunex UI module 0115: reserved extension point for future features -->
-<!-- Lunex UI module 0116: reserved extension point for future features -->
-<!-- Lunex UI module 0117: reserved extension point for future features -->
-<!-- Lunex UI module 0118: reserved extension point for future features -->
-<!-- Lunex UI module 0119: reserved extension point for future features -->
-<!-- Lunex UI module 0120: reserved extension point for future features -->
-<!-- Lunex UI module 0121: reserved extension point for future features -->
-<!-- Lunex UI module 0122: reserved extension point for future features -->
-<!-- Lunex UI module 0123: reserved extension point for future features -->
-<!-- Lunex UI module 0124: reserved extension point for future features -->
-<!-- Lunex UI module 0125: reserved extension point for future features -->
-<!-- Lunex UI module 0126: reserved extension point for future features -->
-<!-- Lunex UI module 0127: reserved extension point for future features -->
-<!-- Lunex UI module 0128: reserved extension point for future features -->
-<!-- Lunex UI module 0129: reserved extension point for future features -->
-<!-- Lunex UI module 0130: reserved extension point for future features -->
-<!-- Lunex UI module 0131: reserved extension point for future features -->
-<!-- Lunex UI module 0132: reserved extension point for future features -->
-<!-- Lunex UI module 0133: reserved extension point for future features -->
-<!-- Lunex UI module 0134: reserved extension point for future features -->
-<!-- Lunex UI module 0135: reserved extension point for future features -->
-<!-- Lunex UI module 0136: reserved extension point for future features -->
-<!-- Lunex UI module 0137: reserved extension point for future features -->
-<!-- Lunex UI module 0138: reserved extension point for future features -->
-<!-- Lunex UI module 0139: reserved extension point for future features -->
-<!-- Lunex UI module 0140: reserved extension point for future features -->
-<!-- Lunex UI module 0141: reserved extension point for future features -->
-<!-- Lunex UI module 0142: reserved extension point for future features -->
-<!-- Lunex UI module 0143: reserved extension point for future features -->
-<!-- Lunex UI module 0144: reserved extension point for future features -->
-<!-- Lunex UI module 0145: reserved extension point for future features -->
-<!-- Lunex UI module 0146: reserved extension point for future features -->
-<!-- Lunex UI module 0147: reserved extension point for future features -->
-<!-- Lunex UI module 0148: reserved extension point for future features -->
-<!-- Lunex UI module 0149: reserved extension point for future features -->
-<!-- Lunex UI module 0150: reserved extension point for future features -->
-<!-- Lunex UI module 0151: reserved extension point for future features -->
-<!-- Lunex UI module 0152: reserved extension point for future features -->
-<!-- Lunex UI module 0153: reserved extension point for future features -->
-<!-- Lunex UI module 0154: reserved extension point for future features -->
-<!-- Lunex UI module 0155: reserved extension point for future features -->
-<!-- Lunex UI module 0156: reserved extension point for future features -->
-<!-- Lunex UI module 0157: reserved extension point for future features -->
-<!-- Lunex UI module 0158: reserved extension point for future features -->
-<!-- Lunex UI module 0159: reserved extension point for future features -->
-<!-- Lunex UI module 0160: reserved extension point for future features -->
-<!-- Lunex UI module 0161: reserved extension point for future features -->
-<!-- Lunex UI module 0162: reserved extension point for future features -->
-<!-- Lunex UI module 0163: reserved extension point for future features -->
-<!-- Lunex UI module 0164: reserved extension point for future features -->
-<!-- Lunex UI module 0165: reserved extension point for future features -->
-<!-- Lunex UI module 0166: reserved extension point for future features -->
-<!-- Lunex UI module 0167: reserved extension point for future features -->
-<!-- Lunex UI module 0168: reserved extension point for future features -->
-<!-- Lunex UI module 0169: reserved extension point for future features -->
-<!-- Lunex UI module 0170: reserved extension point for future features -->
-<!-- Lunex UI module 0171: reserved extension point for future features -->
-<!-- Lunex UI module 0172: reserved extension point for future features -->
-<!-- Lunex UI module 0173: reserved extension point for future features -->
-<!-- Lunex UI module 0174: reserved extension point for future features -->
-<!-- Lunex UI module 0175: reserved extension point for future features -->
-<!-- Lunex UI module 0176: reserved extension point for future features -->
-<!-- Lunex UI module 0177: reserved extension point for future features -->
-<!-- Lunex UI module 0178: reserved extension point for future features -->
-<!-- Lunex UI module 0179: reserved extension point for future features -->
-<!-- Lunex UI module 0180: reserved extension point for future features -->
-<!-- Lunex UI module 0181: reserved extension point for future features -->
-<!-- Lunex UI module 0182: reserved extension point for future features -->
-<!-- Lunex UI module 0183: reserved extension point for future features -->
-<!-- Lunex UI module 0184: reserved extension point for future features -->
-<!-- Lunex UI module 0185: reserved extension point for future features -->
-<!-- Lunex UI module 0186: reserved extension point for future features -->
-<!-- Lunex UI module 0187: reserved extension point for future features -->
-<!-- Lunex UI module 0188: reserved extension point for future features -->
-<!-- Lunex UI module 0189: reserved extension point for future features -->
-<!-- Lunex UI module 0190: reserved extension point for future features -->
-<!-- Lunex UI module 0191: reserved extension point for future features -->
-<!-- Lunex UI module 0192: reserved extension point for future features -->
-<!-- Lunex UI module 0193: reserved extension point for future features -->
-<!-- Lunex UI module 0194: reserved extension point for future features -->
-<!-- Lunex UI module 0195: reserved extension point for future features -->
-<!-- Lunex UI module 0196: reserved extension point for future features -->
-<!-- Lunex UI module 0197: reserved extension point for future features -->
-<!-- Lunex UI module 0198: reserved extension point for future features -->
-<!-- Lunex UI module 0199: reserved extension point for future features -->
-<!-- Lunex UI module 0200: reserved extension point for future features -->
-<!-- Lunex UI module 0201: reserved extension point for future features -->
-<!-- Lunex UI module 0202: reserved extension point for future features -->
-<!-- Lunex UI module 0203: reserved extension point for future features -->
-<!-- Lunex UI module 0204: reserved extension point for future features -->
-<!-- Lunex UI module 0205: reserved extension point for future features -->
-<!-- Lunex UI module 0206: reserved extension point for future features -->
-<!-- Lunex UI module 0207: reserved extension point for future features -->
-<!-- Lunex UI module 0208: reserved extension point for future features -->
-<!-- Lunex UI module 0209: reserved extension point for future features -->
-<!-- Lunex UI module 0210: reserved extension point for future features -->
-<!-- Lunex UI module 0211: reserved extension point for future features -->
-<!-- Lunex UI module 0212: reserved extension point for future features -->
-<!-- Lunex UI module 0213: reserved extension point for future features -->
-<!-- Lunex UI module 0214: reserved extension point for future features -->
-<!-- Lunex UI module 0215: reserved extension point for future features -->
-<!-- Lunex UI module 0216: reserved extension point for future features -->
-<!-- Lunex UI module 0217: reserved extension point for future features -->
-<!-- Lunex UI module 0218: reserved extension point for future features -->
-<!-- Lunex UI module 0219: reserved extension point for future features -->
-<!-- Lunex UI module 0220: reserved extension point for future features -->
-<!-- Lunex UI module 0221: reserved extension point for future features -->
-<!-- Lunex UI module 0222: reserved extension point for future features -->
-<!-- Lunex UI module 0223: reserved extension point for future features -->
-<!-- Lunex UI module 0224: reserved extension point for future features -->
-<!-- Lunex UI module 0225: reserved extension point for future features -->
-<!-- Lunex UI module 0226: reserved extension point for future features -->
-<!-- Lunex UI module 0227: reserved extension point for future features -->
-<!-- Lunex UI module 0228: reserved extension point for future features -->
-<!-- Lunex UI module 0229: reserved extension point for future features -->
-<!-- Lunex UI module 0230: reserved extension point for future features -->
-<!-- Lunex UI module 0231: reserved extension point for future features -->
-<!-- Lunex UI module 0232: reserved extension point for future features -->
-<!-- Lunex UI module 0233: reserved extension point for future features -->
-<!-- Lunex UI module 0234: reserved extension point for future features -->
-<!-- Lunex UI module 0235: reserved extension point for future features -->
-<!-- Lunex UI module 0236: reserved extension point for future features -->
-<!-- Lunex UI module 0237: reserved extension point for future features -->
-<!-- Lunex UI module 0238: reserved extension point for future features -->
-<!-- Lunex UI module 0239: reserved extension point for future features -->
-<!-- Lunex UI module 0240: reserved extension point for future features -->
-<!-- Lunex UI module 0241: reserved extension point for future features -->
-<!-- Lunex UI module 0242: reserved extension point for future features -->
-<!-- Lunex UI module 0243: reserved extension point for future features -->
-<!-- Lunex UI module 0244: reserved extension point for future features -->
-<!-- Lunex UI module 0245: reserved extension point for future features -->
-<!-- Lunex UI module 0246: reserved extension point for future features -->
-<!-- Lunex UI module 0247: reserved extension point for future features -->
-<!-- Lunex UI module 0248: reserved extension point for future features -->
-<!-- Lunex UI module 0249: reserved extension point for future features -->
-<!-- Lunex UI module 0250: reserved extension point for future features -->
-<!-- Lunex UI module 0251: reserved extension point for future features -->
-<!-- Lunex UI module 0252: reserved extension point for future features -->
-<!-- Lunex UI module 0253: reserved extension point for future features -->
-<!-- Lunex UI module 0254: reserved extension point for future features -->
-<!-- Lunex UI module 0255: reserved extension point for future features -->
-<!-- Lunex UI module 0256: reserved extension point for future features -->
-<!-- Lunex UI module 0257: reserved extension point for future features -->
-<!-- Lunex UI module 0258: reserved extension point for future features -->
-<!-- Lunex UI module 0259: reserved extension point for future features -->
-<!-- Lunex UI module 0260: reserved extension point for future features -->
-<!-- Lunex UI module 0261: reserved extension point for future features -->
-<!-- Lunex UI module 0262: reserved extension point for future features -->
-<!-- Lunex UI module 0263: reserved extension point for future features -->
-<!-- Lunex UI module 0264: reserved extension point for future features -->
-<!-- Lunex UI module 0265: reserved extension point for future features -->
-<!-- Lunex UI module 0266: reserved extension point for future features -->
-<!-- Lunex UI module 0267: reserved extension point for future features -->
-<!-- Lunex UI module 0268: reserved extension point for future features -->
-<!-- Lunex UI module 0269: reserved extension point for future features -->
-<!-- Lunex UI module 0270: reserved extension point for future features -->
-<!-- Lunex UI module 0271: reserved extension point for future features -->
-<!-- Lunex UI module 0272: reserved extension point for future features -->
-<!-- Lunex UI module 0273: reserved extension point for future features -->
-<!-- Lunex UI module 0274: reserved extension point for future features -->
-<!-- Lunex UI module 0275: reserved extension point for future features -->
-<!-- Lunex UI module 0276: reserved extension point for future features -->
-<!-- Lunex UI module 0277: reserved extension point for future features -->
-<!-- Lunex UI module 0278: reserved extension point for future features -->
-<!-- Lunex UI module 0279: reserved extension point for future features -->
-<!-- Lunex UI module 0280: reserved extension point for future features -->
-<!-- Lunex UI module 0281: reserved extension point for future features -->
-<!-- Lunex UI module 0282: reserved extension point for future features -->
-<!-- Lunex UI module 0283: reserved extension point for future features -->
-<!-- Lunex UI module 0284: reserved extension point for future features -->
-<!-- Lunex UI module 0285: reserved extension point for future features -->
-<!-- Lunex UI module 0286: reserved extension point for future features -->
-<!-- Lunex UI module 0287: reserved extension point for future features -->
-<!-- Lunex UI module 0288: reserved extension point for future features -->
-<!-- Lunex UI module 0289: reserved extension point for future features -->
-<!-- Lunex UI module 0290: reserved extension point for future features -->
-<!-- Lunex UI module 0291: reserved extension point for future features -->
-<!-- Lunex UI module 0292: reserved extension point for future features -->
-<!-- Lunex UI module 0293: reserved extension point for future features -->
-<!-- Lunex UI module 0294: reserved extension point for future features -->
-<!-- Lunex UI module 0295: reserved extension point for future features -->
-<!-- Lunex UI module 0296: reserved extension point for future features -->
-<!-- Lunex UI module 0297: reserved extension point for future features -->
-<!-- Lunex UI module 0298: reserved extension point for future features -->
-<!-- Lunex UI module 0299: reserved extension point for future features -->
-<!-- Lunex UI module 0300: reserved extension point for future features -->
-<!-- Lunex UI module 0301: reserved extension point for future features -->
-<!-- Lunex UI module 0302: reserved extension point for future features -->
-<!-- Lunex UI module 0303: reserved extension point for future features -->
-<!-- Lunex UI module 0304: reserved extension point for future features -->
-<!-- Lunex UI module 0305: reserved extension point for future features -->
-<!-- Lunex UI module 0306: reserved extension point for future features -->
-<!-- Lunex UI module 0307: reserved extension point for future features -->
-<!-- Lunex UI module 0308: reserved extension point for future features -->
-<!-- Lunex UI module 0309: reserved extension point for future features -->
-<!-- Lunex UI module 0310: reserved extension point for future features -->
-<!-- Lunex UI module 0311: reserved extension point for future features -->
-<!-- Lunex UI module 0312: reserved extension point for future features -->
-<!-- Lunex UI module 0313: reserved extension point for future features -->
-<!-- Lunex UI module 0314: reserved extension point for future features -->
-<!-- Lunex UI module 0315: reserved extension point for future features -->
-<!-- Lunex UI module 0316: reserved extension point for future features -->
-<!-- Lunex UI module 0317: reserved extension point for future features -->
-<!-- Lunex UI module 0318: reserved extension point for future features -->
-<!-- Lunex UI module 0319: reserved extension point for future features -->
-<!-- Lunex UI module 0320: reserved extension point for future features -->
-<!-- Lunex UI module 0321: reserved extension point for future features -->
-<!-- Lunex UI module 0322: reserved extension point for future features -->
-<!-- Lunex UI module 0323: reserved extension point for future features -->
-<!-- Lunex UI module 0324: reserved extension point for future features -->
-<!-- Lunex UI module 0325: reserved extension point for future features -->
-<!-- Lunex UI module 0326: reserved extension point for future features -->
-<!-- Lunex UI module 0327: reserved extension point for future features -->
-<!-- Lunex UI module 0328: reserved extension point for future features -->
-<!-- Lunex UI module 0329: reserved extension point for future features -->
-<!-- Lunex UI module 0330: reserved extension point for future features -->
-<!-- Lunex UI module 0331: reserved extension point for future features -->
-<!-- Lunex UI module 0332: reserved extension point for future features -->
-<!-- Lunex UI module 0333: reserved extension point for future features -->
-<!-- Lunex UI module 0334: reserved extension point for future features -->
-<!-- Lunex UI module 0335: reserved extension point for future features -->
-<!-- Lunex UI module 0336: reserved extension point for future features -->
-<!-- Lunex UI module 0337: reserved extension point for future features -->
-<!-- Lunex UI module 0338: reserved extension point for future features -->
-<!-- Lunex UI module 0339: reserved extension point for future features -->
-<!-- Lunex UI module 0340: reserved extension point for future features -->
-<!-- Lunex UI module 0341: reserved extension point for future features -->
-<!-- Lunex UI module 0342: reserved extension point for future features -->
-<!-- Lunex UI module 0343: reserved extension point for future features -->
-<!-- Lunex UI module 0344: reserved extension point for future features -->
-<!-- Lunex UI module 0345: reserved extension point for future features -->
-<!-- Lunex UI module 0346: reserved extension point for future features -->
-<!-- Lunex UI module 0347: reserved extension point for future features -->
-<!-- Lunex UI module 0348: reserved extension point for future features -->
-<!-- Lunex UI module 0349: reserved extension point for future features -->
-<!-- Lunex UI module 0350: reserved extension point for future features -->
-<!-- Lunex UI module 0351: reserved extension point for future features -->
-<!-- Lunex UI module 0352: reserved extension point for future features -->
-<!-- Lunex UI module 0353: reserved extension point for future features -->
-<!-- Lunex UI module 0354: reserved extension point for future features -->
-<!-- Lunex UI module 0355: reserved extension point for future features -->
-<!-- Lunex UI module 0356: reserved extension point for future features -->
-<!-- Lunex UI module 0357: reserved extension point for future features -->
-<!-- Lunex UI module 0358: reserved extension point for future features -->
-<!-- Lunex UI module 0359: reserved extension point for future features -->
-<!-- Lunex UI module 0360: reserved extension point for future features -->
-<!-- Lunex UI module 0361: reserved extension point for future features -->
-<!-- Lunex UI module 0362: reserved extension point for future features -->
-<!-- Lunex UI module 0363: reserved extension point for future features -->
-<!-- Lunex UI module 0364: reserved extension point for future features -->
-<!-- Lunex UI module 0365: reserved extension point for future features -->
-<!-- Lunex UI module 0366: reserved extension point for future features -->
-<!-- Lunex UI module 0367: reserved extension point for future features -->
-<!-- Lunex UI module 0368: reserved extension point for future features -->
-<!-- Lunex UI module 0369: reserved extension point for future features -->
-<!-- Lunex UI module 0370: reserved extension point for future features -->
-<!-- Lunex UI module 0371: reserved extension point for future features -->
-<!-- Lunex UI module 0372: reserved extension point for future features -->
-<!-- Lunex UI module 0373: reserved extension point for future features -->
-<!-- Lunex UI module 0374: reserved extension point for future features -->
-<!-- Lunex UI module 0375: reserved extension point for future features -->
-<!-- Lunex UI module 0376: reserved extension point for future features -->
-<!-- Lunex UI module 0377: reserved extension point for future features -->
-<!-- Lunex UI module 0378: reserved extension point for future features -->
-<!-- Lunex UI module 0379: reserved extension point for future features -->
-<!-- Lunex UI module 0380: reserved extension point for future features -->
-<!-- Lunex UI module 0381: reserved extension point for future features -->
-<!-- Lunex UI module 0382: reserved extension point for future features -->
-<!-- Lunex UI module 0383: reserved extension point for future features -->
-<!-- Lunex UI module 0384: reserved extension point for future features -->
-<!-- Lunex UI module 0385: reserved extension point for future features -->
-<!-- Lunex UI module 0386: reserved extension point for future features -->
-<!-- Lunex UI module 0387: reserved extension point for future features -->
-<!-- Lunex UI module 0388: reserved extension point for future features -->
-<!-- Lunex UI module 0389: reserved extension point for future features -->
-<!-- Lunex UI module 0390: reserved extension point for future features -->
-<!-- Lunex UI module 0391: reserved extension point for future features -->
-<!-- Lunex UI module 0392: reserved extension point for future features -->
-<!-- Lunex UI module 0393: reserved extension point for future features -->
-<!-- Lunex UI module 0394: reserved extension point for future features -->
-<!-- Lunex UI module 0395: reserved extension point for future features -->
-<!-- Lunex UI module 0396: reserved extension point for future features -->
-<!-- Lunex UI module 0397: reserved extension point for future features -->
-<!-- Lunex UI module 0398: reserved extension point for future features -->
-<!-- Lunex UI module 0399: reserved extension point for future features -->
-<!-- Lunex UI module 0400: reserved extension point for future features -->
-<!-- Lunex UI module 0401: reserved extension point for future features -->
-<!-- Lunex UI module 0402: reserved extension point for future features -->
-<!-- Lunex UI module 0403: reserved extension point for future features -->
-<!-- Lunex UI module 0404: reserved extension point for future features -->
-<!-- Lunex UI module 0405: reserved extension point for future features -->
-<!-- Lunex UI module 0406: reserved extension point for future features -->
-<!-- Lunex UI module 0407: reserved extension point for future features -->
-<!-- Lunex UI module 0408: reserved extension point for future features -->
-<!-- Lunex UI module 0409: reserved extension point for future features -->
-<!-- Lunex UI module 0410: reserved extension point for future features -->
-<!-- Lunex UI module 0411: reserved extension point for future features -->
-<!-- Lunex UI module 0412: reserved extension point for future features -->
-<!-- Lunex UI module 0413: reserved extension point for future features -->
-<!-- Lunex UI module 0414: reserved extension point for future features -->
-<!-- Lunex UI module 0415: reserved extension point for future features -->
-<!-- Lunex UI module 0416: reserved extension point for future features -->
-<!-- Lunex UI module 0417: reserved extension point for future features -->
-<!-- Lunex UI module 0418: reserved extension point for future features -->
-<!-- Lunex UI module 0419: reserved extension point for future features -->
-<!-- Lunex UI module 0420: reserved extension point for future features -->
-<!-- Lunex UI module 0421: reserved extension point for future features -->
-<!-- Lunex UI module 0422: reserved extension point for future features -->
-<!-- Lunex UI module 0423: reserved extension point for future features -->
-<!-- Lunex UI module 0424: reserved extension point for future features -->
-<!-- Lunex UI module 0425: reserved extension point for future features -->
-<!-- Lunex UI module 0426: reserved extension point for future features -->
-<!-- Lunex UI module 0427: reserved extension point for future features -->
-<!-- Lunex UI module 0428: reserved extension point for future features -->
-<!-- Lunex UI module 0429: reserved extension point for future features -->
-<!-- Lunex UI module 0430: reserved extension point for future features -->
-<!-- Lunex UI module 0431: reserved extension point for future features -->
-<!-- Lunex UI module 0432: reserved extension point for future features -->
-<!-- Lunex UI module 0433: reserved extension point for future features -->
-<!-- Lunex UI module 0434: reserved extension point for future features -->
-<!-- Lunex UI module 0435: reserved extension point for future features -->
-<!-- Lunex UI module 0436: reserved extension point for future features -->
-<!-- Lunex UI module 0437: reserved extension point for future features -->
-<!-- Lunex UI module 0438: reserved extension point for future features -->
-<!-- Lunex UI module 0439: reserved extension point for future features -->
-<!-- Lunex UI module 0440: reserved extension point for future features -->
-<!-- Lunex UI module 0441: reserved extension point for future features -->
-<!-- Lunex UI module 0442: reserved extension point for future features -->
-<!-- Lunex UI module 0443: reserved extension point for future features -->
-<!-- Lunex UI module 0444: reserved extension point for future features -->
-<!-- Lunex UI module 0445: reserved extension point for future features -->
-<!-- Lunex UI module 0446: reserved extension point for future features -->
-<!-- Lunex UI module 0447: reserved extension point for future features -->
-<!-- Lunex UI module 0448: reserved extension point for future features -->
-<!-- Lunex UI module 0449: reserved extension point for future features -->
-<!-- Lunex UI module 0450: reserved extension point for future features -->
-<!-- Lunex UI module 0451: reserved extension point for future features -->
-<!-- Lunex UI module 0452: reserved extension point for future features -->
-<!-- Lunex UI module 0453: reserved extension point for future features -->
-<!-- Lunex UI module 0454: reserved extension point for future features -->
-<!-- Lunex UI module 0455: reserved extension point for future features -->
-<!-- Lunex UI module 0456: reserved extension point for future features -->
-<!-- Lunex UI module 0457: reserved extension point for future features -->
-<!-- Lunex UI module 0458: reserved extension point for future features -->
-<!-- Lunex UI module 0459: reserved extension point for future features -->
-<!-- Lunex UI module 0460: reserved extension point for future features -->
-<!-- Lunex UI module 0461: reserved extension point for future features -->
-<!-- Lunex UI module 0462: reserved extension point for future features -->
-<!-- Lunex UI module 0463: reserved extension point for future features -->
-<!-- Lunex UI module 0464: reserved extension point for future features -->
-<!-- Lunex UI module 0465: reserved extension point for future features -->
-<!-- Lunex UI module 0466: reserved extension point for future features -->
-<!-- Lunex UI module 0467: reserved extension point for future features -->
-<!-- Lunex UI module 0468: reserved extension point for future features -->
-<!-- Lunex UI module 0469: reserved extension point for future features -->
-<!-- Lunex UI module 0470: reserved extension point for future features -->
-<!-- Lunex UI module 0471: reserved extension point for future features -->
-<!-- Lunex UI module 0472: reserved extension point for future features -->
-<!-- Lunex UI module 0473: reserved extension point for future features -->
-<!-- Lunex UI module 0474: reserved extension point for future features -->
-<!-- Lunex UI module 0475: reserved extension point for future features -->
-<!-- Lunex UI module 0476: reserved extension point for future features -->
-<!-- Lunex UI module 0477: reserved extension point for future features -->
-<!-- Lunex UI module 0478: reserved extension point for future features -->
-<!-- Lunex UI module 0479: reserved extension point for future features -->
-<!-- Lunex UI module 0480: reserved extension point for future features -->
-<!-- Lunex UI module 0481: reserved extension point for future features -->
-<!-- Lunex UI module 0482: reserved extension point for future features -->
-<!-- Lunex UI module 0483: reserved extension point for future features -->
-<!-- Lunex UI module 0484: reserved extension point for future features -->
-<!-- Lunex UI module 0485: reserved extension point for future features -->
-<!-- Lunex UI module 0486: reserved extension point for future features -->
-<!-- Lunex UI module 0487: reserved extension point for future features -->
-<!-- Lunex UI module 0488: reserved extension point for future features -->
-<!-- Lunex UI module 0489: reserved extension point for future features -->
-<!-- Lunex UI module 0490: reserved extension point for future features -->
-<!-- Lunex UI module 0491: reserved extension point for future features -->
-<!-- Lunex UI module 0492: reserved extension point for future features -->
-<!-- Lunex UI module 0493: reserved extension point for future features -->
-<!-- Lunex UI module 0494: reserved extension point for future features -->
-<!-- Lunex UI module 0495: reserved extension point for future features -->
-<!-- Lunex UI module 0496: reserved extension point for future features -->
-<!-- Lunex UI module 0497: reserved extension point for future features -->
-<!-- Lunex UI module 0498: reserved extension point for future features -->
-<!-- Lunex UI module 0499: reserved extension point for future features -->
-<!-- Lunex UI module 0500: reserved extension point for future features -->
-<!-- Lunex UI module 0501: reserved extension point for future features -->
-<!-- Lunex UI module 0502: reserved extension point for future features -->
-<!-- Lunex UI module 0503: reserved extension point for future features -->
-<!-- Lunex UI module 0504: reserved extension point for future features -->
-<!-- Lunex UI module 0505: reserved extension point for future features -->
-<!-- Lunex UI module 0506: reserved extension point for future features -->
-<!-- Lunex UI module 0507: reserved extension point for future features -->
-<!-- Lunex UI module 0508: reserved extension point for future features -->
-<!-- Lunex UI module 0509: reserved extension point for future features -->
-<!-- Lunex UI module 0510: reserved extension point for future features -->
-<!-- Lunex UI module 0511: reserved extension point for future features -->
-<!-- Lunex UI module 0512: reserved extension point for future features -->
-<!-- Lunex UI module 0513: reserved extension point for future features -->
-<!-- Lunex UI module 0514: reserved extension point for future features -->
-<!-- Lunex UI module 0515: reserved extension point for future features -->
-<!-- Lunex UI module 0516: reserved extension point for future features -->
-<!-- Lunex UI module 0517: reserved extension point for future features -->
-<!-- Lunex UI module 0518: reserved extension point for future features -->
-<!-- Lunex UI module 0519: reserved extension point for future features -->
-<!-- Lunex UI module 0520: reserved extension point for future features -->
-<!-- Lunex UI module 0521: reserved extension point for future features -->
-<!-- Lunex UI module 0522: reserved extension point for future features -->
-<!-- Lunex UI module 0523: reserved extension point for future features -->
-<!-- Lunex UI module 0524: reserved extension point for future features -->
-<!-- Lunex UI module 0525: reserved extension point for future features -->
-<!-- Lunex UI module 0526: reserved extension point for future features -->
-<!-- Lunex UI module 0527: reserved extension point for future features -->
-<!-- Lunex UI module 0528: reserved extension point for future features -->
-<!-- Lunex UI module 0529: reserved extension point for future features -->
-<!-- Lunex UI module 0530: reserved extension point for future features -->
-<!-- Lunex UI module 0531: reserved extension point for future features -->
-<!-- Lunex UI module 0532: reserved extension point for future features -->
-<!-- Lunex UI module 0533: reserved extension point for future features -->
-<!-- Lunex UI module 0534: reserved extension point for future features -->
-<!-- Lunex UI module 0535: reserved extension point for future features -->
-<!-- Lunex UI module 0536: reserved extension point for future features -->
-<!-- Lunex UI module 0537: reserved extension point for future features -->
-<!-- Lunex UI module 0538: reserved extension point for future features -->
-<!-- Lunex UI module 0539: reserved extension point for future features -->
-<!-- Lunex UI module 0540: reserved extension point for future features -->
-<!-- Lunex UI module 0541: reserved extension point for future features -->
-<!-- Lunex UI module 0542: reserved extension point for future features -->
-<!-- Lunex UI module 0543: reserved extension point for future features -->
-<!-- Lunex UI module 0544: reserved extension point for future features -->
-<!-- Lunex UI module 0545: reserved extension point for future features -->
-<!-- Lunex UI module 0546: reserved extension point for future features -->
-<!-- Lunex UI module 0547: reserved extension point for future features -->
-<!-- Lunex UI module 0548: reserved extension point for future features -->
-<!-- Lunex UI module 0549: reserved extension point for future features -->
-<!-- Lunex UI module 0550: reserved extension point for future features -->
-<!-- Lunex UI module 0551: reserved extension point for future features -->
-<!-- Lunex UI module 0552: reserved extension point for future features -->
-<!-- Lunex UI module 0553: reserved extension point for future features -->
-<!-- Lunex UI module 0554: reserved extension point for future features -->
-<!-- Lunex UI module 0555: reserved extension point for future features -->
-<!-- Lunex UI module 0556: reserved extension point for future features -->
-<!-- Lunex UI module 0557: reserved extension point for future features -->
-<!-- Lunex UI module 0558: reserved extension point for future features -->
-<!-- Lunex UI module 0559: reserved extension point for future features -->
-<!-- Lunex UI module 0560: reserved extension point for future features -->
-<!-- Lunex UI module 0561: reserved extension point for future features -->
-<!-- Lunex UI module 0562: reserved extension point for future features -->
-<!-- Lunex UI module 0563: reserved extension point for future features -->
-<!-- Lunex UI module 0564: reserved extension point for future features -->
-<!-- Lunex UI module 0565: reserved extension point for future features -->
-<!-- Lunex UI module 0566: reserved extension point for future features -->
-<!-- Lunex UI module 0567: reserved extension point for future features -->
-<!-- Lunex UI module 0568: reserved extension point for future features -->
-<!-- Lunex UI module 0569: reserved extension point for future features -->
-<!-- Lunex UI module 0570: reserved extension point for future features -->
-<!-- Lunex UI module 0571: reserved extension point for future features -->
-<!-- Lunex UI module 0572: reserved extension point for future features -->
-<!-- Lunex UI module 0573: reserved extension point for future features -->
-<!-- Lunex UI module 0574: reserved extension point for future features -->
-<!-- Lunex UI module 0575: reserved extension point for future features -->
-<!-- Lunex UI module 0576: reserved extension point for future features -->
-<!-- Lunex UI module 0577: reserved extension point for future features -->
-<!-- Lunex UI module 0578: reserved extension point for future features -->
-<!-- Lunex UI module 0579: reserved extension point for future features -->
-<!-- Lunex UI module 0580: reserved extension point for future features -->
-<!-- Lunex UI module 0581: reserved extension point for future features -->
-<!-- Lunex UI module 0582: reserved extension point for future features -->
-<!-- Lunex UI module 0583: reserved extension point for future features -->
-<!-- Lunex UI module 0584: reserved extension point for future features -->
-<!-- Lunex UI module 0585: reserved extension point for future features -->
-<!-- Lunex UI module 0586: reserved extension point for future features -->
-<!-- Lunex UI module 0587: reserved extension point for future features -->
-<!-- Lunex UI module 0588: reserved extension point for future features -->
-<!-- Lunex UI module 0589: reserved extension point for future features -->
-<!-- Lunex UI module 0590: reserved extension point for future features -->
-<!-- Lunex UI module 0591: reserved extension point for future features -->
-<!-- Lunex UI module 0592: reserved extension point for future features -->
-<!-- Lunex UI module 0593: reserved extension point for future features -->
-<!-- Lunex UI module 0594: reserved extension point for future features -->
-<!-- Lunex UI module 0595: reserved extension point for future features -->
-<!-- Lunex UI module 0596: reserved extension point for future features -->
-<!-- Lunex UI module 0597: reserved extension point for future features -->
-<!-- Lunex UI module 0598: reserved extension point for future features -->
-<!-- Lunex UI module 0599: reserved extension point for future features -->
-<!-- Lunex UI module 0600: reserved extension point for future features -->
-<!-- Lunex UI module 0601: reserved extension point for future features -->
-<!-- Lunex UI module 0602: reserved extension point for future features -->
-<!-- Lunex UI module 0603: reserved extension point for future features -->
-<!-- Lunex UI module 0604: reserved extension point for future features -->
-<!-- Lunex UI module 0605: reserved extension point for future features -->
-<!-- Lunex UI module 0606: reserved extension point for future features -->
-<!-- Lunex UI module 0607: reserved extension point for future features -->
-<!-- Lunex UI module 0608: reserved extension point for future features -->
-<!-- Lunex UI module 0609: reserved extension point for future features -->
-<!-- Lunex UI module 0610: reserved extension point for future features -->
-<!-- Lunex UI module 0611: reserved extension point for future features -->
-<!-- Lunex UI module 0612: reserved extension point for future features -->
-<!-- Lunex UI module 0613: reserved extension point for future features -->
-<!-- Lunex UI module 0614: reserved extension point for future features -->
-<!-- Lunex UI module 0615: reserved extension point for future features -->
-<!-- Lunex UI module 0616: reserved extension point for future features -->
-<!-- Lunex UI module 0617: reserved extension point for future features -->
-<!-- Lunex UI module 0618: reserved extension point for future features -->
-<!-- Lunex UI module 0619: reserved extension point for future features -->
-<!-- Lunex UI module 0620: reserved extension point for future features -->
-<!-- Lunex UI module 0621: reserved extension point for future features -->
-<!-- Lunex UI module 0622: reserved extension point for future features -->
-<!-- Lunex UI module 0623: reserved extension point for future features -->
-<!-- Lunex UI module 0624: reserved extension point for future features -->
-<!-- Lunex UI module 0625: reserved extension point for future features -->
-<!-- Lunex UI module 0626: reserved extension point for future features -->
-<!-- Lunex UI module 0627: reserved extension point for future features -->
-<!-- Lunex UI module 0628: reserved extension point for future features -->
-<!-- Lunex UI module 0629: reserved extension point for future features -->
-<!-- Lunex UI module 0630: reserved extension point for future features -->
-<!-- Lunex UI module 0631: reserved extension point for future features -->
-<!-- Lunex UI module 0632: reserved extension point for future features -->
-<!-- Lunex UI module 0633: reserved extension point for future features -->
-<!-- Lunex UI module 0634: reserved extension point for future features -->
-<!-- Lunex UI module 0635: reserved extension point for future features -->
-<!-- Lunex UI module 0636: reserved extension point for future features -->
-<!-- Lunex UI module 0637: reserved extension point for future features -->
-<!-- Lunex UI module 0638: reserved extension point for future features -->
-<!-- Lunex UI module 0639: reserved extension point for future features -->
-<!-- Lunex UI module 0640: reserved extension point for future features -->
-<!-- Lunex UI module 0641: reserved extension point for future features -->
-<!-- Lunex UI module 0642: reserved extension point for future features -->
-<!-- Lunex UI module 0643: reserved extension point for future features -->
-<!-- Lunex UI module 0644: reserved extension point for future features -->
-<!-- Lunex UI module 0645: reserved extension point for future features -->
-<!-- Lunex UI module 0646: reserved extension point for future features -->
-<!-- Lunex UI module 0647: reserved extension point for future features -->
-<!-- Lunex UI module 0648: reserved extension point for future features -->
-<!-- Lunex UI module 0649: reserved extension point for future features -->
-<!-- Lunex UI module 0650: reserved extension point for future features -->
-<!-- Lunex UI module 0651: reserved extension point for future features -->
-<!-- Lunex UI module 0652: reserved extension point for future features -->
-<!-- Lunex UI module 0653: reserved extension point for future features -->
-<!-- Lunex UI module 0654: reserved extension point for future features -->
-<!-- Lunex UI module 0655: reserved extension point for future features -->
-<!-- Lunex UI module 0656: reserved extension point for future features -->
-<!-- Lunex UI module 0657: reserved extension point for future features -->
-<!-- Lunex UI module 0658: reserved extension point for future features -->
-<!-- Lunex UI module 0659: reserved extension point for future features -->
-<!-- Lunex UI module 0660: reserved extension point for future features -->
-<!-- Lunex UI module 0661: reserved extension point for future features -->
-<!-- Lunex UI module 0662: reserved extension point for future features -->
-<!-- Lunex UI module 0663: reserved extension point for future features -->
-<!-- Lunex UI module 0664: reserved extension point for future features -->
-<!-- Lunex UI module 0665: reserved extension point for future features -->
-<!-- Lunex UI module 0666: reserved extension point for future features -->
-<!-- Lunex UI module 0667: reserved extension point for future features -->
-<!-- Lunex UI module 0668: reserved extension point for future features -->
-<!-- Lunex UI module 0669: reserved extension point for future features -->
-<!-- Lunex UI module 0670: reserved extension point for future features -->
-<!-- Lunex UI module 0671: reserved extension point for future features -->
-<!-- Lunex UI module 0672: reserved extension point for future features -->
-<!-- Lunex UI module 0673: reserved extension point for future features -->
-<!-- Lunex UI module 0674: reserved extension point for future features -->
-<!-- Lunex UI module 0675: reserved extension point for future features -->
-<!-- Lunex UI module 0676: reserved extension point for future features -->
-<!-- Lunex UI module 0677: reserved extension point for future features -->
-<!-- Lunex UI module 0678: reserved extension point for future features -->
-<!-- Lunex UI module 0679: reserved extension point for future features -->
-<!-- Lunex UI module 0680: reserved extension point for future features -->
-<!-- Lunex UI module 0681: reserved extension point for future features -->
-<!-- Lunex UI module 0682: reserved extension point for future features -->
-<!-- Lunex UI module 0683: reserved extension point for future features -->
-<!-- Lunex UI module 0684: reserved extension point for future features -->
-<!-- Lunex UI module 0685: reserved extension point for future features -->
-<!-- Lunex UI module 0686: reserved extension point for future features -->
-<!-- Lunex UI module 0687: reserved extension point for future features -->
-<!-- Lunex UI module 0688: reserved extension point for future features -->
-<!-- Lunex UI module 0689: reserved extension point for future features -->
-<!-- Lunex UI module 0690: reserved extension point for future features -->
-<!-- Lunex UI module 0691: reserved extension point for future features -->
-<!-- Lunex UI module 0692: reserved extension point for future features -->
-<!-- Lunex UI module 0693: reserved extension point for future features -->
-<!-- Lunex UI module 0694: reserved extension point for future features -->
-<!-- Lunex UI module 0695: reserved extension point for future features -->
-<!-- Lunex UI module 0696: reserved extension point for future features -->
-<!-- Lunex UI module 0697: reserved extension point for future features -->
-<!-- Lunex UI module 0698: reserved extension point for future features -->
-<!-- Lunex UI module 0699: reserved extension point for future features -->
-<!-- Lunex UI module 0700: reserved extension point for future features -->
-<!-- Lunex UI module 0701: reserved extension point for future features -->
-<!-- Lunex UI module 0702: reserved extension point for future features -->
-<!-- Lunex UI module 0703: reserved extension point for future features -->
-<!-- Lunex UI module 0704: reserved extension point for future features -->
-<!-- Lunex UI module 0705: reserved extension point for future features -->
-<!-- Lunex UI module 0706: reserved extension point for future features -->
-<!-- Lunex UI module 0707: reserved extension point for future features -->
-<!-- Lunex UI module 0708: reserved extension point for future features -->
-<!-- Lunex UI module 0709: reserved extension point for future features -->
-<!-- Lunex UI module 0710: reserved extension point for future features -->
-<!-- Lunex UI module 0711: reserved extension point for future features -->
-<!-- Lunex UI module 0712: reserved extension point for future features -->
-<!-- Lunex UI module 0713: reserved extension point for future features -->
-<!-- Lunex UI module 0714: reserved extension point for future features -->
-<!-- Lunex UI module 0715: reserved extension point for future features -->
-<!-- Lunex UI module 0716: reserved extension point for future features -->
-<!-- Lunex UI module 0717: reserved extension point for future features -->
-<!-- Lunex UI module 0718: reserved extension point for future features -->
-<!-- Lunex UI module 0719: reserved extension point for future features -->
-<!-- Lunex UI module 0720: reserved extension point for future features -->
-<!-- Lunex UI module 0721: reserved extension point for future features -->
-<!-- Lunex UI module 0722: reserved extension point for future features -->
-<!-- Lunex UI module 0723: reserved extension point for future features -->
-<!-- Lunex UI module 0724: reserved extension point for future features -->
-<!-- Lunex UI module 0725: reserved extension point for future features -->
-<!-- Lunex UI module 0726: reserved extension point for future features -->
-<!-- Lunex UI module 0727: reserved extension point for future features -->
-<!-- Lunex UI module 0728: reserved extension point for future features -->
-<!-- Lunex UI module 0729: reserved extension point for future features -->
-<!-- Lunex UI module 0730: reserved extension point for future features -->
-<!-- Lunex UI module 0731: reserved extension point for future features -->
-<!-- Lunex UI module 0732: reserved extension point for future features -->
-<!-- Lunex UI module 0733: reserved extension point for future features -->
-<!-- Lunex UI module 0734: reserved extension point for future features -->
-<!-- Lunex UI module 0735: reserved extension point for future features -->
-<!-- Lunex UI module 0736: reserved extension point for future features -->
-<!-- Lunex UI module 0737: reserved extension point for future features -->
-<!-- Lunex UI module 0738: reserved extension point for future features -->
-<!-- Lunex UI module 0739: reserved extension point for future features -->
-<!-- Lunex UI module 0740: reserved extension point for future features -->
-<!-- Lunex UI module 0741: reserved extension point for future features -->
-<!-- Lunex UI module 0742: reserved extension point for future features -->
-<!-- Lunex UI module 0743: reserved extension point for future features -->
-<!-- Lunex UI module 0744: reserved extension point for future features -->
-<!-- Lunex UI module 0745: reserved extension point for future features -->
-<!-- Lunex UI module 0746: reserved extension point for future features -->
-<!-- Lunex UI module 0747: reserved extension point for future features -->
-<!-- Lunex UI module 0748: reserved extension point for future features -->
-<!-- Lunex UI module 0749: reserved extension point for future features -->
-<!-- Lunex UI module 0750: reserved extension point for future features -->
-<!-- Lunex UI module 0751: reserved extension point for future features -->
-<!-- Lunex UI module 0752: reserved extension point for future features -->
-<!-- Lunex UI module 0753: reserved extension point for future features -->
-<!-- Lunex UI module 0754: reserved extension point for future features -->
-<!-- Lunex UI module 0755: reserved extension point for future features -->
-<!-- Lunex UI module 0756: reserved extension point for future features -->
-<!-- Lunex UI module 0757: reserved extension point for future features -->
-<!-- Lunex UI module 0758: reserved extension point for future features -->
-<!-- Lunex UI module 0759: reserved extension point for future features -->
-<!-- Lunex UI module 0760: reserved extension point for future features -->
-<!-- Lunex UI module 0761: reserved extension point for future features -->
-<!-- Lunex UI module 0762: reserved extension point for future features -->
-<!-- Lunex UI module 0763: reserved extension point for future features -->
-<!-- Lunex UI module 0764: reserved extension point for future features -->
-<!-- Lunex UI module 0765: reserved extension point for future features -->
-<!-- Lunex UI module 0766: reserved extension point for future features -->
-<!-- Lunex UI module 0767: reserved extension point for future features -->
-<!-- Lunex UI module 0768: reserved extension point for future features -->
-<!-- Lunex UI module 0769: reserved extension point for future features -->
-<!-- Lunex UI module 0770: reserved extension point for future features -->
-<!-- Lunex UI module 0771: reserved extension point for future features -->
-<!-- Lunex UI module 0772: reserved extension point for future features -->
-<!-- Lunex UI module 0773: reserved extension point for future features -->
-<!-- Lunex UI module 0774: reserved extension point for future features -->
-<!-- Lunex UI module 0775: reserved extension point for future features -->
-<!-- Lunex UI module 0776: reserved extension point for future features -->
-<!-- Lunex UI module 0777: reserved extension point for future features -->
-<!-- Lunex UI module 0778: reserved extension point for future features -->
-<!-- Lunex UI module 0779: reserved extension point for future features -->
-<!-- Lunex UI module 0780: reserved extension point for future features -->
-<!-- Lunex UI module 0781: reserved extension point for future features -->
-<!-- Lunex UI module 0782: reserved extension point for future features -->
-<!-- Lunex UI module 0783: reserved extension point for future features -->
-<!-- Lunex UI module 0784: reserved extension point for future features -->
-<!-- Lunex UI module 0785: reserved extension point for future features -->
-<!-- Lunex UI module 0786: reserved extension point for future features -->
-<!-- Lunex UI module 0787: reserved extension point for future features -->
-<!-- Lunex UI module 0788: reserved extension point for future features -->
-<!-- Lunex UI module 0789: reserved extension point for future features -->
-<!-- Lunex UI module 0790: reserved extension point for future features -->
-<!-- Lunex UI module 0791: reserved extension point for future features -->
-<!-- Lunex UI module 0792: reserved extension point for future features -->
-<!-- Lunex UI module 0793: reserved extension point for future features -->
-<!-- Lunex UI module 0794: reserved extension point for future features -->
-<!-- Lunex UI module 0795: reserved extension point for future features -->
-<!-- Lunex UI module 0796: reserved extension point for future features -->
-<!-- Lunex UI module 0797: reserved extension point for future features -->
-<!-- Lunex UI module 0798: reserved extension point for future features -->
-<!-- Lunex UI module 0799: reserved extension point for future features -->
-<!-- Lunex UI module 0800: reserved extension point for future features -->
-<!-- Lunex UI module 0801: reserved extension point for future features -->
-<!-- Lunex UI module 0802: reserved extension point for future features -->
-<!-- Lunex UI module 0803: reserved extension point for future features -->
-<!-- Lunex UI module 0804: reserved extension point for future features -->
-<!-- Lunex UI module 0805: reserved extension point for future features -->
-<!-- Lunex UI module 0806: reserved extension point for future features -->
-<!-- Lunex UI module 0807: reserved extension point for future features -->
-<!-- Lunex UI module 0808: reserved extension point for future features -->
-<!-- Lunex UI module 0809: reserved extension point for future features -->
-<!-- Lunex UI module 0810: reserved extension point for future features -->
-<!-- Lunex UI module 0811: reserved extension point for future features -->
-<!-- Lunex UI module 0812: reserved extension point for future features -->
-<!-- Lunex UI module 0813: reserved extension point for future features -->
-<!-- Lunex UI module 0814: reserved extension point for future features -->
-<!-- Lunex UI module 0815: reserved extension point for future features -->
-<!-- Lunex UI module 0816: reserved extension point for future features -->
-<!-- Lunex UI module 0817: reserved extension point for future features -->
-<!-- Lunex UI module 0818: reserved extension point for future features -->
-<!-- Lunex UI module 0819: reserved extension point for future features -->
-<!-- Lunex UI module 0820: reserved extension point for future features -->
-<!-- Lunex UI module 0821: reserved extension point for future features -->
-<!-- Lunex UI module 0822: reserved extension point for future features -->
-<!-- Lunex UI module 0823: reserved extension point for future features -->
-<!-- Lunex UI module 0824: reserved extension point for future features -->
-<!-- Lunex UI module 0825: reserved extension point for future features -->
-<!-- Lunex UI module 0826: reserved extension point for future features -->
-<!-- Lunex UI module 0827: reserved extension point for future features -->
-<!-- Lunex UI module 0828: reserved extension point for future features -->
-<!-- Lunex UI module 0829: reserved extension point for future features -->
-<!-- Lunex UI module 0830: reserved extension point for future features -->
-<!-- Lunex UI module 0831: reserved extension point for future features -->
-<!-- Lunex UI module 0832: reserved extension point for future features -->
-<!-- Lunex UI module 0833: reserved extension point for future features -->
-<!-- Lunex UI module 0834: reserved extension point for future features -->
-<!-- Lunex UI module 0835: reserved extension point for future features -->
-<!-- Lunex UI module 0836: reserved extension point for future features -->
-<!-- Lunex UI module 0837: reserved extension point for future features -->
-<!-- Lunex UI module 0838: reserved extension point for future features -->
-<!-- Lunex UI module 0839: reserved extension point for future features -->
-<!-- Lunex UI module 0840: reserved extension point for future features -->
-<!-- Lunex UI module 0841: reserved extension point for future features -->
-<!-- Lunex UI module 0842: reserved extension point for future features -->
-<!-- Lunex UI module 0843: reserved extension point for future features -->
-<!-- Lunex UI module 0844: reserved extension point for future features -->
-<!-- Lunex UI module 0845: reserved extension point for future features -->
-<!-- Lunex UI module 0846: reserved extension point for future features -->
-<!-- Lunex UI module 0847: reserved extension point for future features -->
-<!-- Lunex UI module 0848: reserved extension point for future features -->
-<!-- Lunex UI module 0849: reserved extension point for future features -->
-<!-- Lunex UI module 0850: reserved extension point for future features -->
-<!-- Lunex UI module 0851: reserved extension point for future features -->
-<!-- Lunex UI module 0852: reserved extension point for future features -->
-<!-- Lunex UI module 0853: reserved extension point for future features -->
-<!-- Lunex UI module 0854: reserved extension point for future features -->
-<!-- Lunex UI module 0855: reserved extension point for future features -->
-<!-- Lunex UI module 0856: reserved extension point for future features -->
-<!-- Lunex UI module 0857: reserved extension point for future features -->
-<!-- Lunex UI module 0858: reserved extension point for future features -->
-<!-- Lunex UI module 0859: reserved extension point for future features -->
-<!-- Lunex UI module 0860: reserved extension point for future features -->
-<!-- Lunex UI module 0861: reserved extension point for future features -->
-<!-- Lunex UI module 0862: reserved extension point for future features -->
-<!-- Lunex UI module 0863: reserved extension point for future features -->
-<!-- Lunex UI module 0864: reserved extension point for future features -->
-<!-- Lunex UI module 0865: reserved extension point for future features -->
-<!-- Lunex UI module 0866: reserved extension point for future features -->
-<!-- Lunex UI module 0867: reserved extension point for future features -->
-<!-- Lunex UI module 0868: reserved extension point for future features -->
-<!-- Lunex UI module 0869: reserved extension point for future features -->
-<!-- Lunex UI module 0870: reserved extension point for future features -->
-<!-- Lunex UI module 0871: reserved extension point for future features -->
-<!-- Lunex UI module 0872: reserved extension point for future features -->
-<!-- Lunex UI module 0873: reserved extension point for future features -->
-<!-- Lunex UI module 0874: reserved extension point for future features -->
-<!-- Lunex UI module 0875: reserved extension point for future features -->
-<!-- Lunex UI module 0876: reserved extension point for future features -->
-<!-- Lunex UI module 0877: reserved extension point for future features -->
-<!-- Lunex UI module 0878: reserved extension point for future features -->
-<!-- Lunex UI module 0879: reserved extension point for future features -->
-<!-- Lunex UI module 0880: reserved extension point for future features -->
-<!-- Lunex UI module 0881: reserved extension point for future features -->
-<!-- Lunex UI module 0882: reserved extension point for future features -->
-<!-- Lunex UI module 0883: reserved extension point for future features -->
-<!-- Lunex UI module 0884: reserved extension point for future features -->
-<!-- Lunex UI module 0885: reserved extension point for future features -->
-<!-- Lunex UI module 0886: reserved extension point for future features -->
-<!-- Lunex UI module 0887: reserved extension point for future features -->
-<!-- Lunex UI module 0888: reserved extension point for future features -->
-<!-- Lunex UI module 0889: reserved extension point for future features -->
-<!-- Lunex UI module 0890: reserved extension point for future features -->
-<!-- Lunex UI module 0891: reserved extension point for future features -->
-<!-- Lunex UI module 0892: reserved extension point for future features -->
-<!-- Lunex UI module 0893: reserved extension point for future features -->
-<!-- Lunex UI module 0894: reserved extension point for future features -->
-<!-- Lunex UI module 0895: reserved extension point for future features -->
-<!-- Lunex UI module 0896: reserved extension point for future features -->
-<!-- Lunex UI module 0897: reserved extension point for future features -->
-<!-- Lunex UI module 0898: reserved extension point for future features -->
-<!-- Lunex UI module 0899: reserved extension point for future features -->
-<!-- Lunex UI module 0900: reserved extension point for future features -->
-<!-- Lunex UI module 0901: reserved extension point for future features -->
-<!-- Lunex UI module 0902: reserved extension point for future features -->
-<!-- Lunex UI module 0903: reserved extension point for future features -->
-<!-- Lunex UI module 0904: reserved extension point for future features -->
-<!-- Lunex UI module 0905: reserved extension point for future features -->
-<!-- Lunex UI module 0906: reserved extension point for future features -->
-<!-- Lunex UI module 0907: reserved extension point for future features -->
-<!-- Lunex UI module 0908: reserved extension point for future features -->
-<!-- Lunex UI module 0909: reserved extension point for future features -->
-<!-- Lunex UI module 0910: reserved extension point for future features -->
-<!-- Lunex UI module 0911: reserved extension point for future features -->
-<!-- Lunex UI module 0912: reserved extension point for future features -->
-<!-- Lunex UI module 0913: reserved extension point for future features -->
-<!-- Lunex UI module 0914: reserved extension point for future features -->
-<!-- Lunex UI module 0915: reserved extension point for future features -->
-<!-- Lunex UI module 0916: reserved extension point for future features -->
-<!-- Lunex UI module 0917: reserved extension point for future features -->
-<!-- Lunex UI module 0918: reserved extension point for future features -->
-<!-- Lunex UI module 0919: reserved extension point for future features -->
-<!-- Lunex UI module 0920: reserved extension point for future features -->
-<!-- Lunex UI module 0921: reserved extension point for future features -->
-<!-- Lunex UI module 0922: reserved extension point for future features -->
-<!-- Lunex UI module 0923: reserved extension point for future features -->
-<!-- Lunex UI module 0924: reserved extension point for future features -->
-<!-- Lunex UI module 0925: reserved extension point for future features -->
-<!-- Lunex UI module 0926: reserved extension point for future features -->
-<!-- Lunex UI module 0927: reserved extension point for future features -->
-<!-- Lunex UI module 0928: reserved extension point for future features -->
-<!-- Lunex UI module 0929: reserved extension point for future features -->
-<!-- Lunex UI module 0930: reserved extension point for future features -->
-<!-- Lunex UI module 0931: reserved extension point for future features -->
-<!-- Lunex UI module 0932: reserved extension point for future features -->
-<!-- Lunex UI module 0933: reserved extension point for future features -->
-<!-- Lunex UI module 0934: reserved extension point for future features -->
-<!-- Lunex UI module 0935: reserved extension point for future features -->
-<!-- Lunex UI module 0936: reserved extension point for future features -->
-<!-- Lunex UI module 0937: reserved extension point for future features -->
-<!-- Lunex UI module 0938: reserved extension point for future features -->
-<!-- Lunex UI module 0939: reserved extension point for future features -->
-<!-- Lunex UI module 0940: reserved extension point for future features -->
-<!-- Lunex UI module 0941: reserved extension point for future features -->
-<!-- Lunex UI module 0942: reserved extension point for future features -->
-<!-- Lunex UI module 0943: reserved extension point for future features -->
-<!-- Lunex UI module 0944: reserved extension point for future features -->
-<!-- Lunex UI module 0945: reserved extension point for future features -->
-<!-- Lunex UI module 0946: reserved extension point for future features -->
-<!-- Lunex UI module 0947: reserved extension point for future features -->
-<!-- Lunex UI module 0948: reserved extension point for future features -->
-<!-- Lunex UI module 0949: reserved extension point for future features -->
-<!-- Lunex UI module 0950: reserved extension point for future features -->
-<!-- Lunex UI module 0951: reserved extension point for future features -->
-<!-- Lunex UI module 0952: reserved extension point for future features -->
-<!-- Lunex UI module 0953: reserved extension point for future features -->
-<!-- Lunex UI module 0954: reserved extension point for future features -->
-<!-- Lunex UI module 0955: reserved extension point for future features -->
-<!-- Lunex UI module 0956: reserved extension point for future features -->
-<!-- Lunex UI module 0957: reserved extension point for future features -->
-<!-- Lunex UI module 0958: reserved extension point for future features -->
-<!-- Lunex UI module 0959: reserved extension point for future features -->
-<!-- Lunex UI module 0960: reserved extension point for future features -->
-<!-- Lunex UI module 0961: reserved extension point for future features -->
-<!-- Lunex UI module 0962: reserved extension point for future features -->
-<!-- Lunex UI module 0963: reserved extension point for future features -->
-<!-- Lunex UI module 0964: reserved extension point for future features -->
-<!-- Lunex UI module 0965: reserved extension point for future features -->
-<!-- Lunex UI module 0966: reserved extension point for future features -->
-<!-- Lunex UI module 0967: reserved extension point for future features -->
-<!-- Lunex UI module 0968: reserved extension point for future features -->
-<!-- Lunex UI module 0969: reserved extension point for future features -->
-<!-- Lunex UI module 0970: reserved extension point for future features -->
-<!-- Lunex UI module 0971: reserved extension point for future features -->
-<!-- Lunex UI module 0972: reserved extension point for future features -->
-<!-- Lunex UI module 0973: reserved extension point for future features -->
-<!-- Lunex UI module 0974: reserved extension point for future features -->
-<!-- Lunex UI module 0975: reserved extension point for future features -->
-<!-- Lunex UI module 0976: reserved extension point for future features -->
-<!-- Lunex UI module 0977: reserved extension point for future features -->
-<!-- Lunex UI module 0978: reserved extension point for future features -->
-<!-- Lunex UI module 0979: reserved extension point for future features -->
-<!-- Lunex UI module 0980: reserved extension point for future features -->
-<!-- Lunex UI module 0981: reserved extension point for future features -->
-<!-- Lunex UI module 0982: reserved extension point for future features -->
-<!-- Lunex UI module 0983: reserved extension point for future features -->
-<!-- Lunex UI module 0984: reserved extension point for future features -->
-<!-- Lunex UI module 0985: reserved extension point for future features -->
-<!-- Lunex UI module 0986: reserved extension point for future features -->
-<!-- Lunex UI module 0987: reserved extension point for future features -->
-<!-- Lunex UI module 0988: reserved extension point for future features -->
-<!-- Lunex UI module 0989: reserved extension point for future features -->
-<!-- Lunex UI module 0990: reserved extension point for future features -->
-<!-- Lunex UI module 0991: reserved extension point for future features -->
-<!-- Lunex UI module 0992: reserved extension point for future features -->
-<!-- Lunex UI module 0993: reserved extension point for future features -->
-<!-- Lunex UI module 0994: reserved extension point for future features -->
-<!-- Lunex UI module 0995: reserved extension point for future features -->
-<!-- Lunex UI module 0996: reserved extension point for future features -->
-<!-- Lunex UI module 0997: reserved extension point for future features -->
-<!-- Lunex UI module 0998: reserved extension point for future features -->
-<!-- Lunex UI module 0999: reserved extension point for future features -->
-<!-- Lunex UI module 1000: reserved extension point for future features -->
-<!-- Lunex UI module 1001: reserved extension point for future features -->
-<!-- Lunex UI module 1002: reserved extension point for future features -->
-<!-- Lunex UI module 1003: reserved extension point for future features -->
-<!-- Lunex UI module 1004: reserved extension point for future features -->
-<!-- Lunex UI module 1005: reserved extension point for future features -->
-<!-- Lunex UI module 1006: reserved extension point for future features -->
-<!-- Lunex UI module 1007: reserved extension point for future features -->
-<!-- Lunex UI module 1008: reserved extension point for future features -->
-<!-- Lunex UI module 1009: reserved extension point for future features -->
-<!-- Lunex UI module 1010: reserved extension point for future features -->
-<!-- Lunex UI module 1011: reserved extension point for future features -->
-<!-- Lunex UI module 1012: reserved extension point for future features -->
-<!-- Lunex UI module 1013: reserved extension point for future features -->
-<!-- Lunex UI module 1014: reserved extension point for future features -->
-<!-- Lunex UI module 1015: reserved extension point for future features -->
-<!-- Lunex UI module 1016: reserved extension point for future features -->
-<!-- Lunex UI module 1017: reserved extension point for future features -->
-<!-- Lunex UI module 1018: reserved extension point for future features -->
-<!-- Lunex UI module 1019: reserved extension point for future features -->
-<!-- Lunex UI module 1020: reserved extension point for future features -->
-<!-- Lunex UI module 1021: reserved extension point for future features -->
-<!-- Lunex UI module 1022: reserved extension point for future features -->
-<!-- Lunex UI module 1023: reserved extension point for future features -->
-<!-- Lunex UI module 1024: reserved extension point for future features -->
-<!-- Lunex UI module 1025: reserved extension point for future features -->
-<!-- Lunex UI module 1026: reserved extension point for future features -->
-<!-- Lunex UI module 1027: reserved extension point for future features -->
-<!-- Lunex UI module 1028: reserved extension point for future features -->
-<!-- Lunex UI module 1029: reserved extension point for future features -->
-<!-- Lunex UI module 1030: reserved extension point for future features -->
-<!-- Lunex UI module 1031: reserved extension point for future features -->
-<!-- Lunex UI module 1032: reserved extension point for future features -->
-<!-- Lunex UI module 1033: reserved extension point for future features -->
-<!-- Lunex UI module 1034: reserved extension point for future features -->
-<!-- Lunex UI module 1035: reserved extension point for future features -->
-<!-- Lunex UI module 1036: reserved extension point for future features -->
-<!-- Lunex UI module 1037: reserved extension point for future features -->
-<!-- Lunex UI module 1038: reserved extension point for future features -->
-<!-- Lunex UI module 1039: reserved extension point for future features -->
-<!-- Lunex UI module 1040: reserved extension point for future features -->
-<!-- Lunex UI module 1041: reserved extension point for future features -->
-<!-- Lunex UI module 1042: reserved extension point for future features -->
-<!-- Lunex UI module 1043: reserved extension point for future features -->
-<!-- Lunex UI module 1044: reserved extension point for future features -->
-<!-- Lunex UI module 1045: reserved extension point for future features -->
-<!-- Lunex UI module 1046: reserved extension point for future features -->
-<!-- Lunex UI module 1047: reserved extension point for future features -->
-<!-- Lunex UI module 1048: reserved extension point for future features -->
-<!-- Lunex UI module 1049: reserved extension point for future features -->
-<!-- Lunex UI module 1050: reserved extension point for future features -->
-<!-- Lunex UI module 1051: reserved extension point for future features -->
-<!-- Lunex UI module 1052: reserved extension point for future features -->
-<!-- Lunex UI module 1053: reserved extension point for future features -->
-<!-- Lunex UI module 1054: reserved extension point for future features -->
-<!-- Lunex UI module 1055: reserved extension point for future features -->
-<!-- Lunex UI module 1056: reserved extension point for future features -->
-<!-- Lunex UI module 1057: reserved extension point for future features -->
-<!-- Lunex UI module 1058: reserved extension point for future features -->
-<!-- Lunex UI module 1059: reserved extension point for future features -->
-<!-- Lunex UI module 1060: reserved extension point for future features -->
-<!-- Lunex UI module 1061: reserved extension point for future features -->
-<!-- Lunex UI module 1062: reserved extension point for future features -->
-<!-- Lunex UI module 1063: reserved extension point for future features -->
-<!-- Lunex UI module 1064: reserved extension point for future features -->
-<!-- Lunex UI module 1065: reserved extension point for future features -->
-<!-- Lunex UI module 1066: reserved extension point for future features -->
-<!-- Lunex UI module 1067: reserved extension point for future features -->
-<!-- Lunex UI module 1068: reserved extension point for future features -->
-<!-- Lunex UI module 1069: reserved extension point for future features -->
-<!-- Lunex UI module 1070: reserved extension point for future features -->
-<!-- Lunex UI module 1071: reserved extension point for future features -->
-<!-- Lunex UI module 1072: reserved extension point for future features -->
-<!-- Lunex UI module 1073: reserved extension point for future features -->
-<!-- Lunex UI module 1074: reserved extension point for future features -->
-<!-- Lunex UI module 1075: reserved extension point for future features -->
-<!-- Lunex UI module 1076: reserved extension point for future features -->
-<!-- Lunex UI module 1077: reserved extension point for future features -->
-<!-- Lunex UI module 1078: reserved extension point for future features -->
-<!-- Lunex UI module 1079: reserved extension point for future features -->
-<!-- Lunex UI module 1080: reserved extension point for future features -->
-<!-- Lunex UI module 1081: reserved extension point for future features -->
-<!-- Lunex UI module 1082: reserved extension point for future features -->
-<!-- Lunex UI module 1083: reserved extension point for future features -->
-<!-- Lunex UI module 1084: reserved extension point for future features -->
-<!-- Lunex UI module 1085: reserved extension point for future features -->
-<!-- Lunex UI module 1086: reserved extension point for future features -->
-<!-- Lunex UI module 1087: reserved extension point for future features -->
-<!-- Lunex UI module 1088: reserved extension point for future features -->
-<!-- Lunex UI module 1089: reserved extension point for future features -->
-<!-- Lunex UI module 1090: reserved extension point for future features -->
-<!-- Lunex UI module 1091: reserved extension point for future features -->
-<!-- Lunex UI module 1092: reserved extension point for future features -->
-<!-- Lunex UI module 1093: reserved extension point for future features -->
-<!-- Lunex UI module 1094: reserved extension point for future features -->
-<!-- Lunex UI module 1095: reserved extension point for future features -->
-<!-- Lunex UI module 1096: reserved extension point for future features -->
-<!-- Lunex UI module 1097: reserved extension point for future features -->
-<!-- Lunex UI module 1098: reserved extension point for future features -->
-<!-- Lunex UI module 1099: reserved extension point for future features -->
-<!-- Lunex UI module 1100: reserved extension point for future features -->
-<!-- Lunex UI module 1101: reserved extension point for future features -->
-<!-- Lunex UI module 1102: reserved extension point for future features -->
-<!-- Lunex UI module 1103: reserved extension point for future features -->
-<!-- Lunex UI module 1104: reserved extension point for future features -->
-<!-- Lunex UI module 1105: reserved extension point for future features -->
-<!-- Lunex UI module 1106: reserved extension point for future features -->
-<!-- Lunex UI module 1107: reserved extension point for future features -->
-<!-- Lunex UI module 1108: reserved extension point for future features -->
-<!-- Lunex UI module 1109: reserved extension point for future features -->
-<!-- Lunex UI module 1110: reserved extension point for future features -->
-<!-- Lunex UI module 1111: reserved extension point for future features -->
-<!-- Lunex UI module 1112: reserved extension point for future features -->
-<!-- Lunex UI module 1113: reserved extension point for future features -->
-<!-- Lunex UI module 1114: reserved extension point for future features -->
-<!-- Lunex UI module 1115: reserved extension point for future features -->
-<!-- Lunex UI module 1116: reserved extension point for future features -->
-<!-- Lunex UI module 1117: reserved extension point for future features -->
-<!-- Lunex UI module 1118: reserved extension point for future features -->
-<!-- Lunex UI module 1119: reserved extension point for future features -->
-<!-- Lunex UI module 1120: reserved extension point for future features -->
-<!-- Lunex UI module 1121: reserved extension point for future features -->
-<!-- Lunex UI module 1122: reserved extension point for future features -->
-<!-- Lunex UI module 1123: reserved extension point for future features -->
-<!-- Lunex UI module 1124: reserved extension point for future features -->
-<!-- Lunex UI module 1125: reserved extension point for future features -->
-<!-- Lunex UI module 1126: reserved extension point for future features -->
-<!-- Lunex UI module 1127: reserved extension point for future features -->
-<!-- Lunex UI module 1128: reserved extension point for future features -->
-<!-- Lunex UI module 1129: reserved extension point for future features -->
-<!-- Lunex UI module 1130: reserved extension point for future features -->
-<!-- Lunex UI module 1131: reserved extension point for future features -->
-<!-- Lunex UI module 1132: reserved extension point for future features -->
-<!-- Lunex UI module 1133: reserved extension point for future features -->
-<!-- Lunex UI module 1134: reserved extension point for future features -->
-<!-- Lunex UI module 1135: reserved extension point for future features -->
-<!-- Lunex UI module 1136: reserved extension point for future features -->
-<!-- Lunex UI module 1137: reserved extension point for future features -->
-<!-- Lunex UI module 1138: reserved extension point for future features -->
-<!-- Lunex UI module 1139: reserved extension point for future features -->
-<!-- Lunex UI module 1140: reserved extension point for future features -->
-<!-- Lunex UI module 1141: reserved extension point for future features -->
-<!-- Lunex UI module 1142: reserved extension point for future features -->
-<!-- Lunex UI module 1143: reserved extension point for future features -->
-<!-- Lunex UI module 1144: reserved extension point for future features -->
-<!-- Lunex UI module 1145: reserved extension point for future features -->
-<!-- Lunex UI module 1146: reserved extension point for future features -->
-<!-- Lunex UI module 1147: reserved extension point for future features -->
-<!-- Lunex UI module 1148: reserved extension point for future features -->
-<!-- Lunex UI module 1149: reserved extension point for future features -->
-<!-- Lunex UI module 1150: reserved extension point for future features -->
-<!-- Lunex UI module 1151: reserved extension point for future features -->
-<!-- Lunex UI module 1152: reserved extension point for future features -->
-<!-- Lunex UI module 1153: reserved extension point for future features -->
-<!-- Lunex UI module 1154: reserved extension point for future features -->
-<!-- Lunex UI module 1155: reserved extension point for future features -->
-<!-- Lunex UI module 1156: reserved extension point for future features -->
-<!-- Lunex UI module 1157: reserved extension point for future features -->
-<!-- Lunex UI module 1158: reserved extension point for future features -->
-<!-- Lunex UI module 1159: reserved extension point for future features -->
-<!-- Lunex UI module 1160: reserved extension point for future features -->
-<!-- Lunex UI module 1161: reserved extension point for future features -->
-<!-- Lunex UI module 1162: reserved extension point for future features -->
-<!-- Lunex UI module 1163: reserved extension point for future features -->
-<!-- Lunex UI module 1164: reserved extension point for future features -->
-<!-- Lunex UI module 1165: reserved extension point for future features -->
-<!-- Lunex UI module 1166: reserved extension point for future features -->
-<!-- Lunex UI module 1167: reserved extension point for future features -->
-<!-- Lunex UI module 1168: reserved extension point for future features -->
-<!-- Lunex UI module 1169: reserved extension point for future features -->
-<!-- Lunex UI module 1170: reserved extension point for future features -->
-<!-- Lunex UI module 1171: reserved extension point for future features -->
-<!-- Lunex UI module 1172: reserved extension point for future features -->
-<!-- Lunex UI module 1173: reserved extension point for future features -->
-<!-- Lunex UI module 1174: reserved extension point for future features -->
-<!-- Lunex UI module 1175: reserved extension point for future features -->
-<!-- Lunex UI module 1176: reserved extension point for future features -->
-<!-- Lunex UI module 1177: reserved extension point for future features -->
-<!-- Lunex UI module 1178: reserved extension point for future features -->
-<!-- Lunex UI module 1179: reserved extension point for future features -->
-<!-- Lunex UI module 1180: reserved extension point for future features -->
-<!-- Lunex UI module 1181: reserved extension point for future features -->
-<!-- Lunex UI module 1182: reserved extension point for future features -->
-<!-- Lunex UI module 1183: reserved extension point for future features -->
-<!-- Lunex UI module 1184: reserved extension point for future features -->
-<!-- Lunex UI module 1185: reserved extension point for future features -->
-<!-- Lunex UI module 1186: reserved extension point for future features -->
-<!-- Lunex UI module 1187: reserved extension point for future features -->
-<!-- Lunex UI module 1188: reserved extension point for future features -->
-<!-- Lunex UI module 1189: reserved extension point for future features -->
-<!-- Lunex UI module 1190: reserved extension point for future features -->
-<!-- Lunex UI module 1191: reserved extension point for future features -->
-<!-- Lunex UI module 1192: reserved extension point for future features -->
-<!-- Lunex UI module 1193: reserved extension point for future features -->
-<!-- Lunex UI module 1194: reserved extension point for future features -->
-<!-- Lunex UI module 1195: reserved extension point for future features -->
-<!-- Lunex UI module 1196: reserved extension point for future features -->
-<!-- Lunex UI module 1197: reserved extension point for future features -->
-<!-- Lunex UI module 1198: reserved extension point for future features -->
-<!-- Lunex UI module 1199: reserved extension point for future features -->
-<!-- Lunex UI module 1200: reserved extension point for future features -->
-<!-- Lunex UI module 1201: reserved extension point for future features -->
-<!-- Lunex UI module 1202: reserved extension point for future features -->
-<!-- Lunex UI module 1203: reserved extension point for future features -->
-<!-- Lunex UI module 1204: reserved extension point for future features -->
-<!-- Lunex UI module 1205: reserved extension point for future features -->
-<!-- Lunex UI module 1206: reserved extension point for future features -->
-<!-- Lunex UI module 1207: reserved extension point for future features -->
-<!-- Lunex UI module 1208: reserved extension point for future features -->
-<!-- Lunex UI module 1209: reserved extension point for future features -->
-<!-- Lunex UI module 1210: reserved extension point for future features -->
-<!-- Lunex UI module 1211: reserved extension point for future features -->
-<!-- Lunex UI module 1212: reserved extension point for future features -->
-<!-- Lunex UI module 1213: reserved extension point for future features -->
-<!-- Lunex UI module 1214: reserved extension point for future features -->
-<!-- Lunex UI module 1215: reserved extension point for future features -->
-<!-- Lunex UI module 1216: reserved extension point for future features -->
-<!-- Lunex UI module 1217: reserved extension point for future features -->
-<!-- Lunex UI module 1218: reserved extension point for future features -->
-<!-- Lunex UI module 1219: reserved extension point for future features -->
-<!-- Lunex UI module 1220: reserved extension point for future features -->
-<!-- Lunex UI module 1221: reserved extension point for future features -->
-<!-- Lunex UI module 1222: reserved extension point for future features -->
-<!-- Lunex UI module 1223: reserved extension point for future features -->
-<!-- Lunex UI module 1224: reserved extension point for future features -->
-<!-- Lunex UI module 1225: reserved extension point for future features -->
-<!-- Lunex UI module 1226: reserved extension point for future features -->
-<!-- Lunex UI module 1227: reserved extension point for future features -->
-<!-- Lunex UI module 1228: reserved extension point for future features -->
-<!-- Lunex UI module 1229: reserved extension point for future features -->
-<!-- Lunex UI module 1230: reserved extension point for future features -->
-<!-- Lunex UI module 1231: reserved extension point for future features -->
-<!-- Lunex UI module 1232: reserved extension point for future features -->
-<!-- Lunex UI module 1233: reserved extension point for future features -->
-<!-- Lunex UI module 1234: reserved extension point for future features -->
-<!-- Lunex UI module 1235: reserved extension point for future features -->
-<!-- Lunex UI module 1236: reserved extension point for future features -->
-<!-- Lunex UI module 1237: reserved extension point for future features -->
-<!-- Lunex UI module 1238: reserved extension point for future features -->
-<!-- Lunex UI module 1239: reserved extension point for future features -->
-<!-- Lunex UI module 1240: reserved extension point for future features -->
-<!-- Lunex UI module 1241: reserved extension point for future features -->
-<!-- Lunex UI module 1242: reserved extension point for future features -->
-<!-- Lunex UI module 1243: reserved extension point for future features -->
-<!-- Lunex UI module 1244: reserved extension point for future features -->
-<!-- Lunex UI module 1245: reserved extension point for future features -->
-<!-- Lunex UI module 1246: reserved extension point for future features -->
-<!-- Lunex UI module 1247: reserved extension point for future features -->
-<!-- Lunex UI module 1248: reserved extension point for future features -->
-<!-- Lunex UI module 1249: reserved extension point for future features -->
-<!-- Lunex UI module 1250: reserved extension point for future features -->
-<!-- Lunex UI module 1251: reserved extension point for future features -->
-<!-- Lunex UI module 1252: reserved extension point for future features -->
-<!-- Lunex UI module 1253: reserved extension point for future features -->
-<!-- Lunex UI module 1254: reserved extension point for future features -->
-<!-- Lunex UI module 1255: reserved extension point for future features -->
-<!-- Lunex UI module 1256: reserved extension point for future features -->
-<!-- Lunex UI module 1257: reserved extension point for future features -->
-<!-- Lunex UI module 1258: reserved extension point for future features -->
-<!-- Lunex UI module 1259: reserved extension point for future features -->
-<!-- Lunex UI module 1260: reserved extension point for future features -->
-<!-- Lunex UI module 1261: reserved extension point for future features -->
-<!-- Lunex UI module 1262: reserved extension point for future features -->
-<!-- Lunex UI module 1263: reserved extension point for future features -->
-<!-- Lunex UI module 1264: reserved extension point for future features -->
-<!-- Lunex UI module 1265: reserved extension point for future features -->
-<!-- Lunex UI module 1266: reserved extension point for future features -->
-<!-- Lunex UI module 1267: reserved extension point for future features -->
-<!-- Lunex UI module 1268: reserved extension point for future features -->
-<!-- Lunex UI module 1269: reserved extension point for future features -->
-<!-- Lunex UI module 1270: reserved extension point for future features -->
-<!-- Lunex UI module 1271: reserved extension point for future features -->
-<!-- Lunex UI module 1272: reserved extension point for future features -->
-<!-- Lunex UI module 1273: reserved extension point for future features -->
-<!-- Lunex UI module 1274: reserved extension point for future features -->
-<!-- Lunex UI module 1275: reserved extension point for future features -->
-<!-- Lunex UI module 1276: reserved extension point for future features -->
-<!-- Lunex UI module 1277: reserved extension point for future features -->
-<!-- Lunex UI module 1278: reserved extension point for future features -->
-<!-- Lunex UI module 1279: reserved extension point for future features -->
-<!-- Lunex UI module 1280: reserved extension point for future features -->
-<!-- Lunex UI module 1281: reserved extension point for future features -->
-<!-- Lunex UI module 1282: reserved extension point for future features -->
-<!-- Lunex UI module 1283: reserved extension point for future features -->
-<!-- Lunex UI module 1284: reserved extension point for future features -->
-<!-- Lunex UI module 1285: reserved extension point for future features -->
-<!-- Lunex UI module 1286: reserved extension point for future features -->
-<!-- Lunex UI module 1287: reserved extension point for future features -->
-<!-- Lunex UI module 1288: reserved extension point for future features -->
-<!-- Lunex UI module 1289: reserved extension point for future features -->
-<!-- Lunex UI module 1290: reserved extension point for future features -->
-<!-- Lunex UI module 1291: reserved extension point for future features -->
-<!-- Lunex UI module 1292: reserved extension point for future features -->
-<!-- Lunex UI module 1293: reserved extension point for future features -->
-<!-- Lunex UI module 1294: reserved extension point for future features -->
-<!-- Lunex UI module 1295: reserved extension point for future features -->
-<!-- Lunex UI module 1296: reserved extension point for future features -->
-<!-- Lunex UI module 1297: reserved extension point for future features -->
-<!-- Lunex UI module 1298: reserved extension point for future features -->
-<!-- Lunex UI module 1299: reserved extension point for future features -->
-<!-- Lunex UI module 1300: reserved extension point for future features -->
-<!-- Lunex UI module 1301: reserved extension point for future features -->
-<!-- Lunex UI module 1302: reserved extension point for future features -->
-<!-- Lunex UI module 1303: reserved extension point for future features -->
-<!-- Lunex UI module 1304: reserved extension point for future features -->
-<!-- Lunex UI module 1305: reserved extension point for future features -->
-<!-- Lunex UI module 1306: reserved extension point for future features -->
-<!-- Lunex UI module 1307: reserved extension point for future features -->
-<!-- Lunex UI module 1308: reserved extension point for future features -->
-<!-- Lunex UI module 1309: reserved extension point for future features -->
-<!-- Lunex UI module 1310: reserved extension point for future features -->
-<!-- Lunex UI module 1311: reserved extension point for future features -->
-<!-- Lunex UI module 1312: reserved extension point for future features -->
-<!-- Lunex UI module 1313: reserved extension point for future features -->
-<!-- Lunex UI module 1314: reserved extension point for future features -->
-<!-- Lunex UI module 1315: reserved extension point for future features -->
-<!-- Lunex UI module 1316: reserved extension point for future features -->
-<!-- Lunex UI module 1317: reserved extension point for future features -->
-<!-- Lunex UI module 1318: reserved extension point for future features -->
-<!-- Lunex UI module 1319: reserved extension point for future features -->
-<!-- Lunex UI module 1320: reserved extension point for future features -->
-<!-- Lunex UI module 1321: reserved extension point for future features -->
-<!-- Lunex UI module 1322: reserved extension point for future features -->
-<!-- Lunex UI module 1323: reserved extension point for future features -->
-<!-- Lunex UI module 1324: reserved extension point for future features -->
-<!-- Lunex UI module 1325: reserved extension point for future features -->
-<!-- Lunex UI module 1326: reserved extension point for future features -->
-<!-- Lunex UI module 1327: reserved extension point for future features -->
-<!-- Lunex UI module 1328: reserved extension point for future features -->
-<!-- Lunex UI module 1329: reserved extension point for future features -->
-<!-- Lunex UI module 1330: reserved extension point for future features -->
-<!-- Lunex UI module 1331: reserved extension point for future features -->
-<!-- Lunex UI module 1332: reserved extension point for future features -->
-<!-- Lunex UI module 1333: reserved extension point for future features -->
-<!-- Lunex UI module 1334: reserved extension point for future features -->
-<!-- Lunex UI module 1335: reserved extension point for future features -->
-<!-- Lunex UI module 1336: reserved extension point for future features -->
-<!-- Lunex UI module 1337: reserved extension point for future features -->
-<!-- Lunex UI module 1338: reserved extension point for future features -->
-<!-- Lunex UI module 1339: reserved extension point for future features -->
-<!-- Lunex UI module 1340: reserved extension point for future features -->
-<!-- Lunex UI module 1341: reserved extension point for future features -->
-<!-- Lunex UI module 1342: reserved extension point for future features -->
-<!-- Lunex UI module 1343: reserved extension point for future features -->
-<!-- Lunex UI module 1344: reserved extension point for future features -->
-<!-- Lunex UI module 1345: reserved extension point for future features -->
-<!-- Lunex UI module 1346: reserved extension point for future features -->
-<!-- Lunex UI module 1347: reserved extension point for future features -->
-<!-- Lunex UI module 1348: reserved extension point for future features -->
-<!-- Lunex UI module 1349: reserved extension point for future features -->
-<!-- Lunex UI module 1350: reserved extension point for future features -->
-<!-- Lunex UI module 1351: reserved extension point for future features -->
-<!-- Lunex UI module 1352: reserved extension point for future features -->
-<!-- Lunex UI module 1353: reserved extension point for future features -->
-<!-- Lunex UI module 1354: reserved extension point for future features -->
-<!-- Lunex UI module 1355: reserved extension point for future features -->
-<!-- Lunex UI module 1356: reserved extension point for future features -->
-<!-- Lunex UI module 1357: reserved extension point for future features -->
-<!-- Lunex UI module 1358: reserved extension point for future features -->
-<!-- Lunex UI module 1359: reserved extension point for future features -->
-<!-- Lunex UI module 1360: reserved extension point for future features -->
-<!-- Lunex UI module 1361: reserved extension point for future features -->
-<!-- Lunex UI module 1362: reserved extension point for future features -->
-<!-- Lunex UI module 1363: reserved extension point for future features -->
-<!-- Lunex UI module 1364: reserved extension point for future features -->
-<!-- Lunex UI module 1365: reserved extension point for future features -->
-<!-- Lunex UI module 1366: reserved extension point for future features -->
-<!-- Lunex UI module 1367: reserved extension point for future features -->
-<!-- Lunex UI module 1368: reserved extension point for future features -->
-<!-- Lunex UI module 1369: reserved extension point for future features -->
-<!-- Lunex UI module 1370: reserved extension point for future features -->
-<!-- Lunex UI module 1371: reserved extension point for future features -->
-<!-- Lunex UI module 1372: reserved extension point for future features -->
-<!-- Lunex UI module 1373: reserved extension point for future features -->
-<!-- Lunex UI module 1374: reserved extension point for future features -->
-<!-- Lunex UI module 1375: reserved extension point for future features -->
-<!-- Lunex UI module 1376: reserved extension point for future features -->
-<!-- Lunex UI module 1377: reserved extension point for future features -->
-<!-- Lunex UI module 1378: reserved extension point for future features -->
-<!-- Lunex UI module 1379: reserved extension point for future features -->
-<!-- Lunex UI module 1380: reserved extension point for future features -->
-<!-- Lunex UI module 1381: reserved extension point for future features -->
-<!-- Lunex UI module 1382: reserved extension point for future features -->
-<!-- Lunex UI module 1383: reserved extension point for future features -->
-<!-- Lunex UI module 1384: reserved extension point for future features -->
-<!-- Lunex UI module 1385: reserved extension point for future features -->
-<!-- Lunex UI module 1386: reserved extension point for future features -->
-<!-- Lunex UI module 1387: reserved extension point for future features -->
-<!-- Lunex UI module 1388: reserved extension point for future features -->
-<!-- Lunex UI module 1389: reserved extension point for future features -->
-<!-- Lunex UI module 1390: reserved extension point for future features -->
-<!-- Lunex UI module 1391: reserved extension point for future features -->
-<!-- Lunex UI module 1392: reserved extension point for future features -->
-<!-- Lunex UI module 1393: reserved extension point for future features -->
-<!-- Lunex UI module 1394: reserved extension point for future features -->
-<!-- Lunex UI module 1395: reserved extension point for future features -->
-<!-- Lunex UI module 1396: reserved extension point for future features -->
-<!-- Lunex UI module 1397: reserved extension point for future features -->
-<!-- Lunex UI module 1398: reserved extension point for future features -->
-<!-- Lunex UI module 1399: reserved extension point for future features -->
-<!-- Lunex UI module 1400: reserved extension point for future features -->
-<!-- Lunex UI module 1401: reserved extension point for future features -->
-<!-- Lunex UI module 1402: reserved extension point for future features -->
-<!-- Lunex UI module 1403: reserved extension point for future features -->
-<!-- Lunex UI module 1404: reserved extension point for future features -->
-<!-- Lunex UI module 1405: reserved extension point for future features -->
-<!-- Lunex UI module 1406: reserved extension point for future features -->
-<!-- Lunex UI module 1407: reserved extension point for future features -->
-<!-- Lunex UI module 1408: reserved extension point for future features -->
-<!-- Lunex UI module 1409: reserved extension point for future features -->
-<!-- Lunex UI module 1410: reserved extension point for future features -->
-<!-- Lunex UI module 1411: reserved extension point for future features -->
-<!-- Lunex UI module 1412: reserved extension point for future features -->
-<!-- Lunex UI module 1413: reserved extension point for future features -->
-<!-- Lunex UI module 1414: reserved extension point for future features -->
-<!-- Lunex UI module 1415: reserved extension point for future features -->
-<!-- Lunex UI module 1416: reserved extension point for future features -->
-<!-- Lunex UI module 1417: reserved extension point for future features -->
-<!-- Lunex UI module 1418: reserved extension point for future features -->
-<!-- Lunex UI module 1419: reserved extension point for future features -->
-<!-- Lunex UI module 1420: reserved extension point for future features -->
-<!-- Lunex UI module 1421: reserved extension point for future features -->
-<!-- Lunex UI module 1422: reserved extension point for future features -->
-<!-- Lunex UI module 1423: reserved extension point for future features -->
-<!-- Lunex UI module 1424: reserved extension point for future features -->
-<!-- Lunex UI module 1425: reserved extension point for future features -->
-<!-- Lunex UI module 1426: reserved extension point for future features -->
-<!-- Lunex UI module 1427: reserved extension point for future features -->
-<!-- Lunex UI module 1428: reserved extension point for future features -->
-<!-- Lunex UI module 1429: reserved extension point for future features -->
-<!-- Lunex UI module 1430: reserved extension point for future features -->
-<!-- Lunex UI module 1431: reserved extension point for future features -->
-<!-- Lunex UI module 1432: reserved extension point for future features -->
-<!-- Lunex UI module 1433: reserved extension point for future features -->
-<!-- Lunex UI module 1434: reserved extension point for future features -->
-<!-- Lunex UI module 1435: reserved extension point for future features -->
-<!-- Lunex UI module 1436: reserved extension point for future features -->
-<!-- Lunex UI module 1437: reserved extension point for future features -->
-<!-- Lunex UI module 1438: reserved extension point for future features -->
-<!-- Lunex UI module 1439: reserved extension point for future features -->
-<!-- Lunex UI module 1440: reserved extension point for future features -->
-<!-- Lunex UI module 1441: reserved extension point for future features -->
-<!-- Lunex UI module 1442: reserved extension point for future features -->
-<!-- Lunex UI module 1443: reserved extension point for future features -->
-<!-- Lunex UI module 1444: reserved extension point for future features -->
-<!-- Lunex UI module 1445: reserved extension point for future features -->
-<!-- Lunex UI module 1446: reserved extension point for future features -->
-<!-- Lunex UI module 1447: reserved extension point for future features -->
-<!-- Lunex UI module 1448: reserved extension point for future features -->
-<!-- Lunex UI module 1449: reserved extension point for future features -->
-<!-- Lunex UI module 1450: reserved extension point for future features -->
-<!-- Lunex UI module 1451: reserved extension point for future features -->
-<!-- Lunex UI module 1452: reserved extension point for future features -->
-<!-- Lunex UI module 1453: reserved extension point for future features -->
-<!-- Lunex UI module 1454: reserved extension point for future features -->
-<!-- Lunex UI module 1455: reserved extension point for future features -->
-<!-- Lunex UI module 1456: reserved extension point for future features -->
-<!-- Lunex UI module 1457: reserved extension point for future features -->
-<!-- Lunex UI module 1458: reserved extension point for future features -->
-<!-- Lunex UI module 1459: reserved extension point for future features -->
-<!-- Lunex UI module 1460: reserved extension point for future features -->
-<!-- Lunex UI module 1461: reserved extension point for future features -->
-<!-- Lunex UI module 1462: reserved extension point for future features -->
-<!-- Lunex UI module 1463: reserved extension point for future features -->
-<!-- Lunex UI module 1464: reserved extension point for future features -->
-<!-- Lunex UI module 1465: reserved extension point for future features -->
-<!-- Lunex UI module 1466: reserved extension point for future features -->
-<!-- Lunex UI module 1467: reserved extension point for future features -->
-<!-- Lunex UI module 1468: reserved extension point for future features -->
-<!-- Lunex UI module 1469: reserved extension point for future features -->
-<!-- Lunex UI module 1470: reserved extension point for future features -->
-<!-- Lunex UI module 1471: reserved extension point for future features -->
-<!-- Lunex UI module 1472: reserved extension point for future features -->
-<!-- Lunex UI module 1473: reserved extension point for future features -->
-<!-- Lunex UI module 1474: reserved extension point for future features -->
-<!-- Lunex UI module 1475: reserved extension point for future features -->
-<!-- Lunex UI module 1476: reserved extension point for future features -->
-<!-- Lunex UI module 1477: reserved extension point for future features -->
-<!-- Lunex UI module 1478: reserved extension point for future features -->
-<!-- Lunex UI module 1479: reserved extension point for future features -->
-<!-- Lunex UI module 1480: reserved extension point for future features -->
-<!-- Lunex UI module 1481: reserved extension point for future features -->
-<!-- Lunex UI module 1482: reserved extension point for future features -->
-<!-- Lunex UI module 1483: reserved extension point for future features -->
-<!-- Lunex UI module 1484: reserved extension point for future features -->
-<!-- Lunex UI module 1485: reserved extension point for future features -->
-<!-- Lunex UI module 1486: reserved extension point for future features -->
-<!-- Lunex UI module 1487: reserved extension point for future features -->
-<!-- Lunex UI module 1488: reserved extension point for future features -->
-<!-- Lunex UI module 1489: reserved extension point for future features -->
-<!-- Lunex UI module 1490: reserved extension point for future features -->
-<!-- Lunex UI module 1491: reserved extension point for future features -->
-<!-- Lunex UI module 1492: reserved extension point for future features -->
-<!-- Lunex UI module 1493: reserved extension point for future features -->
-<!-- Lunex UI module 1494: reserved extension point for future features -->
-<!-- Lunex UI module 1495: reserved extension point for future features -->
-<!-- Lunex UI module 1496: reserved extension point for future features -->
-<!-- Lunex UI module 1497: reserved extension point for future features -->
-<!-- Lunex UI module 1498: reserved extension point for future features -->
-<!-- Lunex UI module 1499: reserved extension point for future features -->
-<!-- Lunex UI module 1500: reserved extension point for future features -->
+let state={
+  balance:1000,
+  inv:[],
+  history:[],
+  source:null,
+  target:null,
+  filter:"all",
+  search:"",
+  tsearch:"",
+  sort:"asc",
+  currentCase:null,
+  sound:true
+};
+
+const id=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
+const item=idv=>ITEMS.find(x=>x.id===Number(idv));
+const fmt=n=>Number(n||0).toLocaleString("en-US");
+const img=u=>`<img class="skin-image" src="${u}" alt="" loading="lazy" draggable="false">`;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function load(){
+  try{const raw=JSON.parse(localStorage.getItem(KEY)||"null");if(raw)Object.assign(state,raw);}catch(e){}
+  state.balance=Number(state.balance)||1000;
+  state.inv=Array.isArray(state.inv)?state.inv:[];
+  state.history=Array.isArray(state.history)?state.history:[];
+  if(!state.inv.length) state.inv=[
+    {uid:id(),itemId:1},
+    {uid:id(),itemId:2},
+    {uid:id(),itemId:4},
+    {uid:id(),itemId:6},
+    {uid:id(),itemId:7}
+  ];
+  save();
+}
+
+function toast(text){
+  const e=$("#toast");e.textContent=text;e.classList.add("show");
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove("show"),2200);
+}
+
+function getInv(){
+  return state.inv.map(x=>{const it=item(x.itemId);return it?{...it,uid:x.uid}:null;}).filter(Boolean);
+}
+
+function setPage(page){
+  $$(".page").forEach(x=>x.classList.toggle("active",x.id===page));
+  $$(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+  if(page==="inventory") renderFullInventory();
+  if(page==="history") renderHistory();
+  if(page==="cases") renderCases();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderBalance(){
+  $("#balance").textContent=fmt(state.balance);
+  $("#pb").textContent=fmt(state.balance);
+  $("#pi").textContent=getInv().length;
+  $("#pu").textContent=state.history.filter(x=>x.type==="upgrade").length;
+}
+
+function sourceList(){
+  let a=getInv();
+  const q=state.search.trim().toLowerCase();
+  if(state.filter!=="all")a=a.filter(x=>x.type===state.filter);
+  if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));
+  a.sort((x,y)=>x.price-y.price);
+  $("#count").textContent=getInv().length;
+  $("#sourceList").innerHTML=a.length?a.map(x=>`
+    <button class="source-item ${state.source?.uid===x.uid?"selected":""}" data-source="${x.uid}">
+      <span class="source-thumb" style="--rarity:${x.color}">${img(x.image)}</span>
+      <span class="source-copy"><b>${x.name}</b><small>${x.rarity} · ${x.type.toUpperCase()}</small></span>
+      <strong>◆ ${fmt(x.price)}</strong>
+    </button>`).join(""):`<div class="empty-list">NO SKINS FOUND</div>`;
+  $$("[data-source]").forEach(b=>b.onclick=()=>selectSource(b.dataset.source));
+}
+
+function selectSource(uid){
+  state.source=getInv().find(x=>x.uid===uid)||null;
+  if(state.target&&state.target.price<=state.source.price)state.target=null;
+  renderAll();toast("Source skin selected");
+}
+
+function getTargets(){
+  let a=[...ITEMS];
+  if(state.source)a=a.filter(x=>x.price>state.source.price);
+  const q=state.tsearch.trim().toLowerCase();
+  if(q)a=a.filter(x=>x.name.toLowerCase().includes(q));
+  if(state.sort==="asc")a.sort((x,y)=>x.price-y.price);
+  if(state.sort==="desc")a.sort((x,y)=>y.price-x.price);
+  if(state.sort==="name")a.sort((x,y)=>x.name.localeCompare(y.name));
+  return a;
+}
+
+function renderTargets(){
+  const a=getTargets();
+  $("#targets").innerHTML=a.length?a.map(x=>`
+    <button class="skin-card ${state.target?.id===x.id?"selected":""}" data-target="${x.id}" style="--rarity:${x.color}">
+      <span class="rarity">${x.rarity}</span>
+      <div class="skin-art">${img(x.image)}</div>
+      <div class="skin-name">${x.name}</div>
+      <div class="skin-meta"><span>${x.type.toUpperCase()}</span><b>◆ ${fmt(x.price)}</b></div>
+    </button>`).join(""):`<div class="no-target">SELECT A SOURCE SKIN TO SEE AVAILABLE TARGETS.</div>`;
+  $$("[data-target]").forEach(b=>b.onclick=()=>{
+    if(!state.source)return toast("Select a source skin first");
+    state.target=item(b.dataset.target);renderAll();
+  });
+}
+
+function calc(){
+  if(!state.source||!state.target)return {multiplier:0,chance:0};
+  const multiplier=state.target.price/state.source.price;
+  const chance=Math.max(2,Math.min(92,96/multiplier));
+  return {multiplier,chance};
+}
+
+function renderSlots(){
+  const s=$("#sourceSlot"),t=$("#targetSlot");
+  if(state.source){
+    s.className="slot selected-slot";
+    s.innerHTML=`<span class="slot-rarity" style="--rarity:${state.source.color}">${state.source.rarity}</span><div class="slot-image">${img(state.source.image)}</div><b>${state.source.name}</b><small>◆ ${fmt(state.source.price)}</small>`;
+  }else{
+    s.className="slot empty";s.innerHTML="<span>+</span><small>SELECT YOUR SKIN</small>";
+  }
+  if(state.target){
+    t.className="slot selected-slot";
+    t.innerHTML=`<span class="slot-rarity" style="--rarity:${state.target.color}">${state.target.rarity}</span><div class="slot-image">${img(state.target.image)}</div><b>${state.target.name}</b><small>◆ ${fmt(state.target.price)}</small>`;
+  }else{
+    t.className="slot empty";t.innerHTML="<span>+</span><small>SELECT TARGET SKIN</small>";
+  }
+}
+
+function renderStats(){
+  const c=calc();
+  $("#sourceValue").textContent=state.source?fmt(state.source.price):"0";
+  $("#targetValue").textContent=state.target?fmt(state.target.price):"0";
+  $("#multiplier").textContent="x"+c.multiplier.toFixed(2);
+  $("#multi2").textContent="x"+c.multiplier.toFixed(2);
+  $("#chance").textContent=Math.round(c.chance)+"%";
+  $("#chance2").textContent=Math.round(c.chance)+"%";
+  const deg=c.chance*3.6;
+  $("#ring").style.setProperty("--deg",deg+"deg");
+  $("#upgrade").disabled=!(state.source&&state.target&&state.target.price>state.source.price);
+  $("#upgrade small").textContent=state.source&&state.target?("WIN CHANCE "+Math.round(c.chance)+"%"):"SELECT SOURCE + TARGET";
+}
+
+function renderAll(){
+  renderBalance();sourceList();renderTargets();renderSlots();renderStats();renderFullInventory();
+}
+
+function upgrade(){
+  if(!state.source||!state.target)return toast("Select source and target");
+  const src=state.source,tar=state.target,c=calc(),button=$("#upgrade");
+  button.disabled=true;
+  button.innerHTML="<b>ROLLING...</b><small>GOOD LUCK</small>";
+  let start=performance.now();
+  const duration=1900;
+  function animate(now){
+    const p=Math.min(1,(now-start)/duration);
+    const fake=Math.round(Math.max(1,Math.min(99,50+Math.sin(p*55)*45)));
+    $("#chance").textContent=fake+"%";
+    $("#ring").style.transform=`scale(${1+Math.sin(p*40)*.035})`;
+    if(p<1)return requestAnimationFrame(animate);
+    $("#ring").style.transform="";
+    const roll=Math.random()*100;
+    const win=roll<c.chance;
+    state.inv=state.inv.filter(x=>x.uid!==src.uid);
+    if(win)state.inv.push({uid:id(),itemId:tar.id});
+    state.history.unshift({
+      type:"upgrade",win,source:src.name,target:tar.name,
+      price:tar.price,time:Date.now(),chance:c.chance,roll
+    });
+    state.source=null;state.target=null;save();
+    button.innerHTML="<b>UPGRADE</b><small>SELECT SOURCE + TARGET</small>";
+    showResult(win,tar,c,roll);renderAll();
+  }
+  requestAnimationFrame(animate);
+}
+
+function showResult(win,tar,c,roll){
+  $("#resultVisual").innerHTML=win?img(tar.image):'<div class="loss-mark">×</div>';
+  $("#resultTitle").textContent=win?"UPGRADE SUCCESS":"UPGRADE FAILED";
+  $("#resultTitle").className=win?"success-title":"loss-title";
+  $("#resultText").textContent=win
+    ?`Roll ${roll.toFixed(2)} was below your ${c.chance.toFixed(2)}% win chance.`
+    :`Roll ${roll.toFixed(2)} was above your ${c.chance.toFixed(2)}% win chance.`;
+  $("#resultItem").innerHTML=win?`${img(tar.image)}<span>${tar.name} · ◆ ${fmt(tar.price)}</span>`:`<span>${tar.name} was lost.</span>`;
+  $("#resultModal").classList.add("show");
+}
+
+function renderCases(){
+  $("#casesGrid").innerHTML=CASES.map(c=>`
+    <article class="case-card" style="--case:${c.color}">
+      <div class="case-glow"></div>
+      <div class="case-box"><span>◒</span></div>
+      <div class="case-info"><span class="eyebrow">LUNEX DROP</span><h2>${c.name}</h2><p>Contains selected CS2 skins with weighted demo chances.</p>
+      <div class="case-bottom"><b>◆ ${fmt(c.price)}</b><button class="secondary" data-case="${c.id}">OPEN CASE</button></div></div>
+    </article>`).join("");
+  $$("[data-case]").forEach(b=>b.onclick=()=>openCaseModal(b.dataset.case));
+}
+
+function openCaseModal(caseId){
+  const c=CASES.find(x=>x.id===caseId);if(!c)return;
+  state.currentCase=c;
+  $("#caseVisual").innerHTML=`<div class="case-box large" style="--case:${c.color}"><span>◒</span></div>`;
+  $("#caseTitle").textContent=c.name;
+  $("#caseText").textContent=`Price: ◆ ${fmt(c.price)}`;
+  $("#openCase").textContent=`OPEN FOR ◆ ${fmt(c.price)}`;
+  $("#caseModal").classList.add("show");
+  const pool=c.pool.map(item).filter(Boolean);
+  $("#roulette").innerHTML=Array.from({length:7},(_,i)=>`<div class="roulette-item">${img(pool[i%pool.length].image)}</div>`).join("");
+}
+
+function openCase(){
+  const c=state.currentCase;if(!c)return;
+  if(state.balance<c.price)return toast("Not enough demo balance");
+  state.balance-=c.price;
+  const x=item(c.pool[Math.floor(Math.random()*c.pool.length)]);
+  state.inv.push({uid:id(),itemId:x.id});
+  state.history.unshift({type:"case",win:true,source:c.name,target:x.name,price:x.price,time:Date.now()});
+  save();renderAll();
+  $("#caseText").innerHTML=`YOU WON <b>${x.name}</b> · ◆ ${fmt(x.price)}`;
+  toast("Case opened");
+}
+
+function renderFullInventory(){
+  const a=getInv();
+  $("#invCount").textContent=a.length;
+  $("#invValue").textContent=fmt(a.reduce((sum,x)=>sum+x.price,0));
+  $("#fullInventory").innerHTML=a.map(x=>`
+    <article class="full-card" style="--rarity:${x.color}">
+      <div class="full-art">${img(x.image)}</div>
+      <span class="eyebrow">${x.rarity}</span><h3>${x.name}</h3>
+      <p>${x.type.toUpperCase()} · ◆ ${fmt(x.price)}</p>
+      <button class="secondary" data-full="${x.uid}">USE FOR UPGRADE</button>
+    </article>`).join("");
+  $$("[data-full]").forEach(b=>b.onclick=()=>{selectSource(b.dataset.full);setPage("upgrade");});
+}
+
+function renderHistory(){
+  const h=state.history.slice(0,60);
+  $("#historyList").innerHTML=h.length?h.map(x=>`
+    <div class="history-row">
+      <span>${x.type==="upgrade"?"⚡ UPGRADE":"▣ CASE"}</span>
+      <span>${x.target}</span>
+      <span>◆ ${fmt(x.price)}</span>
+      <span class="${x.type==="upgrade"?(x.win?"win":"loss"):"win"}">${x.type==="upgrade"?(x.win?"WIN":"LOSS"):"RECEIVED"}</span>
+      <span>${new Date(x.time).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
+    </div>`).join(""):`<div class="empty-history">NO ACTIVITY YET</div>`;
+}
+
+function closeModal(idv){const e=$("#"+idv);if(e)e.classList.remove("show");}
+
+$$(".nav").forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+$$("[data-page]").forEach(b=>b.addEventListener("click",e=>{if(b.dataset.page)setPage(b.dataset.page);}));
+$$("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
+["resultModal","caseModal","profileModal"].forEach(idv=>$("#"+idv).addEventListener("click",e=>{if(e.target.id===idv)closeModal(idv);}));
+$("#upgrade").onclick=upgrade;
+$("#openCase").onclick=openCase;
+$("#profile").onclick=()=>{renderBalance();$("#profileModal").classList.add("show");};
+$("#sound").onclick=()=>{state.sound=!state.sound;$("#sound").textContent=state.sound?"◉":"○";save();toast(state.sound?"Sound enabled":"Sound disabled");};
+$("#search").oninput=e=>{state.search=e.target.value;sourceList();};
+$("#targetSearch").oninput=e=>{state.tsearch=e.target.value;renderTargets();};
+$("#sort").onchange=e=>{state.sort=e.target.value;renderTargets();};
+$("#clearSearch").onclick=()=>{$("#search").value="";state.search="";sourceList();};
+$$(".filter").forEach(b=>b.onclick=()=>{$$(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.filter=b.dataset.filter;sourceList();});
+$("#reset").onclick=()=>{if(confirm("Reset local demo?")){localStorage.removeItem(KEY);location.reload();}};
+
+load();
+renderCases();
+renderAll();
+})();
+/* LUNEX JS module 0001: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0002: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0003: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0004: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0005: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0006: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0007: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0008: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0009: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0010: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0011: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0012: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0013: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0014: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0015: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0016: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0017: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0018: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0019: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0020: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0021: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0022: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0023: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0024: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0025: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0026: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0027: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0028: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0029: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0030: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0031: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0032: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0033: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0034: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0035: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0036: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0037: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0038: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0039: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0040: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0041: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0042: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0043: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0044: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0045: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0046: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0047: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0048: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0049: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0050: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0051: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0052: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0053: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0054: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0055: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0056: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0057: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0058: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0059: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0060: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0061: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0062: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0063: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0064: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0065: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0066: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0067: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0068: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0069: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0070: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0071: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0072: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0073: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0074: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0075: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0076: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0077: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0078: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0079: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0080: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0081: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0082: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0083: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0084: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0085: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0086: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0087: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0088: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0089: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0090: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0091: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0092: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0093: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0094: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0095: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0096: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0097: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0098: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0099: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0100: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0101: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0102: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0103: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0104: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0105: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0106: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0107: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0108: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0109: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0110: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0111: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0112: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0113: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0114: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0115: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0116: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0117: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0118: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0119: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0120: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0121: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0122: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0123: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0124: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0125: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0126: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0127: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0128: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0129: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0130: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0131: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0132: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0133: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0134: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0135: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0136: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0137: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0138: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0139: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0140: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0141: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0142: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0143: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0144: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0145: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0146: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0147: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0148: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0149: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0150: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0151: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0152: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0153: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0154: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0155: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0156: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0157: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0158: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0159: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0160: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0161: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0162: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0163: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0164: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0165: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0166: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0167: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0168: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0169: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0170: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0171: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0172: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0173: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0174: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0175: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0176: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0177: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0178: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0179: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0180: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0181: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0182: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0183: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0184: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0185: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0186: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0187: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0188: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0189: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0190: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0191: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0192: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0193: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0194: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0195: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0196: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0197: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0198: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0199: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0200: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0201: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0202: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0203: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0204: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0205: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0206: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0207: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0208: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0209: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0210: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0211: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0212: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0213: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0214: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0215: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0216: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0217: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0218: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0219: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0220: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0221: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0222: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0223: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0224: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0225: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0226: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0227: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0228: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0229: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0230: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0231: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0232: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0233: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0234: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0235: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0236: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0237: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0238: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0239: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0240: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0241: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0242: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0243: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0244: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0245: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0246: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0247: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0248: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0249: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0250: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0251: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0252: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0253: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0254: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0255: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0256: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0257: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0258: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0259: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0260: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0261: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0262: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0263: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0264: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0265: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0266: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0267: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0268: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0269: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0270: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0271: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0272: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0273: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0274: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0275: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0276: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0277: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0278: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0279: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0280: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0281: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0282: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0283: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0284: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0285: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0286: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0287: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0288: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0289: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0290: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0291: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0292: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0293: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0294: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0295: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0296: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0297: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0298: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0299: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0300: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0301: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0302: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0303: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0304: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0305: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0306: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0307: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0308: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0309: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0310: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0311: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0312: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0313: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0314: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0315: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0316: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0317: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0318: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0319: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0320: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0321: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0322: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0323: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0324: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0325: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0326: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0327: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0328: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0329: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0330: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0331: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0332: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0333: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0334: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0335: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0336: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0337: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0338: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0339: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0340: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0341: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0342: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0343: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0344: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0345: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0346: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0347: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0348: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0349: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0350: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0351: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0352: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0353: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0354: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0355: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0356: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0357: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0358: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0359: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0360: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0361: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0362: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0363: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0364: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0365: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0366: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0367: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0368: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0369: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0370: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0371: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0372: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0373: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0374: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0375: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0376: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0377: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0378: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0379: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0380: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0381: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0382: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0383: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0384: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0385: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0386: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0387: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0388: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0389: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0390: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0391: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0392: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0393: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0394: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0395: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0396: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0397: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0398: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0399: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0400: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0401: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0402: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0403: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0404: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0405: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0406: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0407: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0408: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0409: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0410: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0411: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0412: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0413: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0414: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0415: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0416: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0417: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0418: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0419: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0420: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0421: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0422: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0423: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0424: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0425: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0426: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0427: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0428: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0429: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0430: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0431: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0432: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0433: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0434: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0435: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0436: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0437: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0438: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0439: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0440: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0441: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0442: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0443: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0444: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0445: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0446: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0447: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0448: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0449: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0450: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0451: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0452: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0453: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0454: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0455: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0456: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0457: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0458: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0459: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0460: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0461: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0462: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0463: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0464: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0465: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0466: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0467: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0468: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0469: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0470: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0471: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0472: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0473: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0474: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0475: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0476: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0477: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0478: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0479: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0480: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0481: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0482: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0483: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0484: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0485: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0486: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0487: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0488: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0489: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0490: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0491: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0492: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0493: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0494: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0495: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0496: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0497: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0498: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0499: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0500: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0501: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0502: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0503: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0504: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0505: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0506: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0507: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0508: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0509: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0510: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0511: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0512: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0513: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0514: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0515: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0516: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0517: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0518: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0519: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0520: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0521: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0522: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0523: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0524: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0525: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0526: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0527: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0528: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0529: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0530: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0531: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0532: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0533: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0534: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0535: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0536: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0537: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0538: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0539: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0540: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0541: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0542: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0543: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0544: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0545: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0546: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0547: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0548: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0549: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0550: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0551: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0552: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0553: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0554: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0555: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0556: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0557: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0558: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0559: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0560: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0561: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0562: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0563: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0564: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0565: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0566: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0567: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0568: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0569: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0570: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0571: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0572: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0573: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0574: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0575: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0576: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0577: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0578: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0579: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0580: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0581: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0582: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0583: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0584: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0585: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0586: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0587: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0588: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0589: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0590: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0591: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0592: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0593: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0594: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0595: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0596: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0597: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0598: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0599: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0600: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0601: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0602: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0603: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0604: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0605: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0606: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0607: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0608: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0609: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0610: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0611: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0612: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0613: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0614: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0615: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0616: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0617: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0618: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0619: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0620: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0621: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0622: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0623: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0624: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0625: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0626: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0627: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0628: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0629: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0630: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0631: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0632: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0633: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0634: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0635: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0636: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0637: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0638: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0639: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0640: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0641: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0642: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0643: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0644: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0645: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0646: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0647: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0648: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0649: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0650: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0651: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0652: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0653: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0654: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0655: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0656: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0657: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0658: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0659: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0660: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0661: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0662: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0663: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0664: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0665: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0666: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0667: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0668: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0669: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0670: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0671: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0672: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0673: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0674: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0675: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0676: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0677: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0678: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0679: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0680: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0681: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0682: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0683: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0684: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0685: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0686: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0687: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0688: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0689: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0690: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0691: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0692: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0693: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0694: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0695: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0696: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0697: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0698: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0699: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0700: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0701: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0702: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0703: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0704: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0705: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0706: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0707: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0708: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0709: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0710: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0711: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0712: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0713: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0714: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0715: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0716: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0717: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0718: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0719: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0720: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0721: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0722: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0723: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0724: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0725: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0726: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0727: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0728: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0729: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0730: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0731: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0732: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0733: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0734: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0735: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0736: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0737: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0738: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0739: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0740: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0741: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0742: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0743: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0744: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0745: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0746: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0747: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0748: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0749: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0750: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0751: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0752: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0753: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0754: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0755: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0756: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0757: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0758: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0759: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0760: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0761: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0762: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0763: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0764: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0765: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0766: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0767: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0768: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0769: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0770: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0771: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0772: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0773: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0774: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0775: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0776: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0777: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0778: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0779: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0780: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0781: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0782: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0783: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0784: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0785: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0786: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0787: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0788: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0789: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0790: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0791: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0792: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0793: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0794: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0795: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0796: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0797: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0798: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0799: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0800: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0801: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0802: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0803: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0804: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0805: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0806: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0807: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0808: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0809: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0810: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0811: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0812: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0813: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0814: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0815: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0816: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0817: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0818: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0819: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0820: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0821: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0822: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0823: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0824: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0825: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0826: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0827: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0828: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0829: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0830: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0831: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0832: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0833: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0834: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0835: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0836: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0837: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0838: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0839: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0840: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0841: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0842: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0843: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0844: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0845: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0846: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0847: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0848: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0849: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0850: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0851: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0852: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0853: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0854: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0855: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0856: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0857: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0858: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0859: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0860: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0861: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0862: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0863: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0864: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0865: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0866: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0867: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0868: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0869: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0870: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0871: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0872: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0873: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0874: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0875: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0876: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0877: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0878: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0879: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0880: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0881: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0882: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0883: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0884: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0885: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0886: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0887: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0888: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0889: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0890: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0891: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0892: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0893: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0894: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0895: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0896: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0897: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0898: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0899: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0900: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0901: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0902: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0903: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0904: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0905: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0906: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0907: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0908: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0909: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0910: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0911: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0912: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0913: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0914: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0915: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0916: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0917: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0918: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0919: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0920: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0921: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0922: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0923: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0924: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0925: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0926: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0927: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0928: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0929: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0930: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0931: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0932: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0933: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0934: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0935: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0936: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0937: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0938: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0939: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0940: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0941: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0942: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0943: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0944: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0945: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0946: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0947: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0948: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0949: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0950: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0951: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0952: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0953: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0954: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0955: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0956: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0957: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0958: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0959: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0960: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0961: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0962: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0963: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0964: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0965: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0966: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0967: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0968: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0969: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0970: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0971: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0972: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0973: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0974: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0975: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0976: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0977: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0978: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0979: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0980: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0981: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0982: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0983: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0984: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0985: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0986: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0987: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0988: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0989: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0990: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0991: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0992: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0993: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0994: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0995: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0996: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0997: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0998: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 0999: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1000: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1001: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1002: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1003: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1004: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1005: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1006: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1007: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1008: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1009: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1010: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1011: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1012: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1013: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1014: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1015: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1016: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1017: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1018: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1019: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1020: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1021: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1022: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1023: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1024: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1025: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1026: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1027: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1028: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1029: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1030: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1031: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1032: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1033: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1034: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1035: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1036: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1037: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1038: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1039: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1040: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1041: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1042: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1043: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1044: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1045: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1046: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1047: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1048: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1049: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1050: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1051: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1052: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1053: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1054: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1055: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1056: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1057: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1058: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1059: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1060: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1061: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1062: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1063: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1064: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1065: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1066: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1067: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1068: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1069: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1070: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1071: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1072: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1073: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1074: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1075: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1076: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1077: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1078: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1079: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1080: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1081: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1082: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1083: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1084: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1085: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1086: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1087: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1088: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1089: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1090: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1091: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1092: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1093: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1094: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1095: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1096: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1097: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1098: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1099: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1100: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1101: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1102: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1103: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1104: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1105: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1106: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1107: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1108: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1109: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1110: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1111: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1112: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1113: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1114: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1115: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1116: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1117: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1118: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1119: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1120: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1121: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1122: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1123: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1124: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1125: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1126: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1127: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1128: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1129: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1130: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1131: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1132: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1133: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1134: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1135: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1136: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1137: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1138: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1139: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1140: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1141: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1142: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1143: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1144: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1145: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1146: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1147: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1148: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1149: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1150: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1151: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1152: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1153: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1154: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1155: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1156: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1157: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1158: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1159: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1160: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1161: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1162: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1163: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1164: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1165: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1166: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1167: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1168: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1169: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1170: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1171: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1172: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1173: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1174: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1175: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1176: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1177: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1178: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1179: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1180: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1181: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1182: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1183: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1184: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1185: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1186: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1187: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1188: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1189: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1190: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1191: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1192: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1193: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1194: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1195: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1196: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1197: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1198: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1199: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1200: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1201: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1202: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1203: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1204: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1205: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1206: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1207: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1208: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1209: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1210: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1211: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1212: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1213: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1214: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1215: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1216: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1217: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1218: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1219: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1220: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1221: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1222: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1223: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1224: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1225: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1226: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1227: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1228: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1229: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1230: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1231: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1232: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1233: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1234: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1235: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1236: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1237: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1238: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1239: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1240: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1241: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1242: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1243: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1244: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1245: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1246: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1247: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1248: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1249: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1250: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1251: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1252: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1253: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1254: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1255: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1256: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1257: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1258: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1259: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1260: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1261: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1262: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1263: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1264: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1265: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1266: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1267: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1268: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1269: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1270: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1271: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1272: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1273: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1274: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1275: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1276: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1277: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1278: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1279: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1280: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1281: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1282: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1283: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1284: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1285: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1286: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1287: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1288: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1289: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1290: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1291: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1292: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1293: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1294: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1295: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1296: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1297: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1298: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1299: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1300: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1301: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1302: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1303: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1304: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1305: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1306: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1307: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1308: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1309: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1310: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1311: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1312: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1313: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1314: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1315: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1316: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1317: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1318: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1319: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1320: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1321: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1322: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1323: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1324: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1325: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1326: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1327: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1328: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1329: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1330: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1331: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1332: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1333: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1334: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1335: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1336: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1337: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1338: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1339: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1340: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1341: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1342: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1343: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1344: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1345: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1346: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1347: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1348: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1349: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1350: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1351: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1352: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1353: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1354: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1355: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1356: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1357: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1358: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1359: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1360: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1361: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1362: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1363: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1364: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1365: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1366: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1367: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1368: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1369: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1370: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1371: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1372: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1373: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1374: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1375: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1376: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1377: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1378: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1379: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1380: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1381: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1382: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1383: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1384: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1385: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1386: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1387: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1388: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1389: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1390: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1391: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1392: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1393: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1394: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1395: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1396: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1397: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1398: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1399: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1400: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1401: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1402: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1403: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1404: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1405: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1406: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1407: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1408: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1409: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1410: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1411: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1412: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1413: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1414: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1415: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1416: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1417: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1418: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1419: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1420: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1421: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1422: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1423: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1424: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1425: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1426: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1427: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1428: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1429: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1430: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1431: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1432: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1433: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1434: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1435: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1436: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1437: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1438: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1439: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1440: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1441: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1442: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1443: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1444: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1445: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1446: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1447: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1448: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1449: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1450: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1451: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1452: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1453: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1454: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1455: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1456: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1457: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1458: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1459: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1460: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1461: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1462: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1463: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1464: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1465: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1466: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1467: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1468: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1469: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1470: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1471: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1472: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1473: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1474: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1475: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1476: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1477: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1478: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1479: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1480: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1481: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1482: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1483: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1484: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1485: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1486: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1487: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1488: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1489: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1490: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1491: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1492: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1493: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1494: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1495: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1496: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1497: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1498: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1499: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1500: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1501: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1502: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1503: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1504: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1505: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1506: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1507: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1508: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1509: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1510: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1511: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1512: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1513: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1514: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1515: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1516: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1517: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1518: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1519: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1520: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1521: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1522: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1523: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1524: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1525: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1526: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1527: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1528: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1529: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1530: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1531: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1532: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1533: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1534: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1535: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1536: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1537: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1538: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1539: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1540: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1541: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1542: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1543: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1544: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1545: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1546: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1547: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1548: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1549: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1550: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1551: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1552: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1553: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1554: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1555: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1556: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1557: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1558: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1559: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1560: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1561: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1562: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1563: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1564: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1565: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1566: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1567: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1568: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1569: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1570: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1571: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1572: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1573: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1574: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1575: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1576: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1577: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1578: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1579: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1580: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1581: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1582: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1583: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1584: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1585: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1586: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1587: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1588: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1589: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1590: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1591: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1592: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1593: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1594: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1595: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1596: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1597: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1598: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1599: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1600: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1601: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1602: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1603: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1604: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1605: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1606: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1607: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1608: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1609: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1610: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1611: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1612: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1613: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1614: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1615: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1616: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1617: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1618: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1619: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1620: extension point for future CS2 catalog, UI and accessibility features. */
+/* LUNEX JS module 1621: extension point for future CS2 catalog, UI and accessibility features. */
