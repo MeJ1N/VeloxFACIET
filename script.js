@@ -82,7 +82,7 @@
     };
   }
 
-  function skinCard(skin, selectable = true) {
+  function skinCard(skin, selectable = true, showSell = true) {
     const selected = state.source?.id === skin.id ? "selected" : "";
     return `<article class="skin-card ${selected}" data-skin-id="${escapeHtml(skin.id)}" ${selectable ? "" : "data-static=\"1\""}>
       <div class="skin-image"><img src="${escapeHtml(skin.image)}" alt="${escapeHtml(skin.name)}" loading="lazy" onerror="this.style.opacity='.12'"></div>
@@ -91,6 +91,7 @@
         <span><i class="rarity-dot" style="background:${escapeHtml(skin.color)}"></i>${escapeHtml(skin.rarity)}</span>
         <b>${money(skin.price)}</b>
       </div>
+      ${showSell ? `<button class="sell-item-btn" type="button" data-sell-id="${escapeHtml(skin.id)}">💰 Продать предмет</button>` : ""}
     </article>`;
   }
 
@@ -170,6 +171,43 @@
     calculate();
   }
 
+  function sellSkin(skinId) {
+    const index = state.inventory.findIndex(item => item.id === skinId);
+    if (index === -1) {
+      showToast("Предмет уже отсутствует в инвентаре");
+      return;
+    }
+
+    const item = state.inventory[index];
+    const payout = Number((item.price * 0.90).toFixed(2));
+
+    state.inventory.splice(index, 1);
+    state.balance = Number((state.balance + payout).toFixed(2));
+
+    if (state.source?.id === item.id) {
+      state.source = null;
+      state.target = null;
+      renderSelected();
+      calculate();
+    }
+
+    state.history.push({
+      title: item.name,
+      image: item.image,
+      price: payout,
+      win: true,
+      type: "Продажа",
+      time: new Date().toLocaleString("ru-RU")
+    });
+
+    save();
+    setBalance();
+    renderInventory();
+    renderFullInventory();
+    renderHistory();
+    showToast("💰 Предмет продан", `${item.name} → +${money(payout)}`);
+  }
+
   function selectedHtml(skin) {
     return `<div class="selected-item">
       <img src="${escapeHtml(skin.image)}" alt="${escapeHtml(skin.name)}">
@@ -204,7 +242,7 @@
     $("#multiplier").textContent = "x" + mult.toFixed(2);
     $("#multiplierBig").textContent = "x" + mult.toFixed(2);
     $("#chanceHint").textContent = chance < 10 ? "Очень рискованный апгрейд" : chance < 35 ? "Высокий риск" : "Нормальный шанс";
-    $("#upgradeBtn").disabled = state.busy || state.balance < s.price;
+    $("#upgradeBtn").disabled = state.busy;
     $("#upgradeCost").textContent = money(s.price);
   }
 
@@ -240,6 +278,7 @@
     const chance = Math.min(95, Math.max(2, 100 / (target.price / source.price)));
     state.busy = true;
     $("#upgradeBtn").disabled = true;
+    $("#upgradeBtn").classList.add("is-running");
     $("#upgradeBtn span:nth-child(2)").textContent = "ПРОВЕРКА...";
     showToast("Проверяем результат...");
     await new Promise(r => setTimeout(r, 1450));
@@ -258,6 +297,7 @@
     showResult(win, win ? target : source, chance);
     state.source = null; state.target = null; renderSelected(); calculate();
     state.busy = false;
+    $("#upgradeBtn").classList.remove("is-running");
     $("#upgradeBtn span:nth-child(2)").textContent = "UPGRADE";
   }
 
@@ -368,6 +408,14 @@
     state.balance += 100;
     save(); setBalance(); calculate(); showToast("+100 виртуальных кредитов");
   });
+  document.addEventListener("click", e => {
+    const sellButton = e.target.closest(".sell-item-btn");
+    if (!sellButton) return;
+    e.preventDefault();
+    e.stopPropagation();
+    sellSkin(sellButton.dataset.sellId);
+  });
+
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") { closeResult(); closeCase(); }
   });
