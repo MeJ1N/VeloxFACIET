@@ -121,3 +121,38 @@ main{max-width:1260px;margin:0 auto;padding:54px 26px 100px;position:relative}
 footer{text-align:center;color:#465366;font-size:9px;padding:0 0 35px}
 @media(max-width:1000px){.skin-grid{grid-template-columns:repeat(4,1fr)}.case-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.topbar{padding:0 12px;height:62px}.brand{min-width:auto}.brand-text{display:none}.main-nav{overflow:auto;margin-left:10px}.nav-btn{padding:8px;font-size:10px}.top-actions{gap:4px}.icon-btn{display:none}main{padding:30px 12px 70px}.hero{display:block}.live-status{margin-top:12px}.hero h1,.page-title h1{font-size:27px}.upgrade-layout{grid-template-columns:1fr}.upgrade-arrow{display:none}.selected-slot{height:210px}.skin-grid{grid-template-columns:repeat(2,1fr)}.section-head{display:block}.controls{margin-top:12px}.search{width:100%}.select{width:100%}.controls{display:grid;grid-template-columns:1fr}.case-grid{grid-template-columns:1fr}.history-row{grid-template-columns:50px 1fr auto}.history-row .history-price{display:none}}
+
+/* Active upgrade state */
+.upgrade-btn:not(:disabled){
+  opacity:1;
+  color:#fff;
+}
+.upgrade-btn:not(:disabled):hover{
+  filter:brightness(1.14);
+}
+.upgrade-btn.is-running{
+  animation:lunexUpgradePulse .75s ease-in-out infinite;
+  filter:brightness(1.22);
+}
+@keyframes lunexUpgradePulse{
+  0%,100%{transform:scale(1);box-shadow:0 10px 35px rgba(46,124,255,.25)}
+  50%{transform:scale(1.012);box-shadow:0 0 35px rgba(46,124,255,.65)}
+}
+
+
+/* === VERIFIED SELL BUTTON === */
+.sell-item-btn{
+  width:100%;
+  margin-top:9px;
+  padding:9px 10px;
+  border:1px solid rgba(72,145,255,.45);
+  border-radius:8px;
+  background:linear-gradient(135deg,#155fce,#2e86ff);
+  color:#fff;
+  font-weight:800;
+  font-size:10px;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.sell-item-btn:hover{filter:brightness(1.14);transform:translateY(-1px);box-shadow:0 8px 22px rgba(46,124,255,.22)}
+.sell-item-btn:active{transform:none}
