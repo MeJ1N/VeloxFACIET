@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/30992452/README.md)
+[README.md](https://github.com/user-attachments/files/30992689/README.md)
 # Lunex Upgrader — FINAL
 
 Готовая GitHub Pages demo-версия CS2 skin upgrader.
@@ -25,4 +25,3 @@
 ## Важно
 
 Это только виртуальная демонстрация. Баланс виртуальный, реальные деньги, Steam-трейды и вывод средств не подключены.
-
