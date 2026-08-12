@@ -1,1400 +1,173 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080b10">
-<title>Lunex CS2 Upgrader</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070a0f">
+  <meta name="description" content="Lunex Upgrader — CS2 skin upgrader demo">
+  <title>Lunex Upgrader — CS2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
-<header class="topbar">
-  <a class="logo" href="#" data-page="upgrade"><span>◒</span><b>LUNEX</b><small>CS2 UPGRADER</small></a>
-  <nav class="main-nav">
-    <button class="nav active" data-page="upgrade">UPGRADE</button>
-    <button class="nav" data-page="cases">CASES</button>
-    <button class="nav" data-page="inventory">INVENTORY</button>
-    <button class="nav" data-page="history">HISTORY</button>
-  </nav>
-  <div class="account-bar">
-    <button id="sound" class="icon-btn">◉</button>
-    <div class="balance">◆ <strong id="balance">1000</strong></div>
-    <button id="profile" class="avatar">G</button>
-  </div>
-</header>
-
-<main>
-<section id="upgrade-page" class="page active">
-  <div class="hero">
-    <div><span class="eyebrow">LUNEX / CS2 SKIN LAB</span><h1>UPGRADE YOUR SKIN</h1><p>Choose a skin from your inventory, select a more expensive target and test your luck.</p></div>
-    <div class="online"><i></i> DEMO ONLINE</div>
-  </div>
-
-  <div class="upgrade-layout">
-    <aside class="inventory-panel panel">
-      <div class="panel-head"><div><span class="eyebrow">YOUR INVENTORY</span><h2>My skins</h2></div><b id="count">0</b></div>
-      <div class="search-row"><input id="search" placeholder="Search skins..."><button id="clearSearch">×</button></div>
-      <div class="filters" id="filters">
-        <button class="filter active" data-filter="all">ALL</button>
-        <button class="filter" data-filter="knife">KNIVES</button>
-        <button class="filter" data-filter="rifle">RIFLES</button>
-        <button class="filter" data-filter="pistol">PISTOLS</button>
-        <button class="filter" data-filter="gloves">GLOVES</button>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" data-nav="upgrade" aria-label="Lunex Upgrader">
+        <span class="brand-mark">L</span>
+        <span class="brand-text"><b>LUNEX</b><small>UPGRADER</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <button class="nav-btn active" data-nav="upgrade">Апгрейд</button>
+        <button class="nav-btn" data-nav="cases">Кейсы</button>
+        <button class="nav-btn" data-nav="inventory">Инвентарь</button>
+        <button class="nav-btn" data-nav="history">История</button>
+      </nav>
+      <div class="top-actions">
+        <button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
+        <button class="balance-pill" id="balanceBtn"><span>◆</span><b id="balance">400</b></button>
+        <button class="avatar">G</button>
       </div>
-      <div id="sourceList" class="source-list"></div>
-    </aside>
+    </header>
 
-    <section class="upgrade-main">
-      <div class="upgrade-board panel">
-        <div class="board-title"><span class="eyebrow">UPGRADE ENGINE</span><span class="engine-dot">● READY</span></div>
-        <div class="slots">
-          <button id="sourceSlot" class="slot empty"><span>+</span><small>SELECT YOUR SKIN</small></button>
-          <div class="upgrade-core">
-            <div class="multiplier">MULTIPLIER <b id="multiplier">x0.00</b></div>
-            <div id="ring" class="chance-ring"><div><strong id="chance">0%</strong><small>WIN CHANCE</small></div></div>
-            <div class="direction">SOURCE <span>→</span> TARGET</div>
-            <button id="upgradeButton" class="upgrade-btn" disabled><b>UPGRADE</b><small>SELECT SOURCE + TARGET</small></button>
+    <main>
+      <section class="page active" id="page-upgrade">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">⚡ LUNEX UPGRADER</div>
+            <h1>Апгрейд скинов CS2</h1>
+            <p>Выбери предмет из инвентаря и цель дороже. Чем выше множитель — тем ниже шанс.</p>
           </div>
-          <button id="targetSlot" class="slot empty"><span>+</span><small>SELECT TARGET SKIN</small></button>
+          <div class="live-status"><i></i><span id="apiStatus">Загрузка каталога...</span></div>
         </div>
-        <div class="stats">
-          <div><span>YOUR SKIN</span><b>◆ <i id="sourceValue">0</i></b></div>
-          <div><span>TARGET</span><b>◆ <i id="targetValue">0</i></b></div>
-          <div><span>MULTIPLIER</span><b id="multi2">x0.00</b></div>
-          <div><span>CHANCE</span><b id="chance2">0%</b></div>
+
+        <div class="upgrade-layout">
+          <section class="upgrade-card panel">
+            <div class="panel-head">
+              <div>
+                <span class="panel-kicker">ВАШ ПРЕДМЕТ</span>
+                <h2>Что апгрейдим?</h2>
+              </div>
+              <button class="small-btn" id="clearSource">Сбросить</button>
+            </div>
+            <div class="selected-slot" id="sourceSlot">
+              <div class="slot-empty">
+                <div class="plus">+</div>
+                <strong>Выберите предмет</strong>
+                <span>из инвентаря ниже</span>
+              </div>
+            </div>
+            <div class="value-line"><span>Стоимость</span><b id="sourcePrice">$0.00</b></div>
+          </section>
+
+          <div class="upgrade-arrow">
+            <div class="arrow-circle">→</div>
+            <span id="multiplier">x0.00</span>
+          </div>
+
+          <section class="upgrade-card panel">
+            <div class="panel-head">
+              <div>
+                <span class="panel-kicker">ЦЕЛЬ</span>
+                <h2>Что получаем?</h2>
+              </div>
+              <button class="small-btn" id="randomTarget">Случайная</button>
+            </div>
+            <div class="selected-slot" id="targetSlot">
+              <div class="slot-empty">
+                <div class="plus">+</div>
+                <strong>Выберите цель</strong>
+                <span>цель должна быть дороже</span>
+              </div>
+            </div>
+            <div class="value-line"><span>Стоимость</span><b id="targetPrice">$0.00</b></div>
+          </section>
         </div>
-      </div>
 
-      <div class="market-head">
-        <div><span class="eyebrow">TARGET MARKET</span><h2>Select a target</h2></div>
-        <div class="market-controls"><input id="targetSearch" placeholder="Search target..."><select id="sort"><option value="asc">PRICE ↑</option><option value="desc">PRICE ↓</option><option value="name">NAME</option></select></div>
-      </div>
-      <div id="targets" class="skin-grid"></div>
-    </section>
+        <section class="chance-panel panel">
+          <div class="chance-top">
+            <div>
+              <span class="panel-kicker">Шанс успеха</span>
+              <strong id="chanceText">0%</strong>
+            </div>
+            <div class="chance-mult">Множитель <b id="multiplierBig">x0.00</b></div>
+          </div>
+          <div class="chance-bar"><span id="chanceBar"></span></div>
+          <div class="chance-info">
+            <span id="chanceHint">Выберите два предмета</span>
+            <span>Результат случайный</span>
+          </div>
+          <button class="upgrade-btn" id="upgradeBtn" disabled>
+            <span class="upgrade-icon">⚡</span>
+            <span>UPGRADE</span>
+            <small id="upgradeCost">$0.00</small>
+          </button>
+          <p class="demo-note">Демо-режим: используются виртуальные кредиты. Денежные ставки и вывод средств отсутствуют.</p>
+        </section>
+
+        <section class="inventory-section">
+          <div class="section-head">
+            <div>
+              <span class="panel-kicker">ИНВЕНТАРЬ</span>
+              <h2>Выбери предмет</h2>
+            </div>
+            <div class="controls">
+              <input id="searchInput" class="search" placeholder="🔎  Поиск скина..." autocomplete="off">
+              <select id="rarityFilter" class="select">
+                <option value="all">Все редкости</option>
+                <option value="Mil-Spec Grade">Mil-Spec</option>
+                <option value="Restricted">Restricted</option>
+                <option value="Classified">Classified</option>
+                <option value="Covert">Covert</option>
+                <option value="Extraordinary">Ножи / перчатки</option>
+              </select>
+            </div>
+          </div>
+          <div class="skin-grid" id="inventoryGrid"></div>
+        </section>
+      </section>
+
+      <section class="page" id="page-cases">
+        <div class="page-title"><span class="panel-kicker">CASE OPENING</span><h1>Кейсы</h1><p>Открывай виртуальные кейсы и добавляй предметы в инвентарь.</p></div>
+        <div class="case-grid" id="caseGrid"></div>
+      </section>
+
+      <section class="page" id="page-inventory">
+        <div class="page-title"><span class="panel-kicker">YOUR ITEMS</span><h1>Инвентарь</h1><p>Все полученные предметы находятся здесь.</p></div>
+        <div class="skin-grid" id="fullInventoryGrid"></div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="page-title"><span class="panel-kicker">ACTIVITY</span><h1>История</h1><p>Последние результаты апгрейдов и открытий кейсов.</p></div>
+        <div class="history-list panel" id="historyList"></div>
+      </section>
+    </main>
   </div>
-</section>
 
-<section id="cases" class="page">
-  <div class="hero compact"><div><span class="eyebrow">LUNEX CASES</span><h1>OPEN CASES</h1><p>Virtual demo cases filled with CS2 skins.</p></div></div>
-  <div id="casesGrid" class="case-grid"></div>
-</section>
+  <div class="toast-stack" id="toastStack"></div>
 
-<section id="inventory" class="page">
-  <div class="hero compact"><div><span class="eyebrow">YOUR COLLECTION</span><h1>INVENTORY</h1><p>Everything you won from cases and upgrades.</p></div></div>
-  <div class="inventory-summary">
-    <div><span>ITEMS</span><b id="invCount">0</b></div><div><span>TOTAL VALUE</span><b>◆ <i id="invValue">0</i></b></div>
-    <button id="reset">RESET DEMO</button>
+  <div class="modal-backdrop" id="resultModal" aria-hidden="true">
+    <div class="result-modal">
+      <button class="modal-close" id="closeModal">×</button>
+      <div class="result-label" id="resultLabel">РЕЗУЛЬТАТ</div>
+      <div class="result-title" id="resultTitle">УСПЕХ</div>
+      <div class="result-item" id="resultItem"></div>
+      <button class="modal-btn" id="resultContinue">Продолжить</button>
+    </div>
   </div>
-  <div id="fullInventory" class="full-grid"></div>
-</section>
 
-<section id="history" class="page">
-  <div class="hero compact"><div><span class="eyebrow">ACTIVITY</span><h1>HISTORY</h1><p>Your latest case openings and upgrade results.</p></div></div>
-  <div class="history panel"><div class="history-row history-head"><span>ACTION</span><span>ITEM</span><span>VALUE</span><span>STATUS</span><span>TIME</span></div><div id="historyList"></div></div>
-</section>
-</main>
+  <div class="modal-backdrop" id="caseModal" aria-hidden="true">
+    <div class="result-modal case-modal">
+      <button class="modal-close" id="closeCaseModal">×</button>
+      <div class="result-label">CASE OPENING</div>
+      <div class="result-title" id="caseResultTitle">ОТКРЫВАЕМ...</div>
+      <div class="case-roll" id="caseRoll"></div>
+      <button class="modal-btn" id="caseContinue" disabled>Забрать</button>
+    </div>
+  </div>
 
-<div id="resultModal" class="modal"><div class="modal-card result-card"><button class="close" data-close="resultModal">×</button><span class="eyebrow">UPGRADE RESULT</span><div id="resultVisual" class="result-visual"></div><h2 id="resultTitle">RESULT</h2><p id="resultText"></p><div id="resultItem" class="result-item"></div><button class="primary wide" data-close="resultModal">CONTINUE</button></div></div>
-<div id="caseModal" class="modal"><div class="modal-card"><button class="close" data-close="caseModal">×</button><span class="eyebrow">CASE OPENING</span><div id="caseVisual" class="case-modal-visual"></div><h2 id="caseTitle"></h2><div id="roulette" class="roulette"></div><p id="caseText"></p><button class="primary wide" id="openCase"></button></div></div>
-<div id="profileModal" class="modal"><div class="modal-card"><button class="close" data-close="profileModal">×</button><div class="big-avatar">G</div><span class="eyebrow">DEMO PROFILE</span><h2>Guest</h2><p>Local browser profile</p><div class="profile-stats"><div><span>BALANCE</span><b id="pb">0</b></div><div><span>ITEMS</span><b id="pi">0</b></div><div><span>UPGRADES</span><b id="pu">0</b></div></div></div></div>
-<div id="toast"></div>
-<footer>LUNEX CS2 UPGRADER · VIRTUAL DEMO · NO REAL MONEY</footer>
-<script src="script.js"></script>
+  <footer>© 2026 Lunex Upgrader · CS2 demo interface · No real-money wagering</footer>
+  <script src="script.js"></script>
 </body>
 </html>
-/* LUNEX HTML module 0001: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0002: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0003: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0004: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0005: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0006: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0007: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0008: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0009: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0010: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0011: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0012: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0013: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0014: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0015: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0016: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0017: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0018: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0019: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0020: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0021: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0022: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0023: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0024: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0025: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0026: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0027: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0028: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0029: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0030: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0031: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0032: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0033: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0034: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0035: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0036: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0037: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0038: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0039: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0040: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0041: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0042: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0043: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0044: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0045: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0046: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0047: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0048: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0049: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0050: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0051: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0052: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0053: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0054: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0055: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0056: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0057: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0058: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0059: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0060: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0061: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0062: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0063: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0064: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0065: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0066: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0067: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0068: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0069: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0070: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0071: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0072: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0073: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0074: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0075: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0076: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0077: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0078: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0079: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0080: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0081: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0082: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0083: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0084: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0085: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0086: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0087: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0088: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0089: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0090: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0091: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0092: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0093: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0094: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0095: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0096: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0097: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0098: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0099: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0100: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0101: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0102: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0103: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0104: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0105: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0106: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0107: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0108: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0109: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0110: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0111: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0112: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0113: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0114: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0115: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0116: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0117: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0118: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0119: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0120: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0121: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0122: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0123: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0124: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0125: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0126: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0127: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0128: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0129: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0130: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0131: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0132: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0133: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0134: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0135: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0136: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0137: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0138: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0139: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0140: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0141: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0142: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0143: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0144: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0145: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0146: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0147: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0148: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0149: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0150: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0151: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0152: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0153: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0154: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0155: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0156: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0157: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0158: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0159: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0160: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0161: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0162: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0163: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0164: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0165: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0166: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0167: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0168: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0169: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0170: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0171: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0172: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0173: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0174: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0175: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0176: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0177: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0178: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0179: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0180: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0181: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0182: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0183: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0184: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0185: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0186: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0187: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0188: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0189: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0190: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0191: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0192: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0193: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0194: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0195: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0196: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0197: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0198: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0199: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0200: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0201: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0202: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0203: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0204: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0205: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0206: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0207: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0208: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0209: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0210: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0211: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0212: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0213: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0214: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0215: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0216: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0217: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0218: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0219: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0220: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0221: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0222: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0223: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0224: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0225: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0226: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0227: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0228: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0229: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0230: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0231: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0232: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0233: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0234: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0235: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0236: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0237: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0238: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0239: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0240: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0241: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0242: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0243: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0244: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0245: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0246: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0247: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0248: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0249: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0250: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0251: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0252: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0253: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0254: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0255: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0256: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0257: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0258: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0259: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0260: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0261: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0262: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0263: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0264: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0265: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0266: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0267: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0268: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0269: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0270: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0271: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0272: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0273: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0274: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0275: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0276: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0277: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0278: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0279: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0280: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0281: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0282: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0283: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0284: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0285: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0286: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0287: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0288: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0289: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0290: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0291: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0292: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0293: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0294: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0295: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0296: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0297: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0298: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0299: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0300: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0301: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0302: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0303: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0304: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0305: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0306: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0307: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0308: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0309: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0310: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0311: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0312: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0313: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0314: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0315: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0316: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0317: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0318: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0319: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0320: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0321: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0322: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0323: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0324: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0325: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0326: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0327: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0328: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0329: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0330: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0331: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0332: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0333: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0334: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0335: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0336: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0337: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0338: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0339: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0340: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0341: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0342: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0343: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0344: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0345: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0346: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0347: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0348: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0349: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0350: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0351: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0352: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0353: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0354: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0355: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0356: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0357: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0358: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0359: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0360: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0361: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0362: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0363: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0364: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0365: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0366: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0367: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0368: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0369: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0370: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0371: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0372: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0373: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0374: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0375: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0376: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0377: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0378: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0379: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0380: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0381: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0382: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0383: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0384: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0385: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0386: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0387: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0388: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0389: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0390: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0391: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0392: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0393: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0394: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0395: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0396: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0397: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0398: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0399: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0400: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0401: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0402: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0403: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0404: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0405: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0406: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0407: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0408: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0409: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0410: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0411: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0412: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0413: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0414: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0415: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0416: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0417: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0418: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0419: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0420: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0421: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0422: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0423: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0424: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0425: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0426: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0427: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0428: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0429: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0430: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0431: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0432: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0433: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0434: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0435: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0436: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0437: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0438: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0439: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0440: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0441: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0442: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0443: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0444: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0445: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0446: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0447: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0448: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0449: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0450: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0451: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0452: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0453: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0454: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0455: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0456: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0457: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0458: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0459: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0460: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0461: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0462: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0463: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0464: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0465: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0466: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0467: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0468: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0469: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0470: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0471: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0472: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0473: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0474: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0475: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0476: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0477: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0478: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0479: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0480: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0481: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0482: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0483: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0484: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0485: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0486: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0487: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0488: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0489: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0490: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0491: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0492: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0493: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0494: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0495: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0496: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0497: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0498: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0499: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0500: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0501: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0502: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0503: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0504: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0505: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0506: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0507: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0508: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0509: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0510: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0511: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0512: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0513: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0514: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0515: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0516: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0517: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0518: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0519: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0520: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0521: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0522: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0523: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0524: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0525: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0526: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0527: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0528: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0529: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0530: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0531: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0532: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0533: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0534: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0535: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0536: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0537: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0538: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0539: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0540: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0541: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0542: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0543: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0544: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0545: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0546: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0547: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0548: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0549: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0550: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0551: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0552: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0553: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0554: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0555: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0556: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0557: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0558: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0559: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0560: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0561: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0562: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0563: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0564: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0565: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0566: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0567: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0568: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0569: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0570: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0571: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0572: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0573: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0574: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0575: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0576: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0577: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0578: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0579: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0580: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0581: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0582: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0583: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0584: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0585: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0586: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0587: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0588: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0589: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0590: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0591: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0592: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0593: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0594: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0595: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0596: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0597: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0598: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0599: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0600: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0601: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0602: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0603: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0604: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0605: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0606: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0607: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0608: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0609: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0610: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0611: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0612: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0613: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0614: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0615: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0616: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0617: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0618: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0619: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0620: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0621: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0622: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0623: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0624: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0625: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0626: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0627: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0628: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0629: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0630: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0631: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0632: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0633: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0634: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0635: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0636: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0637: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0638: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0639: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0640: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0641: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0642: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0643: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0644: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0645: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0646: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0647: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0648: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0649: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0650: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0651: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0652: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0653: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0654: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0655: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0656: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0657: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0658: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0659: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0660: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0661: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0662: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0663: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0664: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0665: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0666: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0667: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0668: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0669: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0670: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0671: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0672: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0673: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0674: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0675: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0676: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0677: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0678: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0679: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0680: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0681: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0682: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0683: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0684: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0685: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0686: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0687: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0688: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0689: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0690: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0691: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0692: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0693: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0694: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0695: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0696: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0697: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0698: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0699: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0700: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0701: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0702: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0703: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0704: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0705: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0706: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0707: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0708: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0709: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0710: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0711: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0712: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0713: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0714: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0715: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0716: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0717: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0718: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0719: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0720: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0721: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0722: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0723: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0724: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0725: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0726: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0727: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0728: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0729: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0730: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0731: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0732: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0733: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0734: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0735: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0736: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0737: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0738: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0739: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0740: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0741: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0742: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0743: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0744: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0745: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0746: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0747: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0748: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0749: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0750: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0751: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0752: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0753: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0754: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0755: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0756: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0757: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0758: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0759: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0760: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0761: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0762: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0763: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0764: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0765: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0766: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0767: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0768: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0769: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0770: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0771: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0772: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0773: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0774: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0775: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0776: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0777: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0778: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0779: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0780: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0781: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0782: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0783: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0784: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0785: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0786: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0787: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0788: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0789: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0790: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0791: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0792: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0793: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0794: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0795: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0796: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0797: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0798: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0799: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0800: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0801: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0802: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0803: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0804: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0805: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0806: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0807: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0808: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0809: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0810: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0811: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0812: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0813: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0814: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0815: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0816: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0817: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0818: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0819: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0820: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0821: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0822: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0823: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0824: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0825: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0826: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0827: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0828: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0829: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0830: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0831: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0832: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0833: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0834: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0835: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0836: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0837: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0838: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0839: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0840: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0841: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0842: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0843: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0844: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0845: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0846: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0847: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0848: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0849: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0850: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0851: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0852: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0853: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0854: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0855: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0856: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0857: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0858: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0859: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0860: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0861: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0862: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0863: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0864: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0865: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0866: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0867: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0868: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0869: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0870: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0871: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0872: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0873: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0874: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0875: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0876: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0877: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0878: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0879: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0880: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0881: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0882: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0883: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0884: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0885: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0886: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0887: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0888: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0889: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0890: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0891: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0892: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0893: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0894: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0895: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0896: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0897: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0898: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0899: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0900: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0901: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0902: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0903: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0904: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0905: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0906: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0907: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0908: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0909: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0910: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0911: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0912: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0913: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0914: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0915: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0916: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0917: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0918: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0919: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0920: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0921: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0922: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0923: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0924: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0925: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0926: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0927: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0928: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0929: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0930: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0931: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0932: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0933: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0934: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0935: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0936: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0937: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0938: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0939: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0940: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0941: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0942: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0943: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0944: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0945: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0946: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0947: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0948: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0949: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0950: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0951: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0952: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0953: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0954: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0955: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0956: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0957: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0958: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0959: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0960: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0961: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0962: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0963: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0964: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0965: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0966: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0967: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0968: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0969: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0970: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0971: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0972: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0973: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0974: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0975: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0976: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0977: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0978: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0979: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0980: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0981: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0982: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0983: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0984: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0985: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0986: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0987: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0988: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0989: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0990: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0991: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0992: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0993: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0994: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0995: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0996: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0997: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0998: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 0999: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1000: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1001: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1002: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1003: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1004: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1005: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1006: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1007: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1008: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1009: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1010: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1011: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1012: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1013: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1014: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1015: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1016: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1017: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1018: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1019: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1020: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1021: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1022: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1023: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1024: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1025: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1026: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1027: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1028: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1029: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1030: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1031: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1032: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1033: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1034: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1035: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1036: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1037: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1038: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1039: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1040: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1041: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1042: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1043: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1044: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1045: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1046: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1047: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1048: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1049: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1050: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1051: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1052: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1053: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1054: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1055: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1056: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1057: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1058: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1059: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1060: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1061: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1062: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1063: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1064: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1065: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1066: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1067: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1068: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1069: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1070: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1071: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1072: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1073: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1074: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1075: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1076: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1077: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1078: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1079: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1080: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1081: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1082: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1083: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1084: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1085: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1086: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1087: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1088: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1089: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1090: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1091: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1092: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1093: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1094: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1095: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1096: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1097: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1098: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1099: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1100: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1101: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1102: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1103: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1104: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1105: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1106: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1107: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1108: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1109: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1110: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1111: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1112: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1113: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1114: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1115: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1116: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1117: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1118: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1119: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1120: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1121: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1122: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1123: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1124: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1125: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1126: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1127: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1128: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1129: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1130: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1131: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1132: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1133: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1134: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1135: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1136: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1137: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1138: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1139: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1140: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1141: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1142: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1143: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1144: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1145: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1146: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1147: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1148: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1149: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1150: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1151: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1152: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1153: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1154: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1155: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1156: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1157: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1158: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1159: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1160: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1161: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1162: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1163: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1164: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1165: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1166: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1167: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1168: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1169: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1170: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1171: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1172: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1173: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1174: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1175: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1176: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1177: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1178: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1179: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1180: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1181: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1182: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1183: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1184: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1185: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1186: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1187: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1188: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1189: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1190: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1191: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1192: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1193: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1194: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1195: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1196: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1197: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1198: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1199: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1200: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1201: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1202: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1203: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1204: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1205: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1206: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1207: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1208: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1209: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1210: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1211: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1212: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1213: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1214: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1215: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1216: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1217: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1218: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1219: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1220: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1221: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1222: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1223: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1224: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1225: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1226: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1227: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1228: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1229: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1230: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1231: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1232: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1233: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1234: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1235: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1236: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1237: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1238: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1239: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1240: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1241: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1242: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1243: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1244: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1245: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1246: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1247: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1248: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1249: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1250: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1251: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1252: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1253: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1254: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1255: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1256: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1257: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1258: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1259: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1260: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1261: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1262: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1263: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1264: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1265: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1266: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1267: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1268: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1269: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1270: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1271: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1272: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1273: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1274: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1275: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1276: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1277: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1278: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1279: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1280: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1281: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1282: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1283: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1284: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1285: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1286: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1287: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1288: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1289: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1290: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1291: extension point for future CS2 catalog, UI and accessibility features. */
-/* LUNEX HTML module 1292: extension point for future CS2 catalog, UI and accessibility features. */
