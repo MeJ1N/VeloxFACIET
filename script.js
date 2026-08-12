@@ -21,7 +21,7 @@
     history: [],
     source: null,
     target: null,
-    balance: Number(localStorage.getItem("lunex_balance") || 400),
+    balance: Number(localStorage.getItem("lunex_balance") || 0),
     sound: localStorage.getItem("lunex_sound") !== "off",
     busy: false
   };
@@ -54,12 +54,25 @@
 
   function load() {
     try {
+      // New account baseline: the player starts with exactly $0.
+      // The version flag resets old demo balances once after this update,
+      // then preserves the balance normally on future page loads.
+      const balanceVersion = "start-zero-v1";
+      if (localStorage.getItem("lunex_balance_version") !== balanceVersion) {
+        state.balance = 0;
+        localStorage.setItem("lunex_balance_version", balanceVersion);
+        localStorage.setItem("lunex_balance", "0");
+      } else {
+        state.balance = Number(localStorage.getItem("lunex_balance") || 0);
+      }
+
       state.inventory = JSON.parse(localStorage.getItem("lunex_inventory") || "[]");
       state.history = JSON.parse(localStorage.getItem("lunex_history") || "[]");
       state.inventory = state.inventory.map((x, i) => ({...x, uid: x.uid || ("item-" + Date.now() + "-" + i + "-" + Math.random().toString(36).slice(2,8))}));
     } catch {
       state.inventory = [];
       state.history = [];
+      state.balance = 0;
     }
   }
 
