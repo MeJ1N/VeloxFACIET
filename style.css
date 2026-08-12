@@ -156,3 +156,28 @@ footer{text-align:center;color:#465366;font-size:9px;padding:0 0 35px}
 }
 .sell-item-btn:hover{filter:brightness(1.14);transform:translateY(-1px);box-shadow:0 8px 22px rgba(46,124,255,.22)}
 .sell-item-btn:active{transform:none}
+
+/* === PROMO PANEL === */
+.promo-panel{
+  margin:0 0 22px;
+  padding:18px;
+  border:1px solid rgba(65,139,255,.24);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(20,36,61,.9),rgba(12,22,38,.9));
+}
+.promo-title{font-size:16px;font-weight:900}
+.promo-subtitle,.promo-note{font-size:11px;color:#8494ab;margin-top:4px}
+.promo-form{display:flex;gap:10px;margin-top:14px}
+.promo-form input{
+  flex:1;min-width:0;padding:12px 13px;border-radius:9px;
+  border:1px solid rgba(100,145,205,.25);background:#0a1320;color:#fff;outline:none;
+}
+.promo-form button{
+  padding:12px 16px;border:0;border-radius:9px;background:linear-gradient(135deg,#1768e8,#2f8cff);
+  color:#fff;font-weight:900;cursor:pointer;
+}
+.promo-form button:hover{filter:brightness(1.12)}
+.promo-status{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.promo-row{display:flex;gap:9px;align-items:center;padding:6px 9px;border-radius:7px;background:rgba(255,255,255,.035);font-size:11px}
+.promo-row span{color:#7f91aa}
+@media(max-width:600px){.promo-form{flex-direction:column}.promo-form button{width:100%}}
