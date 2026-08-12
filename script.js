@@ -56,6 +56,7 @@
     try {
       state.inventory = JSON.parse(localStorage.getItem("lunex_inventory") || "[]");
       state.history = JSON.parse(localStorage.getItem("lunex_history") || "[]");
+      state.inventory = state.inventory.map((x, i) => ({...x, uid: x.uid || ("item-" + Date.now() + "-" + i + "-" + Math.random().toString(36).slice(2,8))}));
     } catch {
       state.inventory = [];
       state.history = [];
@@ -84,14 +85,14 @@
 
   function skinCard(skin, selectable = true, showSell = true) {
     const selected = state.source?.id === skin.id ? "selected" : "";
-    return `<article class="skin-card ${selected}" data-skin-id="${escapeHtml(skin.id)}" ${selectable ? "" : "data-static=\"1\""}>
+    return `<article class="skin-card ${selected}" data-skin-id="${escapeHtml(skin.id)}" data-item-uid="${escapeHtml(skin.uid || "")}" ${selectable ? "" : "data-static=\"1\""}>
       <div class="skin-image"><img src="${escapeHtml(skin.image)}" alt="${escapeHtml(skin.name)}" loading="lazy" onerror="this.style.opacity='.12'"></div>
       <div class="skin-name">${escapeHtml(skin.name)}</div>
       <div class="skin-meta">
         <span><i class="rarity-dot" style="background:${escapeHtml(skin.color)}"></i>${escapeHtml(skin.rarity)}</span>
         <b>${money(skin.price)}</b>
       </div>
-      ${showSell ? `<button class="sell-item-btn" type="button" data-sell-id="${escapeHtml(skin.id)}">💰 Продать предмет</button>` : ""}
+      ${showSell ? `<button class="sell-item-btn" type="button" data-sell-id="${escapeHtml(skin.uid || skin.id)}">💰 Продать предмет</button>` : ""}
     </article>`;
   }
 
@@ -107,7 +108,7 @@
       : `<div class="empty-state">Инвентарь пуст. Выбери предмет из стартового набора или открой кейс.</div>`;
     $$("#inventoryGrid .skin-card").forEach(card => {
       card.addEventListener("click", () => {
-        const skin = state.inventory.find(x => x.id === card.dataset.skinId);
+        const skin = state.inventory.find(x => (card.dataset.itemUid && x.uid === card.dataset.itemUid) || x.id === card.dataset.skinId);
         if (skin) selectSource(skin);
       });
     });
@@ -171,20 +172,20 @@
     calculate();
   }
 
-  function sellSkin(skinId) {
-    const index = state.inventory.findIndex(item => item.id === skinId);
+  function sellSkin(itemUid) {
+    const index = state.inventory.findIndex(item => item.uid === itemUid || item.id === itemUid);
     if (index === -1) {
       showToast("Предмет уже отсутствует в инвентаре");
       return;
     }
 
     const item = state.inventory[index];
-    const payout = Number((item.price * 0.90).toFixed(2));
+    const payout = Number((Number(item.price || 0) * 0.90).toFixed(2));
 
     state.inventory.splice(index, 1);
     state.balance = Number((state.balance + payout).toFixed(2));
 
-    if (state.source?.id === item.id) {
+    if (state.source?.uid === item.uid) {
       state.source = null;
       state.target = null;
       renderSelected();
@@ -286,7 +287,7 @@
     state.balance = Math.max(0, state.balance - source.price);
     if (win) {
       state.inventory = state.inventory.filter(x => x.id !== source.id);
-      state.inventory.push({...target});
+      state.inventory.push({...target, uid:"upgrade-" + Date.now() + "-" + Math.random().toString(36).slice(2,8)});
       state.balance += target.price;
     } else {
       state.inventory = state.inventory.filter(x => x.id !== source.id);
@@ -338,7 +339,7 @@
       if (n > 18) {
         clearInterval(timer);
         roll.style.transform = "";
-        state.inventory.push({...item});
+        state.inventory.push({...item, uid:"case-" + Date.now() + "-" + Math.random().toString(36).slice(2,8)});
         state.history.push({title:item.name,image:item.image,price:item.price,win:true,type:"Кейс",time:new Date().toLocaleString("ru-RU")});
         save(); renderInventory(); renderFullInventory(); renderHistory();
         $("#caseResultTitle").textContent = item.name;
@@ -365,7 +366,7 @@
     load();
     setBalance();
     if (state.inventory.length === 0) {
-      state.inventory = FALLBACK_SKINS.slice(0,5).map(x => ({...x}));
+      state.inventory = FALLBACK_SKINS.slice(0,5).map((x,i) => ({...x, uid:"starter-" + Date.now() + "-" + i}));
       save();
     }
     try {
@@ -385,8 +386,45 @@
     // Keep inventory items in the target catalog.
     const known = new Map(state.skins.map(s => [s.id,s]));
     state.inventory = state.inventory.map(x => known.get(x.id) || x);
-    renderInventory(); renderFullInventory(); renderHistory(); renderCases(); renderSelected(); calculate();
+    renderInventory(); renderFullInventory(); renderHistory(); renderCases(); renderSelected(); calculate(); renderPromoStatus();
   }
+
+/* =========================
+   LUNEX PROMO CODES
+   ========================= */
+const PROMO_CODES = {
+  "LUNEX100": {amount:100, max:100},
+  "LUNEX500": {amount:500, max:100},
+  "LUNEX1000": {amount:1000, max:100},
+  "LUNEX2500": {amount:2500, max:100}
+};
+
+function promoStorageKey(code){ return "lunex_promo_" + code; }
+
+function redeemPromo(rawCode){
+  const code = String(rawCode || "").trim().toUpperCase();
+  const promo = PROMO_CODES[code];
+  if(!promo) return showToast("❌ Промокод не найден");
+  const used = Number(localStorage.getItem(promoStorageKey(code)) || 0);
+  if(used >= promo.max) return showToast("⛔ Лимит активаций этого промокода исчерпан");
+  state.balance = Number((state.balance + promo.amount).toFixed(2));
+  localStorage.setItem(promoStorageKey(code), String(used + 1));
+  save();
+  setBalance();
+  calculate();
+  renderPromoStatus();
+  showToast("🎁 Промокод активирован", `+${money(promo.amount)} к балансу`);
+}
+
+function renderPromoStatus(){
+  const box = document.querySelector("#promoStatus");
+  if(!box) return;
+  box.innerHTML = Object.entries(PROMO_CODES).map(([code,p])=>{
+    const used=Number(localStorage.getItem(promoStorageKey(code))||0);
+    return `<div class="promo-row"><b>${code}</b><span>${used}/${p.max}</span></div>`;
+  }).join("");
+}
+
 
   $$(".nav-btn").forEach(btn => btn.addEventListener("click", () => navigate(btn.dataset.nav)));
   $(".brand").addEventListener("click", e => {e.preventDefault();navigate("upgrade")});
@@ -399,6 +437,15 @@
   $("#caseContinue").addEventListener("click", closeCase);
   $("#searchInput").addEventListener("input", renderInventory);
   $("#rarityFilter").addEventListener("change", renderInventory);
+
+  $("#promoBtn")?.addEventListener("click", () => {
+    redeemPromo($("#promoInput")?.value);
+    if($("#promoInput")) $("#promoInput").value = "";
+  });
+  $("#promoInput")?.addEventListener("keydown", e => {
+    if(e.key === "Enter") $("#promoBtn").click();
+  });
+
   $("#soundBtn").addEventListener("click", () => {
     state.sound = !state.sound;
     localStorage.setItem("lunex_sound", state.sound ? "on" : "off");
