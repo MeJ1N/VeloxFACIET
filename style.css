@@ -178,3 +178,10 @@ footer{text-align:center;color:#465366;font-size:9px;padding:0 0 35px}
 .catalog-add-btn{width:100%;margin-top:10px;padding:9px 10px;border:1px solid rgba(60,139,255,.32);border-radius:8px;background:rgba(33,99,190,.13);color:#9ec7ff;font-size:10px;font-weight:900;letter-spacing:.4px;cursor:pointer;transition:.18s}
 .catalog-add-btn:hover{background:rgba(43,124,239,.28);color:#fff;border-color:rgba(79,155,255,.7)}
 @media(max-width:700px){.catalog-search{min-width:0;width:100%}.section-head{gap:12px;flex-direction:column;align-items:stretch}}
+
+.catalog-range-banner{
+  margin:0 0 14px;padding:12px 15px;border:1px solid rgba(46,124,255,.22);
+  border-radius:10px;background:linear-gradient(90deg,rgba(46,124,255,.10),rgba(69,215,255,.035));
+  color:#b9d3ff;font-size:12px;font-weight:800;letter-spacing:.2px;
+}
+.catalog-range{display:none}
