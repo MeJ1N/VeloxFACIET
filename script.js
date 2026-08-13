@@ -109,6 +109,31 @@
     </article>`;
   }
 
+  function renderCatalog() {
+    const box = $("#catalogGrid");
+    if (!box) return;
+    const q = ($("#catalogSearch")?.value || "").toLowerCase().trim();
+    const list = state.skins.filter(s => !q || s.name.toLowerCase().includes(q)).slice(0, 100);
+    box.innerHTML = list.length ? list.map(s => `
+      <article class="skin-card catalog-card">
+        <div class="skin-image"><img src="${escapeHtml(s.image)}" alt="${escapeHtml(s.name)}" loading="lazy" onerror="this.style.opacity='.12'"></div>
+        <div class="skin-name">${escapeHtml(s.name)}</div>
+        <div class="skin-meta"><span><i class="rarity-dot" style="background:${escapeHtml(s.color)}"></i>${escapeHtml(s.rarity)}</span><b>${money(s.price)}</b></div>
+        <button class="catalog-add-btn" type="button" data-catalog-id="${escapeHtml(s.id)}">＋ В инвентарь</button>
+      </article>`).join("") : `<div class="empty-state">Скин не найден.</div>`;
+    $$("#catalogGrid .catalog-add-btn").forEach(btn => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const skin = state.skins.find(x => x.id === btn.dataset.catalogId);
+      if (!skin) return;
+      const copy = {...skin, uid:"catalog-" + Date.now() + "-" + Math.random().toString(36).slice(2,8)};
+      state.inventory.push(copy);
+      save();
+      renderInventory();
+      renderFullInventory();
+      showToast("🎒 Скин добавлен", skin.name);
+    }));
+  }
+
   function renderInventory() {
     const q = ($("#searchInput")?.value || "").toLowerCase().trim();
     const rarity = $("#rarityFilter")?.value || "all";
@@ -370,7 +395,7 @@
     $$(".page").forEach(p => p.classList.remove("active"));
     $(`#page-${page}`).classList.add("active");
     $$(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.nav === page));
-    if (page === "inventory") renderFullInventory();
+    if (page === "inventory") { renderFullInventory(); bindPromo(); }
     if (page === "history") renderHistory();
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -399,7 +424,7 @@
     // Keep inventory items in the target catalog.
     const known = new Map(state.skins.map(s => [s.id,s]));
     state.inventory = state.inventory.map(x => known.get(x.id) || x);
-    renderInventory(); renderFullInventory(); renderHistory(); renderCases(); renderSelected(); calculate(); renderPromoStatus();
+    renderInventory(); renderFullInventory(); renderCatalog(); renderHistory(); renderCases(); renderSelected(); calculate(); renderPromoStatus(); bindPromo();
   }
 
 /* =========================
@@ -415,18 +440,34 @@ const PROMO_CODES = {
 function promoStorageKey(code){ return "lunex_promo_" + code; }
 
 function redeemPromo(rawCode){
+  const input = document.querySelector("#promoInput");
   const code = String(rawCode || "").trim().toUpperCase();
+  if (!code) {
+    showToast("Введите промокод");
+    input?.focus();
+    return false;
+  }
   const promo = PROMO_CODES[code];
-  if(!promo) return showToast("❌ Промокод не найден");
+  if(!promo){
+    showToast("❌ Промокод не найден");
+    input?.classList.add("promo-error");
+    setTimeout(() => input?.classList.remove("promo-error"), 500);
+    return false;
+  }
   const used = Number(localStorage.getItem(promoStorageKey(code)) || 0);
-  if(used >= promo.max) return showToast("⛔ Лимит активаций этого промокода исчерпан");
+  if(used >= promo.max){
+    showToast("⛔ Лимит активаций этого промокода исчерпан");
+    return false;
+  }
   state.balance = Number((state.balance + promo.amount).toFixed(2));
   localStorage.setItem(promoStorageKey(code), String(used + 1));
   save();
   setBalance();
   calculate();
   renderPromoStatus();
-  showToast("🎁 Промокод активирован", `+${money(promo.amount)} к балансу`);
+  if(input) input.value = "";
+  showToast(`🎁 +${money(promo.amount)} зачислено`);
+  return true;
 }
 
 function renderPromoStatus(){
@@ -434,8 +475,25 @@ function renderPromoStatus(){
   if(!box) return;
   box.innerHTML = Object.entries(PROMO_CODES).map(([code,p])=>{
     const used=Number(localStorage.getItem(promoStorageKey(code))||0);
-    return `<div class="promo-row"><b>${code}</b><span>${used}/${p.max}</span></div>`;
+    return `<button type="button" class="promo-chip" data-promo-code="${code}"><b>${code}</b><span>+$${p.amount}</span></button>`;
   }).join("");
+}
+
+function bindPromo(){
+  const input = document.querySelector("#promoInput");
+  const button = document.querySelector("#promoBtn");
+  if(!input || !button || button.dataset.bound === "1") return;
+  button.dataset.bound = "1";
+  button.addEventListener("click", () => redeemPromo(input.value));
+  input.addEventListener("keydown", e => {
+    if(e.key === "Enter") { e.preventDefault(); redeemPromo(input.value); }
+  });
+  document.querySelector("#promoStatus")?.addEventListener("click", e => {
+    const chip = e.target.closest("[data-promo-code]");
+    if(!chip) return;
+    input.value = chip.dataset.promoCode;
+    input.focus();
+  });
 }
 
 
@@ -451,13 +509,7 @@ function renderPromoStatus(){
   $("#searchInput").addEventListener("input", renderInventory);
   $("#rarityFilter").addEventListener("change", renderInventory);
 
-  $("#promoBtn")?.addEventListener("click", () => {
-    redeemPromo($("#promoInput")?.value);
-    if($("#promoInput")) $("#promoInput").value = "";
-  });
-  $("#promoInput")?.addEventListener("keydown", e => {
-    if(e.key === "Enter") $("#promoBtn").click();
-  });
+  bindPromo();
 
   $("#soundBtn").addEventListener("click", () => {
     state.sound = !state.sound;
