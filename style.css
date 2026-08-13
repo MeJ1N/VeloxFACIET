@@ -157,27 +157,24 @@ footer{text-align:center;color:#465366;font-size:9px;padding:0 0 35px}
 .sell-item-btn:hover{filter:brightness(1.14);transform:translateY(-1px);box-shadow:0 8px 22px rgba(46,124,255,.22)}
 .sell-item-btn:active{transform:none}
 
-/* === PROMO PANEL === */
-.promo-panel{
-  margin:0 0 22px;
-  padding:18px;
-  border:1px solid rgba(65,139,255,.24);
-  border-radius:14px;
-  background:linear-gradient(135deg,rgba(20,36,61,.9),rgba(12,22,38,.9));
-}
-.promo-title{font-size:16px;font-weight:900}
-.promo-subtitle,.promo-note{font-size:11px;color:#8494ab;margin-top:4px}
-.promo-form{display:flex;gap:10px;margin-top:14px}
-.promo-form input{
-  flex:1;min-width:0;padding:12px 13px;border-radius:9px;
-  border:1px solid rgba(100,145,205,.25);background:#0a1320;color:#fff;outline:none;
-}
-.promo-form button{
-  padding:12px 16px;border:0;border-radius:9px;background:linear-gradient(135deg,#1768e8,#2f8cff);
-  color:#fff;font-weight:900;cursor:pointer;
-}
-.promo-form button:hover{filter:brightness(1.12)}
-.promo-status{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.promo-row{display:flex;gap:9px;align-items:center;padding:6px 9px;border-radius:7px;background:rgba(255,255,255,.035);font-size:11px}
-.promo-row span{color:#7f91aa}
-@media(max-width:600px){.promo-form{flex-direction:column}.promo-form button{width:100%}}
+/* === PREMIUM PROMO PANEL === */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.promo-panel{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr minmax(360px,520px);gap:22px;align-items:center;margin:0 0 28px;padding:22px 24px;border:1px solid rgba(64,139,255,.20);border-radius:16px;background:linear-gradient(120deg,#0c1420 0%,#0b111b 55%,#0b1727 100%);box-shadow:0 16px 50px rgba(0,0,0,.22)}
+.promo-glow{position:absolute;right:-90px;top:-110px;width:280px;height:280px;border-radius:50%;background:rgba(35,116,255,.13);filter:blur(20px);pointer-events:none}
+.promo-left{position:relative;z-index:1;display:flex;align-items:center;gap:14px}.promo-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(70,145,255,.32);border-radius:12px;background:linear-gradient(135deg,#16345d,#0c1a2e);color:#55a0ff;font-size:22px;font-weight:900;box-shadow:inset 0 0 20px rgba(65,140,255,.08)}
+.promo-kicker{font-size:9px;letter-spacing:2px;color:#4e8edc;font-weight:900}.promo-left h2{margin:4px 0 3px;font-size:18px;letter-spacing:-.3px}.promo-left p{margin:0;color:#718096;font-size:11px}
+.promo-form{position:relative;z-index:2;display:flex;gap:9px}.promo-form input{height:46px;flex:1;min-width:0;padding:0 14px;border:1px solid rgba(92,126,170,.25);border-radius:10px;background:#080f19;color:#fff;outline:none;font:600 12px Inter,sans-serif;transition:.2s}.promo-form input::placeholder{color:#53657c}.promo-form input:focus{border-color:#3d8dff;box-shadow:0 0 0 3px rgba(61,141,255,.10)}.promo-form input.promo-error{animation:promoShake .35s ease;border-color:#ef4b5f}
+.promo-form button{height:46px;padding:0 16px;border:0;border-radius:10px;background:linear-gradient(135deg,#1768e8,#3a8fff);color:#fff;font:900 10px Inter,sans-serif;letter-spacing:.7px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(25,103,232,.22);transition:transform .15s,filter .15s}.promo-form button b{font-size:17px}.promo-form button:hover{filter:brightness(1.12);transform:translateY(-1px)}.promo-form button:active{transform:translateY(0)}
+.promo-status{position:relative;z-index:1;grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;padding-top:2px}.promo-chip{border:1px solid rgba(91,125,169,.18);background:rgba(255,255,255,.025);color:#9aabc0;border-radius:8px;padding:7px 10px;cursor:pointer;display:flex;gap:8px;align-items:center;font:600 10px Inter,sans-serif}.promo-chip:hover{border-color:rgba(67,139,255,.45);background:rgba(48,113,208,.08);color:#fff}.promo-chip span{color:#4f9aff;font-weight:800}
+@keyframes promoShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(max-width:760px){.promo-panel{grid-template-columns:1fr;padding:18px}.promo-form{width:100%}.promo-form button{flex:0 0 auto}.promo-status{grid-column:auto}}
+
+/* === 100-SKIN CATALOG === */
+.catalog-section{margin-top:30px;padding-top:26px;border-top:1px solid rgba(110,145,190,.12)}
+.catalog-sub{margin:5px 0 0;color:#77869c;font-size:11px}
+.catalog-search{min-width:230px}
+.catalog-card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.catalog-card:hover{transform:translateY(-3px);border-color:rgba(62,139,255,.48);box-shadow:0 12px 30px rgba(0,0,0,.22)}
+.catalog-add-btn{width:100%;margin-top:10px;padding:9px 10px;border:1px solid rgba(60,139,255,.32);border-radius:8px;background:rgba(33,99,190,.13);color:#9ec7ff;font-size:10px;font-weight:900;letter-spacing:.4px;cursor:pointer;transition:.18s}
+.catalog-add-btn:hover{background:rgba(43,124,239,.28);color:#fff;border-color:rgba(79,155,255,.7)}
+@media(max-width:700px){.catalog-search{min-width:0;width:100%}.section-head{gap:12px;flex-direction:column;align-items:stretch}}
