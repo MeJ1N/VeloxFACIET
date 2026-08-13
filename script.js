@@ -35,13 +35,20 @@
   }
 
   function normalizeSkin(s, i) {
+    const rawPrice = Number(s.price);
+    // Keep real API prices when they are usable; otherwise create a stable
+    // demo price spanning the requested $10-$10,000 range.
+    const demoPrice = 10 * Math.pow(1000, (i % 300) / 299);
+    const price = Number.isFinite(rawPrice) && rawPrice >= 10 && rawPrice <= 10000
+      ? rawPrice
+      : Number(demoPrice.toFixed(2));
     return {
       id: s.id || "skin-" + i,
       name: s.name || "Unknown Skin",
       rarity: s.rarity?.name || "Restricted",
       color: s.rarity?.color || "#4b69ff",
       image: s.image || "",
-      price: Number(s.price || (8 + ((i * 17) % 300))),
+      price,
       market_hash_name: s.market_hash_name || s.name
     };
   }
@@ -113,7 +120,7 @@
     const box = $("#catalogGrid");
     if (!box) return;
     const q = ($("#catalogSearch")?.value || "").toLowerCase().trim();
-    const list = state.skins.filter(s => !q || s.name.toLowerCase().includes(q)).slice(0, 100);
+    const list = state.skins.filter(s => !q || s.name.toLowerCase().includes(q)).slice(0, 300);
     box.innerHTML = list.length ? list.map(s => `
       <article class="skin-card catalog-card">
         <div class="skin-image"><img src="${escapeHtml(s.image)}" alt="${escapeHtml(s.name)}" loading="lazy" onerror="this.style.opacity='.12'"></div>
@@ -287,7 +294,7 @@
 
   function chooseRandomTarget() {
     if (!state.source) return showToast("Сначала выбери исходный предмет");
-    const options = state.skins.filter(s => s.price > state.source.price * 1.05);
+    const options = state.skins.filter(s => s.id !== state.source.id && s.price > state.source.price);
     if (!options.length) return showToast("Нет подходящих целей");
     const target = options[Math.floor(Math.random() * options.length)];
     state.target = target;
@@ -412,8 +419,10 @@
       if (!res.ok) throw new Error("API " + res.status);
       const data = await res.json();
       const normalized = data.map(normalizeSkin);
-      const useful = normalized.filter(s => s.image && s.name);
-      state.skins = useful.length > 30 ? useful : FALLBACK_SKINS;
+      const useful = normalized
+        .filter(s => s.image && s.name && s.price >= 10 && s.price <= 10000)
+        .sort((a,b) => a.price - b.price);
+      state.skins = useful.length >= 300 ? useful.slice(0,300) : useful.length >= 30 ? useful : FALLBACK_SKINS;
       $("#apiStatus").textContent = "Каталог CS2 подключён";
       $("#apiStatus").parentElement.querySelector("i").style.background = "var(--green)";
     } catch (e) {
