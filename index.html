@@ -126,6 +126,18 @@
           </div>
           <div class="skin-grid" id="inventoryGrid"></div>
         </section>
+
+        <section class="catalog-section">
+          <div class="section-head">
+            <div>
+              <span class="panel-kicker">CS2 CATALOG</span>
+              <h2>Каталог скинов</h2>
+              <p class="catalog-sub">До 100 скинов из каталога CS2. Нажми «В инвентарь», чтобы добавить предмет.</p>
+            </div>
+            <input id="catalogSearch" class="search catalog-search" placeholder="🔎 Поиск по каталогу..." autocomplete="off">
+          </div>
+          <div class="skin-grid" id="catalogGrid"></div>
+        </section>
       </section>
 
       <section class="page" id="page-cases">
@@ -135,17 +147,22 @@
 
       <section class="page" id="page-inventory">
 
-        <section class="promo-panel">
-          <div>
-            <div class="promo-title">🎁 Промокод</div>
-            <div class="promo-subtitle">Введи код и получи виртуальные деньги</div>
+        <section class="promo-panel" aria-label="Промокод">
+          <div class="promo-glow"></div>
+          <div class="promo-left">
+            <div class="promo-icon">%</div>
+            <div>
+              <div class="promo-kicker">LUNEX BONUS</div>
+              <h2>Активировать промокод</h2>
+              <p>Получи виртуальные кредиты за промокод.</p>
+            </div>
           </div>
           <div class="promo-form">
-            <input id="promoInput" type="text" maxlength="32" placeholder="LUNEX100">
-            <button id="promoBtn" type="button">АКТИВИРОВАТЬ</button>
+            <label class="sr-only" for="promoInput">Промокод</label>
+            <input id="promoInput" type="text" maxlength="32" placeholder="Введите промокод" autocomplete="off" spellcheck="false">
+            <button id="promoBtn" type="button"><span>АКТИВИРОВАТЬ</span><b>→</b></button>
           </div>
           <div id="promoStatus" class="promo-status"></div>
-          <div class="promo-note">Лимит 100 активаций на каждый код в этой демо-версии.</div>
         </section>
         <div class="page-title"><span class="panel-kicker">YOUR ITEMS</span><h1>Инвентарь</h1><p>Все полученные предметы находятся здесь.</p></div>
         <div class="skin-grid" id="fullInventoryGrid"></div>
