@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/31016912/README.md)
+[README.md](https://github.com/user-attachments/files/31078826/README.md)
 # Lunex Upgrader — FINAL
 
 Готовая GitHub Pages demo-версия CS2 skin upgrader.
@@ -27,4 +27,4 @@
 Это только виртуальная демонстрация. Баланс виртуальный, реальные деньги, Steam-трейды и вывод средств не подключены.
 
 
-Catalog update: 300 local entries, $10-$10,000 demo price range, target selection no longer requires a 5% price gap.
+Catalog update: 300 local entries, $10-$9,000 demo price range, target selection no longer requires a 5% price gap.
