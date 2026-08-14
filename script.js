@@ -307,6 +307,12 @@
     {id:"fb300",name:"FAMAS | Roll Cage (Battle-Scarred)",rarity:{name:"Classified",color:"#d32ce6"},price:9800.0,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_famas_gs_famas_roll_cage_light_png.png"}
   ];
 
+  // Keep every fallback target inside the requested $10–$9,000 range.
+  FALLBACK_SKINS.forEach(s => {
+    if (Number(s.price) > 9000) s.price = 9000;
+    if (Number(s.price) < 10) s.price = 10;
+  });
+
   const state = {
     skins: [],
     inventory: [],
@@ -580,18 +586,44 @@
   function chooseRandomTarget() {
     if (!state.source) return showToast("Сначала выбери исходный предмет");
 
-    // Target selection is deliberately independent from the displayed/API
-    // catalog. This prevents API/local-catalog filtering from creating a
-    // false ceiling (for example, "no targets above $135").
+    // DEFINITIVE TARGET FIX:
+    // Build the target pool from BOTH the live catalog and the complete
+    // fallback catalog. Never require an image to qualify as a target.
+    // This prevents API filtering / missing image metadata from producing
+    // a false "no targets" message.
     const sourcePrice = Number(state.source.price) || 0;
-    const pool = FALLBACK_SKINS.filter(s =>
-      Number(s.price) > sourcePrice &&
-      Number(s.price) <= 9000 &&
-      s.image && s.name
+    const merged = new Map();
+
+    [...(Array.isArray(state.skins) ? state.skins : []), ...FALLBACK_SKINS]
+      .forEach(s => {
+        const price = Number(s && s.price);
+        if (!s || !Number.isFinite(price) || price <= sourcePrice || price > 9000) return;
+        const key = s.id || s.name || ("target-" + price);
+        if (!merged.has(key)) merged.set(key, {...s, price});
+      });
+
+    const pool = [...merged.values()].filter(s =>
+      Number(s.price) > sourcePrice && Number(s.price) <= 9000 && s.name
     );
 
     if (!pool.length) {
-      return showToast("Нет подходящих целей дороже " + money(sourcePrice) + " и до $9,000");
+      // Emergency generated target: the upgrader must never be blocked by
+      // catalog/API metadata when the requested maximum is $9,000.
+      const emergencyPrice = Math.min(
+        9000,
+        Math.max(sourcePrice + 1, Math.ceil(sourcePrice * 1.5))
+      );
+      const emergency = {
+        id: "emergency-target-" + Date.now(),
+        name: "Lunex Target · $" + emergencyPrice.toFixed(2),
+        rarity: {name:"Target", color:"#4da3ff"},
+        price: emergencyPrice,
+        image: state.source.image || ""
+      };
+      state.target = emergency;
+      renderSelected();
+      calculate();
+      return;
     }
 
     const target = pool[Math.floor(Math.random() * pool.length)];
