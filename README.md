@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/31078826/README.md)
+[README.md](https://github.com/user-attachments/files/31080220/README.md)
 # Lunex Upgrader — FINAL
 
 Готовая GitHub Pages demo-версия CS2 skin upgrader.
