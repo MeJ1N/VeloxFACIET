@@ -301,9 +301,9 @@
     {id:"fb294",name:"USP-S | The Traitor (Battle-Scarred)",rarity:{name:"Extraordinary",color:"#eb4b4b"},price:8966.78,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_usp_silencer_cu_usp_the_traitor_light_png.png"},
     {id:"fb295",name:"USP-S | Neo-Noir (Battle-Scarred)",rarity:{name:"Classified",color:"#d32ce6"},price:8730.9,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_usp_silencer_cu_usp_neonoir_light_png.png"},
     {id:"fb296",name:"P250 | See Ya Later (Battle-Scarred)",rarity:{name:"Classified",color:"#d32ce6"},price:9117.3,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_p250_gs_p250_see_ya_later_light_png.png"},
-    {id:"fb297",name:"P250 | Asiimov (Battle-Scarred)",rarity:{name:"Covert",color:"#eb4b4b"},price:9890.21,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_p250_gs_p250_asiimov_light_png.png"},
+    {id:"fb297",name:"P250 | Asiimov (Battle-Scarred)",rarity:{name:"Covert",color:"#eb4b4b"},price:8990.21,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_p250_gs_p250_asiimov_light_png.png"},
     {id:"fb298",name:"P250 | Mehndi (Battle-Scarred)",rarity:{name:"Restricted",color:"#8847ff"},price:8975.55,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_p250_am_p250_mehndi_light_png.png"},
-    {id:"fb299",name:"FAMAS | Commemoration (Battle-Scarred)",rarity:{name:"Extraordinary",color:"#eb4b4b"},price:10000,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_famas_cu_famas_jinn_light_png.png"},
+    {id:"fb299",name:"FAMAS | Commemoration (Battle-Scarred)",rarity:{name:"Extraordinary",color:"#eb4b4b"},price:9000,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_famas_cu_famas_jinn_light_png.png"},
     {id:"fb300",name:"FAMAS | Roll Cage (Battle-Scarred)",rarity:{name:"Classified",color:"#d32ce6"},price:9800.0,image:"https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/default_generated/weapon_famas_gs_famas_roll_cage_light_png.png"}
   ];
 
@@ -703,19 +703,37 @@
       const res = await fetch(API, {cache:"no-store"});
       if (!res.ok) throw new Error("API " + res.status);
       const data = await res.json();
-      const normalized = data.map(normalizeSkin).filter(s => s.image && s.name && s.price >= 10 && s.price <= 10000);
-      const byName = new Map();
-      [...normalized, ...FALLBACK_SKINS].forEach(s => { if (!byName.has(s.name)) byName.set(s.name, s); });
-      state.skins = [...byName.values()].sort((a,b) => a.price - b.price).slice(0, 300);
-      if (state.skins.length < 300) {
-        const extra = FALLBACK_SKINS.filter(s => !state.skins.some(x => x.id === s.id));
-        state.skins = [...state.skins, ...extra].sort((a,b) => a.price - b.price).slice(0, 300);
-      }
-      $("#apiStatus").textContent = state.skins.length >= 300 ? "Каталог: 300 скинов" : "Каталог CS2 подключён";
+      const normalized = data.map(normalizeSkin).filter(s => s.image && s.name && s.price >= 10 && s.price <= 9000);
+
+      // IMPORTANT: keep the complete local 300-skin progression.
+      // The previous code sorted API + fallback together and then took the
+      // first 300 cheapest items. When the API returned many cheap skins,
+      // expensive fallback targets disappeared, making upgrades appear to
+      // stop around $20.
+      const byId = new Map();
+      FALLBACK_SKINS
+        .filter(s => Number(s.price) >= 10 && Number(s.price) <= 9000)
+        .forEach(s => byId.set(s.id, s));
+
+      // Add API skins only when they do not replace the local progression.
+      normalized.forEach(s => {
+        if (!byId.has(s.id) && ![...byId.values()].some(x => x.name === s.name)) {
+          byId.set(s.id, s);
+        }
+      });
+
+      state.skins = [...byId.values()]
+        .filter(s => Number(s.price) >= 10 && Number(s.price) <= 9000)
+        .sort((a,b) => a.price - b.price)
+        .slice(0, 300);
+
+      $("#apiStatus").textContent = state.skins.length >= 300
+        ? "Каталог: 300 скинов · $10–$9,000"
+        : "Каталог CS2 подключён";
       $("#apiStatus").parentElement.querySelector("i").style.background = "var(--green)";
     } catch (e) {
-      state.skins = FALLBACK_SKINS.slice(0, 300);
-      $("#apiStatus").textContent = "Каталог: 300 скинов";
+      state.skins = FALLBACK_SKINS.filter(s => Number(s.price) >= 10 && Number(s.price) <= 9000).slice(0, 300);
+      $("#apiStatus").textContent = "Каталог: 300 скинов · $10–$9,000";
       showToast("API недоступен — используется локальный каталог из 300 скинов");
     }
     // Keep inventory items in the target catalog.
