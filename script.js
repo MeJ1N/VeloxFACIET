@@ -579,9 +579,22 @@
 
   function chooseRandomTarget() {
     if (!state.source) return showToast("Сначала выбери исходный предмет");
-    const options = state.skins.filter(s => s.price > state.source.price);
-    if (!options.length) return showToast("Нет подходящих целей дороже " + money(state.source.price));
-    const target = options[Math.floor(Math.random() * options.length)];
+
+    // Target selection is deliberately independent from the displayed/API
+    // catalog. This prevents API/local-catalog filtering from creating a
+    // false ceiling (for example, "no targets above $135").
+    const sourcePrice = Number(state.source.price) || 0;
+    const pool = FALLBACK_SKINS.filter(s =>
+      Number(s.price) > sourcePrice &&
+      Number(s.price) <= 9000 &&
+      s.image && s.name
+    );
+
+    if (!pool.length) {
+      return showToast("Нет подходящих целей дороже " + money(sourcePrice) + " и до $9,000");
+    }
+
+    const target = pool[Math.floor(Math.random() * pool.length)];
     state.target = target;
     renderSelected();
     calculate();
