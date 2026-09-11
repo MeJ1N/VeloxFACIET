@@ -5,1929 +5,1660 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Lunex Cheats — Minecraft Store</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+<title>SPIDRNCHIKKK — Minecraft Server</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* =====================================================
-   RESET
-===================================================== */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-html {
-    scroll-behavior: smooth;
+html{
+    scroll-behavior:smooth;
 }
 
-body {
-    min-height: 100vh;
-    background: #05070d;
-    color: #ffffff;
-    font-family: "Inter", sans-serif;
-    overflow-x: hidden;
+body{
+    font-family:Inter,Arial,sans-serif;
+    background:#07080d;
+    color:#fff;
+    overflow-x:hidden;
 }
 
-button,
-input {
-    font-family: inherit;
+/* =========================
+   VARIABLES
+========================= */
+
+:root{
+    --bg:#07080d;
+    --panel:#0e1017;
+    --panel2:#141722;
+    --border:rgba(255,255,255,.08);
+
+    --purple:#8b5cf6;
+    --purple2:#a855f7;
+    --light:#c084fc;
+
+    --green:#35e58c;
+    --red:#ff5d6c;
+
+    --text:#ffffff;
+    --muted:#858b9c;
 }
 
-button {
-    border: none;
-    cursor: pointer;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-
-/* =====================================================
+/* =========================
    BACKGROUND
-===================================================== */
+========================= */
 
-.background-grid {
-    position: fixed;
-    inset: 0;
-    z-index: -5;
+body:before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
 
-    background-image:
-        linear-gradient(rgba(35, 125, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(35, 125, 255, 0.035) 1px, transparent 1px);
+    background:
+        radial-gradient(
+            circle at 15% 10%,
+            rgba(139,92,246,.18),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(168,85,247,.12),
+            transparent 28%
+        ),
+        linear-gradient(
+            rgba(255,255,255,.015) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.015) 1px,
+            transparent 1px
+        );
 
-    background-size: 55px 55px;
+    background-size:
+        auto,
+        auto,
+        45px 45px,
+        45px 45px;
 
-    mask-image: linear-gradient(
-        to bottom,
-        black,
-        transparent 85%
-    );
+    z-index:-1;
 }
 
-.glow {
-    position: fixed;
-    width: 500px;
-    height: 500px;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: .15;
-    pointer-events: none;
-    z-index: -4;
-}
-
-.glow-one {
-    background: #1677ff;
-    top: -250px;
-    left: -150px;
-}
-
-.glow-two {
-    background: #5b2cff;
-    right: -250px;
-    top: 450px;
-}
-
-
-/* =====================================================
-   CONTAINER
-===================================================== */
-
-.container {
-    width: min(1180px, calc(100% - 40px));
-    margin: auto;
-}
-
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-
-    background: rgba(5, 7, 13, .65);
-    backdrop-filter: blur(18px);
-
-    border-bottom: 1px solid rgba(255,255,255,.05);
-
-    transition: .3s;
-}
-
-.header.scrolled {
-    background: rgba(5,7,13,.92);
-    box-shadow: 0 10px 40px rgba(0,0,0,.25);
-}
-
-.navbar {
-    height: 78px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-}
-
-
-/* =====================================================
-   LOGO
-===================================================== */
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-}
-
-.logo-icon {
-    width: 40px;
-    height: 40px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 11px;
-
-    background: linear-gradient(
-        135deg,
-        #1680ff,
-        #6240ff
-    );
-
-    font-family: "Orbitron", sans-serif;
-    font-weight: 800;
-
-    box-shadow:
-        0 0 30px rgba(40,120,255,.35);
-}
-
-.logo-text {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.logo-text span {
-    color: #438fff;
-}
-
-
-/* =====================================================
+/* =========================
    NAVIGATION
-===================================================== */
+========================= */
 
-.nav-links {
-    display: flex;
-    align-items: center;
-    gap: 30px;
+nav{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+
+    height:74px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 6%;
+
+    background:rgba(7,8,13,.78);
+    backdrop-filter:blur(18px);
+
+    border-bottom:1px solid var(--border);
+
+    z-index:100;
 }
 
-.nav-links a {
-    color: #8992a5;
-    font-size: 14px;
-    font-weight: 600;
+.logo{
+    display:flex;
+    align-items:center;
+    gap:11px;
 
-    transition: .2s;
+    font-size:19px;
+    font-weight:900;
 }
 
-.nav-links a:hover {
-    color: #fff;
-}
+.logo-icon{
+    width:39px;
+    height:39px;
 
+    display:grid;
+    place-items:center;
 
-/* =====================================================
-   NAV BUTTONS
-===================================================== */
-
-.nav-buttons {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.cart-button {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-
-    padding: 10px 15px;
-
-    border-radius: 10px;
-
-    background: #0c101a;
-    color: #fff;
-
-    border: 1px solid #1b2230;
-
-    transition: .2s;
-}
-
-.cart-button:hover {
-    border-color: #277cff;
-    background: #101827;
-}
-
-.cart-button span {
-    min-width: 21px;
-    height: 21px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 50%;
-
-    background: #277cff;
-
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.menu-button {
-    display: none;
-
-    width: 42px;
-    height: 42px;
-
-    border-radius: 10px;
-
-    background: #0c101a;
-    color: #fff;
-
-    border: 1px solid #1b2230;
-
-    font-size: 20px;
-}
-
-
-/* =====================================================
-   HERO
-===================================================== */
-
-.hero {
-    min-height: 800px;
-
-    padding-top: 150px;
-    padding-bottom: 100px;
-
-    display: flex;
-    align-items: center;
-}
-
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 70px;
-    align-items: center;
-}
-
-.small-title {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-
-    color: #589bff;
-
-    font-size: 11px;
-    font-weight: 800;
-
-    letter-spacing: 2px;
-}
-
-.small-title span {
-    width: 24px;
-    height: 2px;
-    background: #398cff;
-}
-
-.hero h1 {
-    margin-top: 20px;
-
-    font-family: "Orbitron", sans-serif;
-
-    font-size: clamp(44px, 6vw, 78px);
-    line-height: 1.03;
-
-    letter-spacing: -3px;
-}
-
-.gradient-text {
-    display: block;
-
-    background: linear-gradient(
-        90deg,
-        #ffffff,
-        #408eff,
-        #765cff
-    );
-
-    -webkit-background-clip: text;
-    color: transparent;
-}
-
-.hero-description {
-    max-width: 580px;
-
-    margin-top: 25px;
-
-    color: #8992a5;
-
-    font-size: 16px;
-    line-height: 1.8;
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 13px;
-
-    margin-top: 32px;
-}
-
-.primary-button,
-.secondary-button {
-    padding: 14px 22px;
-
-    border-radius: 10px;
-
-    font-weight: 700;
-    font-size: 14px;
-
-    transition: .25s;
-}
-
-.primary-button {
-    background: linear-gradient(
-        135deg,
-        #187eff,
-        #5b45ff
-    );
-
-    box-shadow:
-        0 10px 30px rgba(30,110,255,.2);
-}
-
-.primary-button:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 15px 40px rgba(30,110,255,.35);
-}
-
-.secondary-button {
-    border: 1px solid #222b3b;
-    background: #0a0e17;
-    color: #b7c0d0;
-}
-
-.secondary-button:hover {
-    border-color: #3c8fff;
-    color: white;
-}
-
-
-/* =====================================================
-   STATS
-===================================================== */
-
-.statistics {
-    display: flex;
-    gap: 45px;
-
-    margin-top: 50px;
-}
-
-.stat {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.stat strong {
-    font-family: "Orbitron", sans-serif;
-    font-size: 18px;
-}
-
-.stat span {
-    color: #687286;
-    font-size: 12px;
-}
-
-
-/* =====================================================
-   CLIENT PREVIEW
-===================================================== */
-
-.client-preview-wrapper {
-    position: relative;
-}
-
-.client-preview {
-    overflow: hidden;
-
-    border: 1px solid #1d2b40;
-    border-radius: 18px;
-
-    background: rgba(9,13,22,.92);
-
-    box-shadow:
-        0 40px 100px rgba(0,0,0,.55),
-        0 0 80px rgba(35,115,255,.08);
-
-    transform: perspective(1000px) rotateY(-4deg);
-
-    transition: .4s;
-}
-
-.client-preview:hover {
-    transform:
-        perspective(1000px)
-        rotateY(0deg)
-        translateY(-5px);
-}
-
-.client-top {
-    height: 52px;
-
-    display: flex;
-    align-items: center;
-
-    gap: 15px;
-
-    padding: 0 18px;
-
-    border-bottom: 1px solid #1a2230;
-
-    color: #8490a5;
-
-    font-size: 12px;
-}
-
-.client-top strong {
-    color: #fff;
-    font-family: "Orbitron", sans-serif;
-}
-
-.client-top small {
-    margin-left: auto;
-}
-
-.window-dots {
-    display: flex;
-    gap: 5px;
-}
-
-.window-dots span {
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: #344154;
-}
-
-.client-body {
-    min-height: 380px;
-
-    display: grid;
-    grid-template-columns: 130px 1fr;
-}
-
-.client-menu {
-    padding: 20px 12px;
-
-    border-right: 1px solid #1a2230;
-}
-
-.client-logo {
-    width: 45px;
-    height: 45px;
-
-    display: grid;
-    place-items: center;
-
-    margin: 0 auto 25px;
-
-    border-radius: 12px;
-
-    background: linear-gradient(
-        135deg,
-        #187eff,
-        #603fff
-    );
-
-    font-family: "Orbitron", sans-serif;
-    font-weight: 800;
-}
-
-.client-menu button {
-    width: 100%;
-
-    padding: 10px 8px;
-    margin-bottom: 5px;
-
-    border-radius: 7px;
-
-    background: transparent;
-    color: #687286;
-
-    text-align: left;
-
-    font-size: 11px;
-}
-
-.client-menu button.active,
-.client-menu button:hover {
-    color: #fff;
-    background: #111b2a;
-}
-
-.client-modules {
-    padding: 28px;
-}
-
-.client-modules h3 {
-    margin-bottom: 18px;
-
-    font-family: "Orbitron", sans-serif;
-    font-size: 15px;
-}
-
-.module-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 14px 0;
-
-    border-bottom: 1px solid #141c29;
-
-    color: #aeb7c7;
-
-    font-size: 12px;
-}
-
-.switch {
-    width: 35px;
-    height: 19px;
-
-    position: relative;
-
-    border-radius: 20px;
-
-    background: #1b2330;
-}
-
-.switch::after {
-    content: "";
-
-    position: absolute;
-
-    width: 13px;
-    height: 13px;
-
-    top: 3px;
-    left: 3px;
-
-    border-radius: 50%;
-
-    background: #6e7787;
-
-    transition: .2s;
-}
-
-.switch.enabled {
-    background: #167cff;
-}
-
-.switch.enabled::after {
-    left: 19px;
-    background: white;
-}
-
-
-/* =====================================================
-   FLOATING CARDS
-===================================================== */
-
-.floating-card {
-    position: absolute;
-
-    padding: 12px 16px;
-
-    border-radius: 10px;
-
-    background: rgba(12,17,27,.92);
-
-    border: 1px solid #24344d;
-
-    box-shadow: 0 15px 35px rgba(0,0,0,.4);
-
-    font-size: 11px;
-    font-weight: 700;
-
-    animation: float 4s ease-in-out infinite;
-}
-
-.floating-card-one {
-    top: 12%;
-    right: -45px;
-}
-
-.floating-card-two {
-    bottom: 12%;
-    left: -45px;
-
-    animation-delay: -2s;
-}
-
-@keyframes float {
-    0%,100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-9px);
-    }
-}
-
-
-/* =====================================================
-   SECTIONS
-===================================================== */
-
-.section {
-    padding: 110px 0;
-}
-
-.section-dark {
-    background:
-        linear-gradient(
-            180deg,
-            transparent,
-            rgba(9,15,27,.65),
-            transparent
-        );
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-
-    margin-bottom: 45px;
-}
-
-.section-header h2,
-.center-heading h2 {
-    margin-top: 12px;
-
-    font-family: "Orbitron", sans-serif;
-
-    font-size: 35px;
-}
-
-.section-header h2 span {
-    color: #438fff;
-}
-
-
-/* =====================================================
-   FILTERS
-===================================================== */
-
-.filters {
-    display: flex;
-    gap: 7px;
-}
-
-.filter-button {
-    padding: 9px 14px;
-
-    border-radius: 8px;
-
-    background: #0a0f18;
-
-    color: #687286;
-
-    border: 1px solid #1b2535;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    transition: .2s;
-}
-
-.filter-button:hover,
-.filter-button.active {
-    background: #147aff;
-    border-color: #147aff;
-    color: white;
-}
-
-
-/* =====================================================
-   PRODUCTS
-===================================================== */
-
-.products-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 18px;
-}
-
-.product-card {
-    position: relative;
-
-    overflow: hidden;
-
-    padding: 25px;
-
-    border: 1px solid #1b2535;
-    border-radius: 15px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(14,20,32,.95),
-            rgba(7,10,17,.95)
-        );
-
-    transition: .3s;
-}
-
-.product-card:hover {
-    transform: translateY(-6px);
-
-    border-color: #2b76d8;
-
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.35),
-        0 0 40px rgba(35,115,255,.08);
-}
-
-.product-badge {
-    position: absolute;
-
-    top: 18px;
-    right: 18px;
-
-    padding: 5px 8px;
-
-    border-radius: 5px;
-
-    background: #102b4e;
-    color: #55a0ff;
-
-    font-size: 8px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.product-icon {
-    width: 55px;
-    height: 55px;
-
-    display: grid;
-    place-items: center;
-
-    margin-bottom: 22px;
-
-    border-radius: 13px;
+    border-radius:11px;
 
     background:
         linear-gradient(
             135deg,
-            #147dff,
-            #563dff
+            var(--purple),
+            var(--light)
         );
 
-    font-family: "Orbitron", sans-serif;
-    font-weight: 800;
+    box-shadow:
+        0 0 30px rgba(139,92,246,.35);
+}
+
+.nav-links{
+    display:flex;
+    gap:30px;
+}
+
+.nav-links a{
+    color:#999eae;
+    text-decoration:none;
+
+    font-size:13px;
+    font-weight:700;
+
+    transition:.25s;
+}
+
+.nav-links a:hover{
+    color:#fff;
+}
+
+.nav-online{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#b9bfcc;
+    font-size:12px;
+    font-weight:600;
+}
+
+.online-dot{
+    width:8px;
+    height:8px;
+
+    border-radius:50%;
+
+    background:var(--green);
 
     box-shadow:
-        0 10px 35px rgba(30,100,255,.2);
+        0 0 12px var(--green);
 }
 
-.product-version {
-    color: #647085;
-    font-size: 10px;
-    font-weight: 600;
+/* =========================
+   HERO
+========================= */
+
+.hero{
+    min-height:720px;
+
+    padding:
+        150px
+        6%
+        90px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    position:relative;
 }
 
-.product-card h3 {
-    margin-top: 8px;
-
-    font-family: "Orbitron", sans-serif;
-    font-size: 18px;
+.hero-content{
+    max-width:900px;
 }
 
-.product-description {
-    margin-top: 10px;
+.badge{
+    display:inline-flex;
 
-    color: #768195;
+    padding:9px 15px;
 
-    font-size: 12px;
-    line-height: 1.6;
+    border-radius:999px;
+
+    border:1px solid
+        rgba(192,132,252,.25);
+
+    background:
+        rgba(139,92,246,.08);
+
+    color:#d8b4fe;
+
+    font-size:11px;
+    font-weight:800;
+
+    margin-bottom:24px;
 }
 
-.product-features {
-    list-style: none;
+.hero h1{
+    font-size:
+        clamp(
+            48px,
+            8vw,
+            92px
+        );
 
-    margin-top: 20px;
+    line-height:.94;
+
+    letter-spacing:-5px;
+
+    font-weight:900;
+
+    margin-bottom:25px;
 }
 
-.product-features li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.gradient{
+    background:
+        linear-gradient(
+            100deg,
+            #fff,
+            #d8b4fe,
+            #8b5cf6
+        );
 
-    margin-bottom: 9px;
+    -webkit-background-clip:text;
+    background-clip:text;
 
-    color: #9ba5b7;
-
-    font-size: 11px;
+    color:transparent;
 }
 
-.product-features li span {
-    color: #398cff;
-    font-weight: 900;
+.hero p{
+    max-width:650px;
+
+    margin:auto;
+
+    color:#8d94a5;
+
+    line-height:1.75;
+
+    font-size:16px;
 }
 
-.product-bottom {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
+.hero-buttons{
+    margin-top:35px;
 
-    margin-top: 25px;
-    padding-top: 20px;
+    display:flex;
+    justify-content:center;
 
-    border-top: 1px solid #172131;
+    gap:12px;
+
+    flex-wrap:wrap;
 }
 
-.product-price {
-    display: flex;
-    flex-direction: column;
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:15px 23px;
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    font-size:13px;
+    font-weight:800;
+
+    transition:.25s;
+
+    cursor:pointer;
 }
 
-.old-price {
-    color: #505a6c;
+.btn-primary{
+    color:#fff;
 
-    font-size: 10px;
-    text-decoration: line-through;
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #a855f7
+        );
+
+    box-shadow:
+        0 12px 35px
+        rgba(139,92,246,.25);
 }
 
-.product-price strong {
-    margin-top: 3px;
+.btn-primary:hover{
+    transform:translateY(-3px);
 
-    font-family: "Orbitron", sans-serif;
-    font-size: 20px;
+    box-shadow:
+        0 17px 45px
+        rgba(139,92,246,.42);
 }
 
-.buy-button {
-    padding: 11px 17px;
+.btn-secondary{
+    color:#fff;
 
-    border-radius: 8px;
+    background:#141720;
 
-    background: #147aff;
-    color: white;
-
-    font-size: 11px;
-    font-weight: 800;
-
-    transition: .2s;
+    border:1px solid var(--border);
 }
 
-.buy-button:hover {
-    background: #3991ff;
-    transform: translateY(-2px);
+.btn-secondary:hover{
+    transform:translateY(-3px);
+
+    background:#1a1e29;
 }
 
+/* =========================
+   SERVER IP
+========================= */
 
-/* =====================================================
-   CENTER HEADING
-===================================================== */
+.server-box{
+    width:min(620px,100%);
 
-.center-heading {
-    text-align: center;
-    margin-bottom: 50px;
+    margin:
+        55px
+        auto
+        0;
+
+    padding:5px;
+
+    border-radius:17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(139,92,246,.4),
+            rgba(255,255,255,.04)
+        );
 }
 
-.center-title {
-    justify-content: center;
+.server-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:15px;
+
+    padding:18px 22px;
+
+    background:#0c0e14;
+
+    border-radius:13px;
 }
 
-.center-heading h2 {
-    font-size: 35px;
+.server-info{
+    text-align:left;
 }
 
-.center-heading p {
-    margin-top: 12px;
-    color: #697488;
+.server-label{
+    color:#6f7585;
+
+    font-size:9px;
+
+    letter-spacing:1.5px;
+    font-weight:800;
 }
 
+.server-ip{
+    margin-top:5px;
 
-/* =====================================================
+    font-size:14px;
+    font-weight:900;
+}
+
+.copy-btn{
+    padding:11px 16px;
+
+    border:1px solid var(--border);
+
+    border-radius:9px;
+
+    background:#171a24;
+
+    color:#fff;
+
+    font-size:12px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.copy-btn:hover{
+    background:#222634;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+    max-width:1100px;
+
+    margin:
+        -15px
+        auto
+        0;
+
+    padding:0 6%;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:15px;
+}
+
+.stat{
+    padding:26px;
+
+    text-align:center;
+
+    background:
+        rgba(16,18,26,.82);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:18px;
+}
+
+.stat-value{
+    font-size:30px;
+    font-weight:900;
+}
+
+.stat-label{
+    margin-top:7px;
+
+    color:#747b8c;
+
+    font-size:10px;
+    font-weight:700;
+}
+
+/* =========================
+   SECTIONS
+========================= */
+
+section{
+    padding:100px 6%;
+}
+
+.section-title{
+    text-align:center;
+
+    margin-bottom:50px;
+}
+
+.section-title span{
+    color:#a78bfa;
+
+    font-size:10px;
+
+    text-transform:uppercase;
+
+    letter-spacing:2px;
+
+    font-weight:900;
+}
+
+.section-title h2{
+    margin-top:10px;
+
+    font-size:42px;
+
+    letter-spacing:-2px;
+}
+
+/* =========================
+   DONATES
+========================= */
+
+.donates{
+    max-width:1250px;
+
+    margin:auto;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:16px;
+}
+
+.donate{
+    position:relative;
+
+    min-height:320px;
+
+    padding:25px;
+
+    overflow:hidden;
+
+    border-radius:19px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #12151f,
+            #0d0f15
+        );
+
+    border:
+        1px solid var(--border);
+
+    transition:.3s;
+}
+
+.donate:after{
+    content:"";
+
+    position:absolute;
+
+    width:130px;
+    height:130px;
+
+    top:-70px;
+    right:-70px;
+
+    border-radius:50%;
+
+    background:
+        rgba(139,92,246,.1);
+
+    filter:blur(10px);
+}
+
+.donate:hover{
+    transform:translateY(-7px);
+
+    border-color:
+        rgba(192,132,252,.45);
+
+    box-shadow:
+        0 20px 55px
+        rgba(0,0,0,.35);
+}
+
+.donate.featured{
+    border-color:
+        rgba(139,92,246,.5);
+
+    box-shadow:
+        0 0 40px
+        rgba(139,92,246,.07);
+}
+
+.popular{
+    position:absolute;
+
+    top:14px;
+    right:14px;
+
+    padding:6px 9px;
+
+    border-radius:7px;
+
+    color:#fff;
+
+    background:#8b5cf6;
+
+    font-size:8px;
+
+    text-transform:uppercase;
+
+    font-weight:900;
+}
+
+.donate-icon{
+    width:49px;
+    height:49px;
+
+    display:grid;
+    place-items:center;
+
+    margin-bottom:20px;
+
+    border-radius:13px;
+
+    background:#191c28;
+
+    font-size:22px;
+}
+
+.donate h3{
+    font-size:21px;
+
+    margin-bottom:8px;
+}
+
+.donate-desc{
+    color:#777e8e;
+
+    font-size:11px;
+
+    line-height:1.65;
+
+    min-height:38px;
+}
+
+.price{
+    margin:
+        18px
+        0;
+
+    font-size:29px;
+
+    font-weight:900;
+}
+
+.price small{
+    color:#686f80;
+
+    font-size:10px;
+
+    font-weight:600;
+}
+
+.buy{
+    width:100%;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    border:
+        1px solid
+        rgba(139,92,246,.3);
+
+    background:
+        rgba(139,92,246,.08);
+
+    color:#c4b5fd;
+
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.buy:hover{
+    background:#8b5cf6;
+
+    color:#fff;
+
+    transform:translateY(-1px);
+}
+
+/* =========================
    FEATURES
-===================================================== */
+========================= */
 
-.features-grid {
-    display: grid;
+.features{
+    max-width:1050px;
 
-    grid-template-columns:
-        repeat(4, 1fr);
+    margin:auto;
 
-    gap: 15px;
-}
-
-.feature-card {
-    padding: 28px 23px;
-
-    border: 1px solid #1b2535;
-    border-radius: 14px;
-
-    background: rgba(8,12,20,.75);
-
-    transition: .3s;
-}
-
-.feature-card:hover {
-    border-color: #276ec6;
-    transform: translateY(-5px);
-}
-
-.feature-icon {
-    width: 45px;
-    height: 45px;
-
-    display: grid;
-    place-items: center;
-
-    margin-bottom: 20px;
-
-    border-radius: 11px;
-
-    background: #0e1b2c;
-
-    font-size: 19px;
-}
-
-.feature-card h3 {
-    font-size: 15px;
-}
-
-.feature-card p {
-    margin-top: 9px;
-
-    color: #687286;
-
-    font-size: 11px;
-    line-height: 1.7;
-}
-
-
-/* =====================================================
-   REVIEWS
-===================================================== */
-
-.reviews-grid {
-    display: grid;
+    display:grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(3,1fr);
 
-    gap: 15px;
+    gap:16px;
 }
 
-.review-card {
-    padding: 24px;
+.feature{
+    padding:27px;
 
-    border: 1px solid #1b2535;
-    border-radius: 14px;
+    border:
+        1px solid var(--border);
 
-    background: #090e17;
+    border-radius:17px;
+
+    background:#10121a;
 }
 
-.stars {
-    color: #4d94ff;
-    letter-spacing: 2px;
+.feature-icon{
+    font-size:25px;
+
+    margin-bottom:15px;
 }
 
-.review-card p {
-    margin-top: 15px;
+.feature h3{
+    font-size:16px;
 
-    color: #8993a5;
-
-    font-size: 12px;
-    line-height: 1.7;
+    margin-bottom:8px;
 }
 
-.review-user {
-    display: flex;
-    align-items: center;
+.feature p{
+    color:#777e8e;
 
-    gap: 10px;
+    font-size:11px;
 
-    margin-top: 20px;
+    line-height:1.7;
 }
 
-.user-avatar {
-    width: 35px;
-    height: 35px;
+/* =========================
+   CART BUTTON
+========================= */
 
-    display: grid;
-    place-items: center;
+.cart-button{
+    position:fixed;
 
-    border-radius: 9px;
+    right:25px;
+    bottom:25px;
 
-    background: #13243a;
+    z-index:150;
 
-    color: #559cff;
+    width:57px;
+    height:57px;
 
-    font-size: 11px;
-    font-weight: 800;
-}
+    display:grid;
+    place-items:center;
 
-.review-user strong {
-    font-size: 11px;
-}
+    border:none;
 
-.review-user span {
-    display: block;
+    border-radius:17px;
 
-    margin-top: 2px;
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #a855f7
+        );
 
-    color: #5d687a;
+    color:#fff;
 
-    font-size: 9px;
-}
+    font-size:22px;
 
-
-/* =====================================================
-   FAQ
-===================================================== */
-
-.faq {
-    max-width: 800px;
-    margin: auto;
-}
-
-.faq-item {
-    overflow: hidden;
-
-    margin-bottom: 10px;
-
-    border: 1px solid #1a2433;
-    border-radius: 11px;
-
-    background: #090e17;
-}
-
-.faq-question {
-    width: 100%;
-
-    display: flex;
-    justify-content: space-between;
-
-    padding: 18px;
-
-    background: transparent;
-    color: white;
-
-    text-align: left;
-
-    font-weight: 700;
-    font-size: 13px;
-}
-
-.faq-question span {
-    color: #438fff;
-    font-size: 18px;
-}
-
-.faq-answer {
-    display: none;
-
-    padding: 0 18px 18px;
-
-    color: #717c90;
-
-    font-size: 12px;
-    line-height: 1.7;
-}
-
-.faq-item.open .faq-answer {
-    display: block;
-}
-
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
-.footer {
-    padding: 45px 0;
-
-    border-top: 1px solid #151e2c;
-
-    background: #04060a;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer p {
-    color: #566174;
-    font-size: 11px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 20px;
-}
-
-.footer-links a {
-    color: #687286;
-    font-size: 11px;
-}
-
-.footer-links a:hover {
-    color: white;
-}
-
-
-/* =====================================================
-   MODAL
-===================================================== */
-
-.modal {
-    position: fixed;
-    inset: 0;
-
-    z-index: 500;
-
-    display: none;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-overlay {
-    position: absolute;
-    inset: 0;
-
-    background: rgba(0,0,0,.75);
-    backdrop-filter: blur(8px);
-}
-
-.modal-window {
-    position: relative;
-    z-index: 2;
-
-    width: min(500px, 100%);
-
-    max-height: 90vh;
-    overflow-y: auto;
-
-    padding: 28px;
-
-    border: 1px solid #26374f;
-    border-radius: 17px;
-
-    background: #090e17;
+    cursor:pointer;
 
     box-shadow:
-        0 30px 100px rgba(0,0,0,.7);
+        0 15px 40px
+        rgba(139,92,246,.3);
+
+    transition:.25s;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    margin-bottom: 25px;
+.cart-button:hover{
+    transform:translateY(-4px) scale(1.03);
 }
 
-.modal-header h2 {
-    font-family: "Orbitron", sans-serif;
+.cart-count{
+    position:absolute;
+
+    top:-6px;
+    right:-6px;
+
+    min-width:20px;
+    height:20px;
+
+    display:grid;
+    place-items:center;
+
+    padding:0 5px;
+
+    border-radius:999px;
+
+    background:#ff4f65;
+
+    font-size:9px;
+
+    font-weight:900;
 }
 
-.close-modal {
-    width: 35px;
-    height: 35px;
-
-    border-radius: 8px;
-
-    background: #111925;
-    color: #8994a7;
-
-    font-size: 20px;
-}
-
-.close-modal:hover {
-    color: white;
-    background: #182438;
-}
-
-
-/* =====================================================
+/* =========================
    CART
-===================================================== */
+========================= */
 
-.cart-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.cart-overlay{
+    position:fixed;
 
-    padding: 13px 0;
+    inset:0;
 
-    border-bottom: 1px solid #182131;
+    z-index:250;
+
+    display:none;
+
+    background:
+        rgba(0,0,0,.75);
+
+    backdrop-filter:blur(9px);
 }
 
-.cart-item-icon {
-    width: 42px;
-    height: 42px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 9px;
-
-    background: linear-gradient(
-        135deg,
-        #167cff,
-        #583fff
-    );
-
-    font-family: "Orbitron", sans-serif;
-    font-size: 10px;
-    font-weight: 800;
+.cart-overlay.active{
+    display:block;
 }
 
-.cart-item-info {
-    flex: 1;
+.cart{
+    position:absolute;
+
+    right:0;
+    top:0;
+    bottom:0;
+
+    width:min(450px,100%);
+
+    padding:27px;
+
+    overflow-y:auto;
+
+    background:#0d0f16;
+
+    border-left:
+        1px solid var(--border);
+
+    animation:
+        cartIn .25s ease;
 }
 
-.cart-item-info strong {
-    display: block;
-    font-size: 12px;
+@keyframes cartIn{
+    from{
+        transform:translateX(100%);
+    }
+
+    to{
+        transform:translateX(0);
+    }
 }
 
-.cart-item-info span {
-    display: block;
+.cart-header{
+    display:flex;
 
-    margin-top: 3px;
+    justify-content:space-between;
+    align-items:center;
 
-    color: #647085;
-    font-size: 9px;
+    margin-bottom:25px;
 }
 
-.cart-price {
-    font-weight: 800;
-    font-size: 12px;
+.cart-header h2{
+    font-size:24px;
 }
 
-.remove-item {
-    width: 27px;
-    height: 27px;
+.close{
+    width:35px;
+    height:35px;
 
-    border-radius: 6px;
+    border:none;
 
-    background: #151d29;
-    color: #657084;
+    border-radius:10px;
+
+    background:#181b25;
+
+    color:#aaa;
+
+    font-size:20px;
+
+    cursor:pointer;
 }
 
-.remove-item:hover {
-    color: #ff5d69;
+.cart-empty{
+    padding:60px 20px;
+
+    text-align:center;
+
+    color:#686f7f;
 }
 
-.cart-total {
-    display: flex;
-    justify-content: space-between;
+.cart-empty-icon{
+    font-size:40px;
 
-    margin-top: 22px;
-
-    font-family: "Orbitron", sans-serif;
+    margin-bottom:15px;
 }
 
-.checkout-button {
-    width: 100%;
+.cart-item{
+    display:grid;
 
-    margin-top: 18px;
-    padding: 14px;
+    grid-template-columns:
+        1fr auto;
 
-    border-radius: 9px;
+    gap:12px;
 
-    background: linear-gradient(
-        135deg,
-        #187eff,
-        #5b45ff
-    );
+    padding:17px;
 
-    color: white;
+    margin-bottom:10px;
 
-    font-weight: 800;
+    border:
+        1px solid var(--border);
+
+    border-radius:14px;
+
+    background:#12151e;
 }
 
-.empty-cart {
-    padding: 35px 10px;
+.cart-item-name{
+    font-weight:800;
 
-    text-align: center;
-
-    color: #687286;
+    font-size:14px;
 }
 
-.empty-cart-icon {
-    font-size: 35px;
-    margin-bottom: 12px;
+.cart-item-price{
+    margin-top:5px;
+
+    color:#a78bfa;
+
+    font-size:12px;
+
+    font-weight:800;
 }
 
-.empty-cart h3 {
-    color: white;
-    margin-bottom: 7px;
+.cart-actions{
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
 }
 
-.empty-cart p {
-    font-size: 11px;
+.qty{
+    width:27px;
+    height:27px;
+
+    border:none;
+
+    border-radius:7px;
+
+    background:#202430;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-weight:900;
 }
 
+.remove{
+    width:27px;
+    height:27px;
 
-/* =====================================================
-   CHECKOUT
-===================================================== */
+    border:none;
 
-.form-group {
-    margin-bottom: 16px;
+    border-radius:7px;
+
+    background:
+        rgba(255,93,108,.1);
+
+    color:#ff7784;
+
+    cursor:pointer;
 }
 
-.form-group label {
-    display: block;
+.cart-total{
+    display:flex;
 
-    margin-bottom: 7px;
+    justify-content:space-between;
 
-    color: #8b96a8;
+    align-items:center;
 
-    font-size: 11px;
-    font-weight: 700;
+    padding:
+        20px
+        0;
+
+    margin-top:15px;
+
+    border-top:
+        1px solid var(--border);
+
+    font-size:14px;
+
+    font-weight:800;
 }
 
-.form-group input {
-    width: 100%;
+.total-price{
+    color:#c4b5fd;
 
-    padding: 13px;
+    font-size:22px;
 
-    border: 1px solid #202c3e;
-    border-radius: 8px;
-
-    outline: none;
-
-    background: #070b12;
-    color: white;
+    font-weight:900;
 }
 
-.form-group input:focus {
-    border-color: #297eff;
+.checkout{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #a855f7
+        );
+
+    color:white;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+    transition:.2s;
 }
 
-.order-summary {
-    margin-top: 20px;
-    padding: 15px;
+.checkout:hover{
+    transform:translateY(-2px);
 
-    border: 1px solid #1c293a;
-    border-radius: 10px;
-
-    background: #070b12;
+    box-shadow:
+        0 12px 30px
+        rgba(139,92,246,.25);
 }
 
-.order-summary-row {
-    display: flex;
-    justify-content: space-between;
+/* =========================
+   CHECKOUT MODAL
+========================= */
 
-    color: #7c8799;
-    font-size: 11px;
+.modal{
+    position:fixed;
+
+    inset:0;
+
+    z-index:400;
+
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:20px;
+
+    background:
+        rgba(0,0,0,.78);
+
+    backdrop-filter:blur(10px);
 }
 
-.order-summary-row strong {
-    color: white;
+.modal.active{
+    display:flex;
 }
 
+.modal-box{
+    width:min(470px,100%);
 
-/* =====================================================
-   NOTIFICATION
-===================================================== */
+    max-height:90vh;
 
-.notification {
-    position: fixed;
+    overflow-y:auto;
 
-    right: 25px;
-    bottom: 25px;
+    padding:30px;
 
-    z-index: 1000;
+    border:
+        1px solid var(--border);
 
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    border-radius:22px;
 
-    padding: 13px 17px;
+    background:#11141d;
 
-    border: 1px solid #24364e;
-    border-radius: 10px;
+    box-shadow:
+        0 30px 100px
+        rgba(0,0,0,.55);
 
-    background: #0b121d;
-
-    box-shadow: 0 20px 50px rgba(0,0,0,.45);
-
-    transform: translateY(30px);
-    opacity: 0;
-
-    transition: .3s;
+    animation:
+        modalIn .25s ease;
 }
 
-.notification.show {
-    transform: translateY(0);
-    opacity: 1;
+@keyframes modalIn{
+    from{
+        opacity:0;
+        transform:
+            scale(.93)
+            translateY(15px);
+    }
+
+    to{
+        opacity:1;
+        transform:
+            scale(1)
+            translateY(0);
+    }
 }
 
-.notification-icon {
-    width: 25px;
-    height: 25px;
+.modal-top{
+    display:flex;
 
-    display: grid;
-    place-items: center;
+    align-items:center;
+    justify-content:space-between;
 
-    border-radius: 50%;
-
-    background: #167cff;
-
-    font-size: 11px;
+    margin-bottom:25px;
 }
 
+.modal-top h2{
+    font-size:23px;
+}
 
-/* =====================================================
+.order-list{
+    margin-bottom:18px;
+}
+
+.order-row{
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:10px;
+
+    padding:12px 0;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,.05);
+
+    color:#a2a8b7;
+
+    font-size:12px;
+}
+
+.order-row strong{
+    color:#fff;
+}
+
+.form-label{
+    display:block;
+
+    margin:
+        16px
+        0
+        7px;
+
+    color:#858b9c;
+
+    font-size:10px;
+
+    font-weight:800;
+}
+
+.input{
+    width:100%;
+
+    padding:14px;
+
+    outline:none;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:10px;
+
+    background:#0b0d12;
+
+    color:#fff;
+
+    font-family:inherit;
+
+    transition:.2s;
+}
+
+.input:focus{
+    border-color:#8b5cf6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(139,92,246,.08);
+}
+
+.final-total{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin:
+        20px 0;
+
+    padding:
+        16px;
+
+    border-radius:12px;
+
+    background:#181b25;
+}
+
+.final-total span{
+    color:#8b91a0;
+
+    font-size:12px;
+}
+
+.final-total strong{
+    color:#c4b5fd;
+
+    font-size:23px;
+}
+
+.modal-buy{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#8b5cf6;
+
+    color:#fff;
+
+    font-weight:900;
+
+    cursor:pointer;
+}
+
+/* =========================
+   PAYMENT
+========================= */
+
+.payment-success{
+    display:none;
+
+    text-align:center;
+}
+
+.payment-success.active{
+    display:block;
+}
+
+.success-icon{
+    width:70px;
+    height:70px;
+
+    display:grid;
+    place-items:center;
+
+    margin:
+        5px
+        auto
+        18px;
+
+    border-radius:50%;
+
+    background:
+        rgba(53,229,140,.1);
+
+    color:var(--green);
+
+    font-size:34px;
+}
+
+.payment-success h2{
+    margin-bottom:8px;
+}
+
+.payment-success p{
+    color:#858b9c;
+
+    font-size:12px;
+
+    line-height:1.7;
+}
+
+.payment-info{
+    margin:
+        20px
+        0;
+
+    padding:17px;
+
+    text-align:left;
+
+    border-radius:12px;
+
+    background:#181b25;
+
+    color:#a4a9b7;
+
+    font-size:11px;
+
+    line-height:1.9;
+}
+
+.payment-info strong{
+    color:white;
+}
+
+.pay-link{
+    display:block;
+
+    width:100%;
+
+    padding:14px;
+
+    border-radius:10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #a855f7
+        );
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:13px;
+
+    font-weight:900;
+
+    text-align:center;
+}
+
+.payment-note{
+    margin-top:12px;
+
+    color:#686f7e;
+
+    font-size:9px;
+
+    line-height:1.6;
+
+    text-align:center;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+    position:fixed;
+
+    left:50%;
+    bottom:25px;
+
+    z-index:600;
+
+    transform:
+        translate(-50%,100px);
+
+    opacity:0;
+
+    padding:
+        13px
+        18px;
+
+    border-radius:11px;
+
+    background:#181b25;
+
+    border:
+        1px solid var(--border);
+
+    box-shadow:
+        0 15px 50px
+        rgba(0,0,0,.4);
+
+    font-size:12px;
+
+    font-weight:800;
+
+    transition:.3s;
+
+    pointer-events:none;
+}
+
+.toast.show{
+    transform:
+        translate(-50%,0);
+
+    opacity:1;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer{
+    padding:
+        45px
+        6%;
+
+    text-align:center;
+
+    border-top:
+        1px solid var(--border);
+
+    color:#606777;
+
+    font-size:10px;
+
+    line-height:1.8;
+}
+
+footer strong{
+    color:#a78bfa;
+}
+
+/* =========================
    RESPONSIVE
-===================================================== */
+========================= */
 
-@media (max-width: 900px) {
+@media(max-width:1000px){
 
-    .nav-links {
-        position: absolute;
-
-        top: 78px;
-        left: 20px;
-        right: 20px;
-
-        display: none;
-        flex-direction: column;
-
-        padding: 18px;
-
-        border: 1px solid #202c3d;
-        border-radius: 12px;
-
-        background: #090e17;
-    }
-
-    .nav-links.open {
-        display: flex;
-    }
-
-    .menu-button {
-        display: block;
-    }
-
-    .hero-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .client-preview-wrapper {
-        max-width: 700px;
-        margin: auto;
-        width: 100%;
-    }
-
-    .products-grid {
+    .donates{
         grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-    .features-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-    .reviews-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-}
-
-
-@media (max-width: 620px) {
-
-    .container {
-        width: min(100% - 25px, 1180px);
-    }
-
-    .hero {
-        padding-top: 120px;
-    }
-
-    .hero h1 {
-        font-size: 43px;
-        letter-spacing: -2px;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-    }
-
-    .statistics {
-        gap: 20px;
-    }
-
-    .section {
-        padding: 75px 0;
-    }
-
-    .section-header {
-        display: block;
-    }
-
-    .filters {
-        margin-top: 20px;
-        flex-wrap: wrap;
-    }
-
-    .products-grid,
-    .features-grid,
-    .reviews-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .client-body {
-        grid-template-columns: 95px 1fr;
-    }
-
-    .client-menu {
-        padding: 15px 8px;
-    }
-
-    .client-modules {
-        padding: 20px 15px;
-    }
-
-    .floating-card-one {
-        right: -5px;
-    }
-
-    .floating-card-two {
-        left: -5px;
-    }
-
-    .footer-content {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .footer-links {
-        flex-wrap: wrap;
-        justify-content: center;
+            repeat(2,1fr);
     }
 
 }
 
+@media(max-width:700px){
+
+    nav{
+        padding:0 20px;
+    }
+
+    .nav-links{
+        display:none;
+    }
+
+    .nav-online{
+        font-size:10px;
+    }
+
+    .hero{
+        min-height:650px;
+
+        padding:
+            120px
+            20px
+            60px;
+    }
+
+    .hero h1{
+        letter-spacing:-3px;
+    }
+
+    .hero p{
+        font-size:14px;
+    }
+
+    section{
+        padding:
+            70px
+            20px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+
+        padding:0 20px;
+    }
+
+    .donates{
+        grid-template-columns:1fr;
+    }
+
+    .features{
+        grid-template-columns:1fr;
+    }
+
+    .server-inner{
+        flex-direction:column;
+    }
+
+    .server-info{
+        text-align:center;
+    }
+
+    .copy-btn{
+        width:100%;
+    }
+
+    .section-title h2{
+        font-size:32px;
+    }
+
+    .cart{
+        width:100%;
+    }
+
+    .modal-box{
+        padding:23px;
+    }
+}
+
+@media(max-width:400px){
+
+    .hero h1{
+        font-size:44px;
+    }
+
+    .logo{
+        font-size:15px;
+    }
+
+    .logo-icon{
+        width:34px;
+        height:34px;
+    }
+}
 </style>
 </head>
 
-
 <body>
 
-<div class="background-grid"></div>
-<div class="glow glow-one"></div>
-<div class="glow glow-two"></div>
+<!-- =========================
+     NAV
+========================= -->
 
+<nav>
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
+    <div class="logo">
 
-<header class="header" id="header">
-
-    <div class="container navbar">
-
-        <a href="#home" class="logo">
-
-            <div class="logo-icon">
-                L
-            </div>
-
-            <div class="logo-text">
-                LUNEX<span>CHEATS</span>
-            </div>
-
-        </a>
-
-
-        <nav class="nav-links" id="navLinks">
-
-            <a href="#home">
-                Главная
-            </a>
-
-            <a href="#products">
-                Товары
-            </a>
-
-            <a href="#features">
-                Преимущества
-            </a>
-
-            <a href="#reviews">
-                Отзывы
-            </a>
-
-            <a href="#faq">
-                FAQ
-            </a>
-
-        </nav>
-
-
-        <div class="nav-buttons">
-
-            <button class="cart-button" id="cartButton">
-                Корзина
-                <span id="cartCount">0</span>
-            </button>
-
-            <button class="menu-button" id="menuButton">
-                ☰
-            </button>
-
+        <div class="logo-icon">
+            S
         </div>
+
+        SPIDRNCHIKKK
 
     </div>
 
-</header>
+    <div class="nav-links">
+
+        <a href="#home">
+            Главная
+        </a>
+
+        <a href="#donate">
+            Донаты
+        </a>
+
+        <a href="#features">
+            Возможности
+        </a>
+
+    </div>
+
+    <div class="nav-online">
+
+        <span class="online-dot"></span>
+
+        <span id="navOnline">
+            247 игроков
+        </span>
+
+    </div>
+
+</nav>
 
 
-
-<!-- =====================================================
+<!-- =========================
      HERO
-===================================================== -->
+========================= -->
 
-<section class="hero" id="home">
+<section
+    class="hero"
+    id="home"
+>
 
-    <div class="container hero-grid">
+    <div class="hero-content">
 
+        <div class="badge">
+            🕷️ ДОБРО ПОЖАЛОВАТЬ НА SPIDRNCHIKKK
+        </div>
 
-        <div class="hero-content">
+        <h1>
 
-            <div class="small-title">
-                <span></span>
-                MINECRAFT CLIENT STORE
-            </div>
+            ТВОЯ ИГРА.<br>
 
+            <span class="gradient">
+                ТВОИ ПРАВИЛА.
+            </span>
 
-            <h1>
+        </h1>
 
-                Играй
+        <p>
 
-                <span class="gradient-text">
-                    по своим правилам
-                </span>
+            SPIDRNCHIKKK — Minecraft-сервер,
+            где каждый игрок может создать
+            свою историю. Развивайся,
+            сражайся и становись легендой.
 
-            </h1>
+        </p>
 
+        <div class="hero-buttons">
 
-            <p class="hero-description">
+            <a
+                href="#donate"
+                class="btn btn-primary"
+            >
+                🛒 Купить донат
+            </a>
 
-                Современный магазин Minecraft-клиентов
-                и цифровых игровых продуктов.
-                Удобный каталог, красивые карточки
-                и быстрое оформление заказа.
-
-            </p>
-
-
-            <div class="hero-buttons">
-
-                <a href="#products"
-                   class="primary-button">
-
-                    Смотреть товары
-
-                </a>
-
-                <a href="#features"
-                   class="secondary-button">
-
-                    Почему мы?
-
-                </a>
-
-            </div>
-
-
-            <div class="statistics">
-
-                <div class="stat">
-
-                    <strong>
-                        4.9/5
-                    </strong>
-
-                    <span>
-                        Рейтинг
-                    </span>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <strong>
-                        24/7
-                    </strong>
-
-                    <span>
-                        Поддержка
-                    </span>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <strong>
-                        1 мин
-                    </strong>
-
-                    <span>
-                        Выдача
-                    </span>
-
-                </div>
-
-            </div>
+            <a
+                href="#features"
+                class="btn btn-secondary"
+            >
+                Узнать больше
+            </a>
 
         </div>
 
 
+        <div class="server-box">
 
-        <!-- CLIENT PREVIEW -->
+            <div class="server-inner">
 
-        <div class="client-preview-wrapper">
+                <div class="server-info">
 
-            <div class="client-preview">
-
-                <div class="client-top">
-
-                    <div class="window-dots">
-
-                        <span></span>
-                        <span></span>
-                        <span></span>
-
+                    <div class="server-label">
+                        IP СЕРВЕРА
                     </div>
 
-                    <strong>
-                        LUNEX CLIENT
-                    </strong>
-
-                    <small>
-                        v3.8.2
-                    </small>
-
-                </div>
-
-
-                <div class="client-body">
-
-                    <div class="client-menu">
-
-                        <div class="client-logo">
-                            LX
-                        </div>
-
-                        <button class="active">
-                            Combat
-                        </button>
-
-                        <button>
-                            Movement
-                        </button>
-
-                        <button>
-                            Player
-                        </button>
-
-                        <button>
-                            Visuals
-                        </button>
-
-                        <button>
-                            Misc
-                        </button>
-
-                    </div>
-
-
-                    <div class="client-modules">
-
-                        <h3>
-                            Modules
-                        </h3>
-
-
-                        <div class="module-row">
-
-                            <span>
-                                Velocity
-                            </span>
-
-                            <div class="switch enabled"></div>
-
-                        </div>
-
-
-                        <div class="module-row">
-
-                            <span>
-                                Auto Sprint
-                            </span>
-
-                            <div class="switch enabled"></div>
-
-                        </div>
-
-
-                        <div class="module-row">
-
-                            <span>
-                                ESP
-                            </span>
-
-                            <div class="switch"></div>
-
-                        </div>
-
-
-                        <div class="module-row">
-
-                            <span>
-                                HUD
-                            </span>
-
-                            <div class="switch enabled"></div>
-
-                        </div>
-
-
-                        <div class="module-row">
-
-                            <span>
-                                Keystrokes
-                            </span>
-
-                            <div class="switch enabled"></div>
-
-                        </div>
-
+                    <div
+                        class="server-ip"
+                        id="serverIp"
+                    >
+                        play.spidrnchikk.ru
                     </div>
 
                 </div>
 
-            </div>
+                <button
+                    class="copy-btn"
+                    onclick="copyIP()"
+                >
+                    📋 Скопировать IP
+                </button>
 
-
-            <div class="floating-card floating-card-one">
-                ⚡ Быстрая выдача
-            </div>
-
-
-            <div class="floating-card floating-card-two">
-                ✓ Проверено
             </div>
 
         </div>
@@ -1937,525 +1668,484 @@ a {
 </section>
 
 
+<!-- =========================
+     STATS
+========================= -->
 
-<!-- =====================================================
-     PRODUCTS
-===================================================== -->
+<div class="stats">
 
-<section class="section" id="products">
+    <div class="stat">
 
-    <div class="container">
+        <div
+            class="stat-value"
+            id="players"
+        >
+            247
+        </div>
+
+        <div class="stat-label">
+            ИГРОКОВ ОНЛАЙН
+        </div>
+
+    </div>
+
+    <div class="stat">
+
+        <div class="stat-value">
+            24/7
+        </div>
+
+        <div class="stat-label">
+            РАБОТА СЕРВЕРА
+        </div>
+
+    </div>
+
+    <div class="stat">
+
+        <div class="stat-value">
+            1.21+
+        </div>
+
+        <div class="stat-label">
+            ВЕРСИЯ MINECRAFT
+        </div>
+
+    </div>
+
+</div>
 
 
-        <div class="section-header">
+<!-- =========================
+     DONATES
+========================= -->
 
-            <div>
+<section id="donate">
 
-                <div class="small-title">
+    <div class="section-title">
 
-                    <span></span>
-                    CATALOG
+        <span>
+            Магазин
+        </span>
 
-                </div>
+        <h2>
+            Донат-привилегии
+        </h2>
 
-                <h2>
+    </div>
 
-                    Выбери свой
-                    <span>продукт</span>
 
-                </h2>
+    <div class="donates">
 
+
+        <!-- БАРОН -->
+
+        <div class="donate">
+
+            <div class="donate-icon">
+                👑
             </div>
 
+            <h3>
+                Барон
+            </h3>
 
-            <div class="filters">
+            <p class="donate-desc">
+                Первый уровень привилегии
+                для игроков сервера.
+            </p>
 
-                <button
-                    class="filter-button active"
-                    data-filter="all">
-
-                    Все
-
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="popular">
-
-                    Популярное
-
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="premium">
-
-                    Premium
-
-                </button>
-
+            <div class="price">
+                12 ₽
+                <small>
+                    / навсегда
+                </small>
             </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Барон',12)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- АСПИД -->
+
+        <div class="donate">
+
+            <div class="donate-icon">
+                🐍
+            </div>
+
+            <h3>
+                Аспид
+            </h3>
+
+            <p class="donate-desc">
+                Больше возможностей
+                и повышенный статус.
+            </p>
+
+            <div class="price">
+                25 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Аспид',25)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- ЭЛИТА -->
+
+        <div class="donate">
+
+            <div class="donate-icon">
+                💎
+            </div>
+
+            <h3>
+                Элита
+            </h3>
+
+            <p class="donate-desc">
+                Премиальный уровень
+                для опытных игроков.
+            </p>
+
+            <div class="price">
+                50 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Элита',50)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- ТИТАН -->
+
+        <div class="donate featured">
+
+            <div class="popular">
+                Популярный
+            </div>
+
+            <div class="donate-icon">
+                ⚡
+            </div>
+
+            <h3>
+                Титан
+            </h3>
+
+            <p class="donate-desc">
+                Мощная привилегия
+                с большим количеством функций.
+            </p>
+
+            <div class="price">
+                80 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Титан',80)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- ПРИНЦ -->
+
+        <div class="donate">
+
+            <div class="donate-icon">
+                🔥
+            </div>
+
+            <h3>
+                Принц
+            </h3>
+
+            <p class="donate-desc">
+                Высокий статус для
+                активных игроков.
+            </p>
+
+            <div class="price">
+                120 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Принц',120)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- КНЯЗЬ -->
+
+        <div class="donate">
+
+            <div class="donate-icon">
+                👑
+            </div>
+
+            <h3>
+                Князь
+            </h3>
+
+            <p class="donate-desc">
+                Премиальная привилегия
+                с расширенными возможностями.
+            </p>
+
+            <div class="price">
+                200 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Князь',200)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+
+        <!-- ГЕРЦОГ -->
+
+        <div class="donate featured">
+
+            <div class="popular">
+                Максимум
+            </div>
+
+            <div class="donate-icon">
+                💠
+            </div>
+
+            <h3>
+                Герцог
+            </h3>
+
+            <p class="donate-desc">
+                Максимальная привилегия
+                SPIDRNCHIKKK.
+            </p>
+
+            <div class="price">
+                350 ₽
+                <small>
+                    / навсегда
+                </small>
+            </div>
+
+            <button
+                class="buy"
+                onclick="addToCart('Герцог',350)"
+            >
+                🛒 В корзину
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     FEATURES
+========================= -->
+
+<section id="features">
+
+    <div class="section-title">
+
+        <span>
+            SPIDRNCHIKKK
+        </span>
+
+        <h2>
+            Почему мы?
+        </h2>
+
+    </div>
+
+
+    <div class="features">
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                ⚔️
+            </div>
+
+            <h3>
+                Активный сервер
+            </h3>
+
+            <p>
+                Игроки, события и активности
+                каждый день.
+            </p>
+
+        </div>
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                🏆
+            </div>
+
+            <h3>
+                Соревнования
+            </h3>
+
+            <p>
+                Сражайся, развивайся
+                и занимай первые места.
+            </p>
+
+        </div>
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                🎁
+            </div>
+
+            <h3>
+                Награды
+            </h3>
+
+            <p>
+                Получай награды
+                за активность на сервере.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     CART BUTTON
+========================= -->
+
+<button
+    class="cart-button"
+    onclick="openCart()"
+>
+
+    🛒
+
+    <span
+        class="cart-count"
+        id="cartCount"
+    >
+        0
+    </span>
+
+</button>
+
+
+<!-- =========================
+     CART
+========================= -->
+
+<div
+    class="cart-overlay"
+    id="cartOverlay"
+>
+
+    <div class="cart">
+
+        <div class="cart-header">
+
+            <h2>
+                🛒 Корзина
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeCart()"
+            >
+                ×
+            </button>
 
         </div>
 
 
         <div
-            class="products-grid"
-            id="productsGrid">
-
-        </div>
-
-    </div>
-
-</section>
+            id="cartItems"
+        ></div>
 
 
+        <div
+            id="cartFooter"
+            style="display:none"
+        >
 
-<!-- =====================================================
-     FEATURES
-===================================================== -->
+            <div class="cart-total">
 
-<section class="section section-dark"
-         id="features">
+                <span>
+                    Итого
+                </span>
 
-    <div class="container">
-
-
-        <div class="center-heading">
-
-            <div class="small-title center-title">
-
-                <span></span>
-                WHY LUNEX
-                <span></span>
+                <span
+                    class="total-price"
+                    id="cartTotal"
+                >
+                    0 ₽
+                </span>
 
             </div>
-
-
-            <h2>
-                Почему выбирают нас
-            </h2>
-
-
-            <p>
-                Всё необходимое для современного
-                магазина цифровых продуктов.
-            </p>
-
-        </div>
-
-
-        <div class="features-grid">
-
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    ⚡
-                </div>
-
-                <h3>
-                    Быстрая выдача
-                </h3>
-
-                <p>
-                    Удобное оформление заказа
-                    и автоматизированная логика
-                    выдачи цифрового продукта.
-                </p>
-
-            </div>
-
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    🛡
-                </div>
-
-                <h3>
-                    Удобный магазин
-                </h3>
-
-                <p>
-                    Красивые карточки, категории,
-                    фильтры и корзина в одном интерфейсе.
-                </p>
-
-            </div>
-
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    💬
-                </div>
-
-                <h3>
-                    Поддержка
-                </h3>
-
-                <p>
-                    Добавь ссылки на Discord,
-                    Telegram или собственную поддержку.
-                </p>
-
-            </div>
-
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    🔄
-                </div>
-
-                <h3>
-                    Обновления
-                </h3>
-
-                <p>
-                    Каталог легко расширяется новыми
-                    цифровыми продуктами.
-                </p>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     REVIEWS
-===================================================== -->
-
-<section class="section" id="reviews">
-
-    <div class="container">
-
-        <div class="center-heading">
-
-            <div class="small-title center-title">
-
-                <span></span>
-                REVIEWS
-                <span></span>
-
-            </div>
-
-            <h2>
-                Отзывы клиентов
-            </h2>
-
-        </div>
-
-
-        <div class="reviews-grid">
-
-
-            <div class="review-card">
-
-                <div class="stars">
-                    ★★★★★
-                </div>
-
-                <p>
-                    Очень приятный сайт, всё понятно
-                    и удобно. Корзина работает отлично.
-                </p>
-
-                <div class="review-user">
-
-                    <div class="user-avatar">
-                        S
-                    </div>
-
-                    <div>
-                        <strong>
-                            Shadow
-                        </strong>
-
-                        <span>
-                            Покупатель
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="review-card">
-
-                <div class="stars">
-                    ★★★★★
-                </div>
-
-                <p>
-                    Дизайн выглядит намного лучше
-                    обычных магазинов. Особенно нравится
-                    синее свечение.
-                </p>
-
-                <div class="review-user">
-
-                    <div class="user-avatar">
-                        A
-                    </div>
-
-                    <div>
-                        <strong>
-                            Alex
-                        </strong>
-
-                        <span>
-                            Покупатель
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="review-card">
-
-                <div class="stars">
-                    ★★★★★
-                </div>
-
-                <p>
-                    На телефоне тоже всё нормально
-                    выглядит. Фильтр товаров удобный.
-                </p>
-
-                <div class="review-user">
-
-                    <div class="user-avatar">
-                        M
-                    </div>
-
-                    <div>
-                        <strong>
-                            Moon
-                        </strong>
-
-                        <span>
-                            Покупатель
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     FAQ
-===================================================== -->
-
-<section class="section section-dark"
-         id="faq">
-
-    <div class="container">
-
-        <div class="center-heading">
-
-            <div class="small-title center-title">
-
-                <span></span>
-                FAQ
-                <span></span>
-
-            </div>
-
-            <h2>
-                Частые вопросы
-            </h2>
-
-        </div>
-
-
-        <div class="faq">
-
-
-            <div class="faq-item">
-
-                <button class="faq-question">
-
-                    Как купить продукт?
-
-                    <span>
-                        +
-                    </span>
-
-                </button>
-
-                <div class="faq-answer">
-
-                    Выберите товар, добавьте его
-                    в корзину и перейдите к оформлению.
-                    В этой демо-версии реальная оплата
-                    не подключена.
-
-                </div>
-
-            </div>
-
-
-            <div class="faq-item">
-
-                <button class="faq-question">
-
-                    Есть ли промокоды?
-
-                    <span>
-                        +
-                    </span>
-
-                </button>
-
-                <div class="faq-answer">
-
-                    Да. Для демонстрации сайта доступен
-                    промокод LUNEX со скидкой 10%.
-
-                </div>
-
-            </div>
-
-
-            <div class="faq-item">
-
-                <button class="faq-question">
-
-                    Работает ли сайт на телефоне?
-
-                    <span>
-                        +
-                    </span>
-
-                </button>
-
-                <div class="faq-answer">
-
-                    Да. Интерфейс адаптирован под
-                    смартфоны, планшеты и компьютеры.
-
-                </div>
-
-            </div>
-
-
-            <div class="faq-item">
-
-                <button class="faq-question">
-
-                    Можно ли изменить товары?
-
-                    <span>
-                        +
-                    </span>
-
-                </button>
-
-                <div class="faq-answer">
-
-                    Да. Список товаров находится
-                    в JavaScript в этом же файле.
-                    Можно менять названия, цены,
-                    категории и описания.
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer class="footer">
-
-    <div class="container footer-content">
-
-        <p>
-            © 2026 Lunex Cheats. Demo Store.
-        </p>
-
-        <div class="footer-links">
-
-            <a href="#home">
-                Главная
-            </a>
-
-            <a href="#products">
-                Каталог
-            </a>
-
-            <a href="#faq">
-                FAQ
-            </a>
-
-        </div>
-
-    </div>
-
-</footer>
-
-
-
-<!-- =====================================================
-     MODAL
-===================================================== -->
-
-<div class="modal" id="modal">
-
-    <div class="modal-overlay"
-         id="modalOverlay">
-    </div>
-
-    <div class="modal-window">
-
-        <div class="modal-header">
-
-            <h2 id="modalTitle">
-                Корзина
-            </h2>
 
             <button
-                class="close-modal"
-                id="closeModal">
-
-                ×
-
+                class="checkout"
+                onclick="openCheckout()"
+            >
+                Оформить заказ →
             </button>
-
-        </div>
-
-
-        <div id="modalContent">
 
         </div>
 
@@ -2464,665 +2154,521 @@ a {
 </div>
 
 
+<!-- =========================
+     CHECKOUT
+========================= -->
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
+<div
+    class="modal"
+    id="checkoutModal"
+>
 
-<script>
+    <div class="modal-box">
 
-/* =====================================================
-   PRODUCTS
-===================================================== */
+        <!-- FORM -->
 
-const products = [
+        <div id="checkoutForm">
 
-    {
-        id: 1,
-        name: "Lunex Lite",
-        category: "popular",
-        version: "1.16.5 — 1.21",
-        price: 299,
-        oldPrice: 399,
-        badge: "POPULAR",
-        description:
-            "Базовая версия цифрового Minecraft-продукта.",
-        features: [
-            "Современный интерфейс",
-            "Настраиваемый HUD",
-            "Система конфигов",
-            "Быстрые обновления"
-        ]
-    },
+            <div class="modal-top">
 
-    {
-        id: 2,
-        name: "Lunex Premium",
-        category: "premium",
-        version: "1.16.5 — 1.21",
-        price: 599,
-        oldPrice: 799,
-        badge: "PREMIUM",
-        description:
-            "Расширенная версия с дополнительными возможностями.",
-        features: [
-            "Все функции Lite",
-            "Premium интерфейс",
-            "Дополнительные настройки",
-            "Приоритетная поддержка"
-        ]
-    },
-
-    {
-        id: 3,
-        name: "Lunex Lifetime",
-        category: "premium",
-        version: "1.16.5 — 1.21",
-        price: 999,
-        oldPrice: 1299,
-        badge: "BEST",
-        description:
-            "Пожизненный доступ к цифровому продукту.",
-        features: [
-            "Пожизненный доступ",
-            "Будущие обновления",
-            "Premium возможности",
-            "VIP поддержка"
-        ]
-    }
-
-];
-
-
-/* =====================================================
-   VARIABLES
-===================================================== */
-
-let cart = [];
-
-let promoDiscount = 0;
-
-const productsGrid =
-    document.getElementById("productsGrid");
-
-const cartButton =
-    document.getElementById("cartButton");
-
-const cartCount =
-    document.getElementById("cartCount");
-
-const modal =
-    document.getElementById("modal");
-
-const modalTitle =
-    document.getElementById("modalTitle");
-
-const modalContent =
-    document.getElementById("modalContent");
-
-const closeModal =
-    document.getElementById("closeModal");
-
-const modalOverlay =
-    document.getElementById("modalOverlay");
-
-
-/* =====================================================
-   RENDER PRODUCTS
-===================================================== */
-
-function renderProducts(filter = "all") {
-
-    productsGrid.innerHTML = "";
-
-    const filtered =
-        products.filter(product => {
-
-            if (filter === "all") {
-                return true;
-            }
-
-            return product.category === filter;
-
-        });
-
-
-    filtered.forEach(product => {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "product-card";
-
-
-        card.innerHTML = `
-
-            <div class="product-badge">
-                ${product.badge}
-            </div>
-
-            <div class="product-icon">
-                LX
-            </div>
-
-            <span class="product-version">
-                Minecraft ${product.version}
-            </span>
-
-            <h3>
-                ${product.name}
-            </h3>
-
-            <p class="product-description">
-                ${product.description}
-            </p>
-
-            <ul class="product-features">
-
-                ${product.features.map(feature => `
-
-                    <li>
-                        <span>✓</span>
-                        ${feature}
-                    </li>
-
-                `).join("")}
-
-            </ul>
-
-            <div class="product-bottom">
-
-                <div class="product-price">
-
-                    <span class="old-price">
-                        ${product.oldPrice} ₽
-                    </span>
-
-                    <strong>
-                        ${product.price} ₽
-                    </strong>
-
-                </div>
+                <h2>
+                    Оформление
+                </h2>
 
                 <button
-                    class="buy-button"
-                    onclick="addToCart(${product.id})">
-
-                    Купить
-
+                    class="close"
+                    onclick="closeCheckout()"
+                >
+                    ×
                 </button>
 
             </div>
 
-        `;
 
+            <div
+                class="order-list"
+                id="orderList"
+            ></div>
 
-        productsGrid.appendChild(card);
 
-    });
+            <label class="form-label">
+                Minecraft ник
+            </label>
 
-}
+            <input
+                class="input"
+                id="nickname"
+                type="text"
+                maxlength="32"
+                placeholder="Например: SPIDRNCHIKKK"
+                autocomplete="off"
+            >
 
 
-/* =====================================================
-   FILTERS
-===================================================== */
+            <div class="final-total">
 
-document
-    .querySelectorAll(".filter-button")
-    .forEach(button => {
+                <span>
+                    К оплате
+                </span>
 
-        button.addEventListener("click", () => {
-
-            document
-                .querySelectorAll(".filter-button")
-                .forEach(btn => {
-
-                    btn.classList.remove("active");
-
-                });
-
-
-            button.classList.add("active");
-
-
-            renderProducts(
-                button.dataset.filter
-            );
-
-        });
-
-    });
-
-
-/* =====================================================
-   ADD TO CART
-===================================================== */
-
-function addToCart(id) {
-
-    const product =
-        products.find(item => item.id === id);
-
-    if (!product) {
-        return;
-    }
-
-
-    const exists =
-        cart.some(item => item.id === id);
-
-
-    if (exists) {
-
-        showNotification(
-            "Этот товар уже находится в корзине"
-        );
-
-        return;
-    }
-
-
-    cart.push(product);
-
-    saveCart();
-
-    updateCart();
-
-    showNotification(
-        `${product.name} добавлен в корзину`
-    );
-
-}
-
-
-/* =====================================================
-   REMOVE
-===================================================== */
-
-function removeFromCart(id) {
-
-    cart =
-        cart.filter(item => item.id !== id);
-
-    saveCart();
-
-    updateCart();
-
-    openCart();
-
-}
-
-
-/* =====================================================
-   UPDATE CART
-===================================================== */
-
-function updateCart() {
-
-    cartCount.textContent =
-        cart.length;
-
-}
-
-
-/* =====================================================
-   SAVE
-===================================================== */
-
-function saveCart() {
-
-    localStorage.setItem(
-        "lunex_cart",
-        JSON.stringify(cart)
-    );
-
-}
-
-
-/* =====================================================
-   LOAD
-===================================================== */
-
-function loadCart() {
-
-    try {
-
-        const saved =
-            localStorage.getItem("lunex_cart");
-
-        if (saved) {
-
-            cart =
-                JSON.parse(saved);
-
-        }
-
-    } catch {
-
-        cart = [];
-
-    }
-
-
-    updateCart();
-
-}
-
-
-/* =====================================================
-   OPEN MODAL
-===================================================== */
-
-function openModal(title, content) {
-
-    modalTitle.textContent =
-        title;
-
-    modalContent.innerHTML =
-        content;
-
-    modal.classList.add("active");
-
-    document.body.style.overflow =
-        "hidden";
-
-}
-
-
-/* =====================================================
-   CLOSE MODAL
-===================================================== */
-
-function closeModalWindow() {
-
-    modal.classList.remove("active");
-
-    document.body.style.overflow =
-        "";
-
-}
-
-
-closeModal.addEventListener(
-    "click",
-    closeModalWindow
-);
-
-modalOverlay.addEventListener(
-    "click",
-    closeModalWindow
-);
-
-
-/* =====================================================
-   CART
-===================================================== */
-
-function openCart() {
-
-    if (cart.length === 0) {
-
-        openModal(
-            "Корзина",
-            `
-
-                <div class="empty-cart">
-
-                    <div class="empty-cart-icon">
-                        🛒
-                    </div>
-
-                    <h3>
-                        Корзина пустая
-                    </h3>
-
-                    <p>
-                        Добавьте товар из каталога.
-                    </p>
-
-                </div>
-
-            `
-        );
-
-        return;
-    }
-
-
-    const total =
-        cart.reduce(
-            (sum, item) =>
-                sum + item.price,
-            0
-        );
-
-
-    openModal(
-        "Корзина",
-        `
-
-            <div>
-
-                ${cart.map(item => `
-
-                    <div class="cart-item">
-
-                        <div class="cart-item-icon">
-                            LX
-                        </div>
-
-                        <div class="cart-item-info">
-
-                            <strong>
-                                ${item.name}
-                            </strong>
-
-                            <span>
-                                Minecraft ${item.version}
-                            </span>
-
-                        </div>
-
-                        <div class="cart-price">
-                            ${item.price} ₽
-                        </div>
-
-                        <button
-                            class="remove-item"
-                            onclick="removeFromCart(${item.id})">
-
-                            ×
-
-                        </button>
-
-                    </div>
-
-                `).join("")}
-
-
-                <div class="cart-total">
-
-                    <span>
-                        Итого
-                    </span>
-
-                    <strong>
-                        ${total} ₽
-                    </strong>
-
-                </div>
-
-
-                <button
-                    class="checkout-button"
-                    onclick="openCheckout()">
-
-                    Перейти к оформлению
-
-                </button>
-
-            </div>
-
-        `
-    );
-
-}
-
-
-cartButton.addEventListener(
-    "click",
-    openCart
-);
-
-
-/* =====================================================
-   CHECKOUT
-===================================================== */
-
-function openCheckout() {
-
-    openModal(
-        "Оформление заказа",
-        `
-
-            <div class="form-group">
-
-                <label>
-                    Minecraft ник
-                </label>
-
-                <input
-                    id="nickname"
-                    type="text"
-                    placeholder="Steve">
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Email
-                </label>
-
-                <input
-                    id="email"
-                    type="email"
-                    placeholder="example@gmail.com">
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Промокод
-                </label>
-
-                <input
-                    id="promo"
-                    type="text"
-                    placeholder="LUNEX">
-
-            </div>
-
-
-            <div class="order-summary">
-
-                <div class="order-summary-row">
-
-                    <span>
-                        Товаров
-                    </span>
-
-                    <strong>
-                        ${cart.length}
-                    </strong>
-
-                </div>
-
-
-                <div
-                    class="order-summary-row"
-                    style="margin-top:10px">
-
-                    <span>
-                        Сумма
-                    </span>
-
-                    <strong id="checkoutPrice">
-                        ${getTotal()} ₽
-                    </strong>
-
-                </div>
+                <strong
+                    id="finalTotal"
+                >
+                    0 ₽
+                </strong>
 
             </div>
 
 
             <button
-                class="checkout-button"
-                onclick="createOrder()">
-
-                Создать заказ
-
+                class="modal-buy"
+                onclick="createOrder()"
+            >
+                💳 Оформить заказ
             </button>
 
+        </div>
 
-            <p style="
-                margin-top:12px;
-                color:#566174;
-                font-size:10px;
-                line-height:1.6;
-            ">
 
-                Демо-режим: реальная платёжная
-                система не подключена.
+        <!-- SUCCESS -->
 
+        <div
+            class="payment-success"
+            id="paymentSuccess"
+        >
+
+            <div class="success-icon">
+                ✓
+            </div>
+
+            <h2>
+                Заказ оформлен!
+            </h2>
+
+            <p>
+                Теперь перейдите на DonationAlerts
+                и оплатите указанную сумму.
             </p>
 
-        `
+
+            <div
+                class="payment-info"
+                id="paymentInfo"
+            ></div>
+
+
+            <a
+                class="pay-link"
+                href="https://www.donationalerts.com/r/fucrool_1"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                💰 Перейти к оплате
+            </a>
+
+
+            <div class="payment-note">
+
+                После оплаты сохраните чек/подтверждение.
+                Выдача привилегии производится администрацией
+                сервера после проверки платежа.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TOAST
+========================= -->
+
+<div
+    class="toast"
+    id="toast"
+>
+    Готово!
+</div>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    © 2026
+    <strong>
+        SPIDRNCHIKKK
+    </strong>
+
+    — Minecraft Server.
+
+    <br>
+
+    Все права защищены.
+
+</footer>
+
+
+<script>
+
+/* =========================================
+   НАСТРОЙКИ
+========================================= */
+
+const SERVER_IP =
+    "play.spidrnchikk.ru";
+
+const PAYMENT_URL =
+    "https://www.donationalerts.com/r/fucrool_1";
+
+
+/* =========================================
+   КОРЗИНА
+========================================= */
+
+let cart = [];
+
+
+/* =========================================
+   ДОБАВЛЕНИЕ В КОРЗИНУ
+========================================= */
+
+function addToCart(name, price){
+
+    const existing =
+        cart.find(item =>
+            item.name === name
+        );
+
+    if(existing){
+
+        existing.quantity++;
+
+    }else{
+
+        cart.push({
+            name:name,
+            price:price,
+            quantity:1
+        });
+
+    }
+
+    updateCart();
+
+    showToast(
+        "🛒 " + name + " добавлен в корзину"
     );
 
 }
 
 
-/* =====================================================
-   TOTAL
-===================================================== */
+/* =========================================
+   ОБНОВЛЕНИЕ КОРЗИНЫ
+========================================= */
 
-function getTotal() {
+function updateCart(){
 
-    let total =
-        cart.reduce(
-            (sum, item) =>
-                sum + item.price,
-            0
+    const container =
+        document.getElementById(
+            "cartItems"
         );
 
+    const footer =
+        document.getElementById(
+            "cartFooter"
+        );
 
-    if (promoDiscount > 0) {
+    const count =
+        document.getElementById(
+            "cartCount"
+        );
 
-        total =
-            Math.round(
-                total *
-                (1 - promoDiscount / 100)
-            );
+    let totalItems = 0;
 
+    let totalPrice = 0;
+
+
+    cart.forEach(item => {
+
+        totalItems += item.quantity;
+
+        totalPrice +=
+            item.price *
+            item.quantity;
+
+    });
+
+
+    count.textContent =
+        totalItems;
+
+
+    if(cart.length === 0){
+
+        container.innerHTML = `
+
+            <div class="cart-empty">
+
+                <div class="cart-empty-icon">
+                    🛒
+                </div>
+
+                <div>
+                    Корзина пуста
+                </div>
+
+                <div
+                    style="
+                        margin-top:7px;
+                        font-size:10px;
+                    "
+                >
+                    Добавьте донат из магазина
+                </div>
+
+            </div>
+
+        `;
+
+        footer.style.display =
+            "none";
+
+        return;
     }
 
 
-    return total;
+    footer.style.display =
+        "block";
+
+
+    container.innerHTML =
+        cart.map((item,index) => `
+
+            <div class="cart-item">
+
+                <div>
+
+                    <div class="cart-item-name">
+                        ${escapeHTML(item.name)}
+                    </div>
+
+                    <div class="cart-item-price">
+                        ${item.price} ₽ × ${item.quantity}
+                    </div>
+
+                </div>
+
+                <div class="cart-actions">
+
+                    <button
+                        class="qty"
+                        onclick="changeQuantity(${index},-1)"
+                    >
+                        −
+                    </button>
+
+                    <span>
+                        ${item.quantity}
+                    </span>
+
+                    <button
+                        class="qty"
+                        onclick="changeQuantity(${index},1)"
+                    >
+                        +
+                    </button>
+
+                    <button
+                        class="remove"
+                        onclick="removeItem(${index})"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+
+    document.getElementById(
+        "cartTotal"
+    ).textContent =
+        totalPrice + " ₽";
 
 }
 
 
-/* =====================================================
-   CREATE ORDER
-===================================================== */
+/* =========================================
+   ИЗМЕНЕНИЕ КОЛИЧЕСТВА
+========================================= */
 
-function createOrder() {
+function changeQuantity(index,change){
+
+    cart[index].quantity += change;
+
+
+    if(cart[index].quantity <= 0){
+
+        cart.splice(index,1);
+
+    }
+
+
+    updateCart();
+
+}
+
+
+/* =========================================
+   УДАЛЕНИЕ
+========================================= */
+
+function removeItem(index){
+
+    const name =
+        cart[index].name;
+
+    cart.splice(index,1);
+
+    updateCart();
+
+    showToast(
+        "Удалено: " + name
+    );
+
+}
+
+
+/* =========================================
+   ОТКРЫТИЕ КОРЗИНЫ
+========================================= */
+
+function openCart(){
+
+    document
+        .getElementById("cartOverlay")
+        .classList.add("active");
+
+}
+
+
+/* =========================================
+   ЗАКРЫТИЕ КОРЗИНЫ
+========================================= */
+
+function closeCart(){
+
+    document
+        .getElementById("cartOverlay")
+        .classList.remove("active");
+
+}
+
+
+/* =========================================
+   CHECKOUT
+========================================= */
+
+function openCheckout(){
+
+    if(cart.length === 0){
+
+        showToast(
+            "❌ Корзина пуста"
+        );
+
+        return;
+    }
+
+
+    closeCart();
+
+
+    renderOrder();
+
+
+    document
+        .getElementById("checkoutForm")
+        .style.display =
+        "block";
+
+
+    document
+        .getElementById("paymentSuccess")
+        .classList.remove("active");
+
+
+    document
+        .getElementById("checkoutModal")
+        .classList.add("active");
+
+}
+
+
+/* =========================================
+   ОТОБРАЖЕНИЕ ЗАКАЗА
+========================================= */
+
+function renderOrder(){
+
+    const list =
+        document.getElementById(
+            "orderList"
+        );
+
+    let total = 0;
+
+
+    list.innerHTML =
+        cart.map(item => {
+
+            const sum =
+                item.price *
+                item.quantity;
+
+            total += sum;
+
+            return `
+
+                <div class="order-row">
+
+                    <span>
+                        ${escapeHTML(item.name)}
+                        × ${item.quantity}
+                    </span>
+
+                    <strong>
+                        ${sum} ₽
+                    </strong>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+
+    document.getElementById(
+        "finalTotal"
+    ).textContent =
+        total + " ₽";
+
+}
+
+
+/* =========================================
+   СОЗДАНИЕ ЗАКАЗА
+========================================= */
+
+function createOrder(){
 
     const nickname =
         document
@@ -3130,351 +2676,306 @@ function createOrder() {
             .value
             .trim();
 
-    const email =
+
+    if(!nickname){
+
+        showToast(
+            "❌ Введите Minecraft ник"
+        );
+
         document
-            .getElementById("email")
-            .value
-            .trim();
+            .getElementById("nickname")
+            .focus();
 
-    const promo =
-        document
-            .getElementById("promo")
-            .value
-            .trim()
-            .toUpperCase();
+        return;
+    }
 
 
-    if (!nickname) {
+    if(nickname.length < 2){
 
-        showNotification(
-            "Введите Minecraft ник"
+        showToast(
+            "❌ Слишком короткий ник"
         );
 
         return;
-
     }
 
 
-    if (!email || !email.includes("@")) {
+    let total = 0;
 
-        showNotification(
-            "Введите корректный Email"
+
+    let products = [];
+
+
+    cart.forEach(item => {
+
+        const sum =
+            item.price *
+            item.quantity;
+
+        total += sum;
+
+
+        products.push(
+            item.name +
+            " × " +
+            item.quantity
         );
 
-        return;
-
-    }
-
-
-    if (promo === "LUNEX") {
-
-        promoDiscount = 10;
-
-    } else {
-
-        promoDiscount = 0;
-
-    }
+    });
 
 
     const orderId =
-        "LX-" +
-        Math.floor(
-            100000 +
-            Math.random() * 900000
+        "SP-" +
+        Date.now()
+            .toString()
+            .slice(-8);
+
+
+    const info =
+        document.getElementById(
+            "paymentInfo"
         );
 
 
-    const total =
-        getTotal();
+    info.innerHTML = `
 
-
-    cart = [];
-
-    saveCart();
-
-    updateCart();
-
-
-    openModal(
-        "Заказ создан",
-        `
-
-            <div style="
-                text-align:center;
-                padding:20px 0;
-            ">
-
-                <div style="
-                    width:65px;
-                    height:65px;
-                    margin:0 auto 20px;
-                    display:grid;
-                    place-items:center;
-                    border-radius:50%;
-                    background:#147cff;
-                    font-size:28px;
-                    box-shadow:
-                    0 0 35px
-                    rgba(20,124,255,.35);
-                ">
-
-                    ✓
-
-                </div>
-
-
-                <h3 style="
-                    font-family:Orbitron;
-                    margin-bottom:10px;
-                ">
-
-                    Спасибо за заказ!
-
-                </h3>
-
-
-                <p style="
-                    color:#697488;
-                    font-size:12px;
-                ">
-
-                    Номер заказа:
-
-                </p>
-
-
-                <strong style="
-                    display:block;
-                    margin:8px 0 20px;
-                    color:#4b98ff;
-                    font-family:Orbitron;
-                ">
-
-                    ${orderId}
-
-                </strong>
-
-
-                <p style="
-                    color:#697488;
-                    font-size:11px;
-                ">
-
-                    Сумма:
-                    <b style="color:white">
-                        ${total} ₽
-                    </b>
-
-                </p>
-
-
-                <button
-                    class="checkout-button"
-                    onclick="closeModalWindow()">
-
-                    Готово
-
-                </button>
-
-            </div>
-
-        `
-    );
-
-}
-
-
-/* =====================================================
-   NOTIFICATION
-===================================================== */
-
-function showNotification(message) {
-
-    const old =
-        document.querySelector(".notification");
-
-    if (old) {
-        old.remove();
-    }
-
-
-    const notification =
-        document.createElement("div");
-
-    notification.className =
-        "notification";
-
-
-    notification.innerHTML = `
-
-        <div class="notification-icon">
-            ✓
+        <div>
+            <strong>Номер заказа:</strong>
+            ${orderId}
         </div>
 
-        <span>
-            ${message}
-        </span>
+        <div>
+            <strong>Игрок:</strong>
+            ${escapeHTML(nickname)}
+        </div>
+
+        <div>
+            <strong>Товары:</strong>
+            ${escapeHTML(products.join(", "))}
+        </div>
+
+        <div>
+            <strong>Сумма:</strong>
+            ${total} ₽
+        </div>
 
     `;
 
 
-    document.body.appendChild(
-        notification
+    document
+        .getElementById("checkoutForm")
+        .style.display =
+        "none";
+
+
+    document
+        .getElementById("paymentSuccess")
+        .classList.add("active");
+
+
+    /*
+        Очищаем корзину после создания заказа.
+    */
+
+    cart = [];
+
+    updateCart();
+
+
+    showToast(
+        "✅ Заказ " +
+        orderId +
+        " создан"
     );
-
-
-    requestAnimationFrame(() => {
-
-        notification.classList.add(
-            "show"
-        );
-
-    });
-
-
-    setTimeout(() => {
-
-        notification.classList.remove(
-            "show"
-        );
-
-        setTimeout(() => {
-
-            notification.remove();
-
-        }, 300);
-
-    }, 2500);
 
 }
 
 
-/* =====================================================
-   FAQ
-===================================================== */
+/* =========================================
+   ЗАКРЫТИЕ CHECKOUT
+========================================= */
 
-document
-    .querySelectorAll(".faq-question")
-    .forEach(question => {
+function closeCheckout(){
 
-        question.addEventListener(
-            "click",
-            () => {
+    document
+        .getElementById("checkoutModal")
+        .classList.remove("active");
 
-                const item =
-                    question.parentElement;
-
-                item.classList.toggle(
-                    "open"
-                );
+}
 
 
-                const icon =
-                    question.querySelector(
-                        "span"
-                    );
+/* =========================================
+   КОПИРОВАНИЕ IP
+========================================= */
+
+function copyIP(){
+
+    navigator
+        .clipboard
+        .writeText(SERVER_IP)
+        .then(() => {
+
+            showToast(
+                "📋 IP скопирован!"
+            );
+
+        })
+        .catch(() => {
+
+            showToast(
+                "IP: " + SERVER_IP
+            );
+
+        });
+
+}
 
 
-                icon.textContent =
-                    item.classList.contains("open")
-                        ? "−"
-                        : "+";
+/* =========================================
+   ОНЛАЙН
+========================================= */
 
-            }
-        );
+function updateOnline(){
 
-    });
+    /*
+        Пока это демонстрационный онлайн.
+        Здесь можно подключить API сервера.
+    */
+
+    const online =
+        Math.floor(
+            Math.random() *
+            (280 - 190 + 1)
+        ) + 190;
 
 
-/* =====================================================
-   MOBILE MENU
-===================================================== */
-
-const menuButton =
     document.getElementById(
-        "menuButton"
-    );
+        "players"
+    ).textContent =
+        online;
 
-const navLinks =
+
     document.getElementById(
-        "navLinks"
-    );
+        "navOnline"
+    ).textContent =
+        online + " игроков";
+
+}
 
 
-menuButton.addEventListener(
-    "click",
-    () => {
-
-        navLinks.classList.toggle(
-            "open"
-        );
-
-    }
+setInterval(
+    updateOnline,
+    5000
 );
 
 
-document
-    .querySelectorAll(".nav-links a")
-    .forEach(link => {
+/* =========================================
+   TOAST
+========================================= */
 
-        link.addEventListener(
-            "click",
-            () => {
+let toastTimer;
 
-                navLinks.classList.remove(
-                    "open"
-                );
 
-            }
+function showToast(text){
+
+    const toast =
+        document.getElementById(
+            "toast"
         );
 
-    });
+
+    toast.textContent =
+        text;
 
 
-/* =====================================================
-   HEADER SCROLL
-===================================================== */
+    toast.classList.add(
+        "show"
+    );
 
-window.addEventListener(
-    "scroll",
-    () => {
 
-        const header =
-            document.getElementById(
-                "header"
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(() => {
+
+            toast.classList.remove(
+                "show"
             );
 
+        },2500);
 
-        if (window.scrollY > 30) {
+}
 
-            header.classList.add(
-                "scrolled"
-            );
 
-        } else {
+/* =========================================
+   ЗАЩИТА HTML
+========================================= */
 
-            header.classList.remove(
-                "scrolled"
-            );
+function escapeHTML(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================================
+   ЗАКРЫТИЕ ПО ФОНУ
+========================================= */
+
+document
+    .getElementById("cartOverlay")
+    .addEventListener(
+        "click",
+        function(event){
+
+            if(event.target === this){
+
+                closeCart();
+
+            }
 
         }
-
-    }
-);
+    );
 
 
-/* =====================================================
-   ESCAPE MODAL
-===================================================== */
+document
+    .getElementById("checkoutModal")
+    .addEventListener(
+        "click",
+        function(event){
+
+            if(event.target === this){
+
+                closeCheckout();
+
+            }
+
+        }
+    );
+
+
+/* =========================================
+   ESC
+========================================= */
 
 document.addEventListener(
     "keydown",
-    event => {
+    function(event){
 
-        if (event.key === "Escape") {
+        if(event.key === "Escape"){
 
-            closeModalWindow();
+            closeCart();
+
+            closeCheckout();
 
         }
 
@@ -3482,13 +2983,11 @@ document.addEventListener(
 );
 
 
-/* =====================================================
-   INIT
-===================================================== */
+/* =========================================
+   START
+========================================= */
 
-loadCart();
-
-renderProducts();
+updateCart();
 
 </script>
 
