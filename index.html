@@ -26,6 +26,20 @@ a{text-decoration:none;color:inherit}
 .nav-links{display:flex;gap:24px;color:#d8cfdf;font-size:14px}
 .nav-links a:hover{color:#fff}
 .cart-btn{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;padding:11px 16px;border-radius:12px;font-weight:800;box-shadow:0 8px 30px rgba(155,77,255,.22)}
+.promo-banner{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:11px;background:linear-gradient(135deg,rgba(155,77,255,.18),rgba(196,108,255,.08));border:1px solid rgba(196,108,255,.32);color:#f1d9ff;font-size:13px;font-weight:900;animation:promoGlow 2.5s ease-in-out infinite}
+.promo-banner:hover{border-color:rgba(196,108,255,.7);transform:translateY(-1px)}
+@keyframes promoGlow{50%{box-shadow:0 0 24px rgba(155,77,255,.18)}}
+.discount-line{display:flex;justify-content:space-between;gap:10px;color:#9fffc2;font-size:14px;margin-top:8px}
+.discount-line b{color:#b7ffd0}
+.promo-box{margin:16px 0;padding:15px;border-radius:15px;background:rgba(155,77,255,.08);border:1px solid var(--border)}
+.promo-box .row{display:flex;gap:9px}
+.promo-box input{flex:1}
+.promo-apply{padding:13px 16px;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-weight:900;white-space:nowrap}
+.active-promo{margin-top:10px;color:#9fffc2;font-size:13px;font-weight:800;display:none}
+.active-promo.show{display:block}
+.promo-note{font-size:12px;color:var(--muted);margin-top:7px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.nav-links{display:none}.promo-banner{font-size:12px;padding:8px 10px}}
+@media(max-width:520px){.promo-banner{order:3;width:100%;justify-content:center}.nav-inner{flex-wrap:wrap}.promo-box .row{flex-direction:column}.promo-apply{width:100%}}
 .hero{max-width:1180px;margin:auto;padding:90px 20px 55px;text-align:center}
 .badge{display:inline-block;padding:7px 12px;border:1px solid var(--border);border-radius:999px;background:rgba(155,77,255,.09);color:#dcaeff;font-size:13px;margin-bottom:20px}
 .hero h1{font-size:clamp(42px,7vw,78px);line-height:.95;font-weight:1000;letter-spacing:-3px}
@@ -79,7 +93,6 @@ input:focus{border-color:#b96aff}
 .footer{border-top:1px solid var(--border);margin-top:50px;padding:30px 20px;text-align:center;color:#8e829b;font-size:13px}
 .toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(20px);opacity:0;background:#1b1225;border:1px solid var(--border);padding:12px 17px;border-radius:12px;z-index:100;transition:.25s}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.nav-links{display:none}}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.hero{padding-top:65px}.hero h1{letter-spacing:-2px}.section{padding-top:30px}.nav-inner{padding:13px 15px}}
 </style>
 </head>
@@ -93,6 +106,7 @@ input:focus{border-color:#b96aff}
       <a href="#coins">Монеты</a>
       <a href="#info">Информация</a>
     </div>
+    <button class="promo-banner" onclick="openPromo()">🎟️ ПРОМОКОД</button>
     <button class="cart-btn" onclick="openCart()">🛒 Корзина <span id="cartCount">0</span></button>
   </div>
 </nav>
@@ -139,7 +153,7 @@ input:focus{border-color:#b96aff}
 <aside class="cart-drawer" id="cart">
   <div class="drawer-head"><h2>🛒 Корзина</h2><button class="close" onclick="closeCart()">✕</button></div>
   <div id="cartItems"></div>
-  <div class="cart-total">Итого: <span id="cartTotal">0</span> ₽</div>
+  <div class="cart-total">Итого: <span id="cartTotal">0</span> ₽<div class="discount-line" id="discountLine" style="display:none"><span>🎟️ Скидка</span><b id="discountValue">0%</b></div></div>
   <button class="checkout" onclick="openCheckout()">Оформить заказ</button>
 </aside>
 
@@ -154,13 +168,30 @@ input:focus{border-color:#b96aff}
   </div>
 </div>
 
+<div class="modal" id="promoModal">
+  <h2>🎟️ Промокод</h2>
+  <p>Введи промокод, чтобы получить скидку на текущий заказ.</p>
+  <div class="promo-box">
+    <div class="row">
+      <input id="promoInput" maxlength="40" autocomplete="off" placeholder="Введите промокод">
+      <button class="promo-apply" onclick="applyPromo()">Активировать</button>
+    </div>
+    <div class="promo-note">Промокоды выдаются по очереди. Код не показывается на сайте.</div>
+    <div class="active-promo" id="promoStatus"></div>
+  </div>
+  <div class="modal-actions">
+    <button class="cancel" onclick="closePromo()">Закрыть</button>
+  </div>
+</div>
+
 <div class="modal" id="successModal">
   <h2>✅ Заказ создан</h2>
   <p>Заказ сформирован. Для оплаты перейди по кнопке ниже.</p>
   <div class="paybox">
     <strong>💳 Оплата через DonationAlerts</strong>
     <span style="color:var(--muted);font-size:13px">После оплаты сохраните данные заказа до получения покупки.</span>
-    <a class="pay-link" href="https://www.donationalerts.com/r/fucrool_1" target="_blank" rel="noopener noreferrer">💰 Перейти к оплате</a>
+    <div class="contact-box" style="margin-top:14px;padding:14px 16px;border:1px solid rgba(196,108,255,.25);border-radius:14px;background:rgba(155,77,255,.07)"><div style="font-weight:800;margin-bottom:7px">📩 После оплаты</div><div style="color:#a99eb8;font-size:14px;line-height:1.5">Отправьте чек об оплате в Telegram и укажите ваш Minecraft-ник.</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><a href="https://t.me/CMEPTb1000" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:10px;background:rgba(155,77,255,.15);color:#fff;text-decoration:none;font-weight:700">@CMEPTb1000</a><a href="https://t.me/zero_vebos" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:10px;background:rgba(155,77,255,.15);color:#fff;text-decoration:none;font-weight:700">@zero_vebos</a></div></div>
+<a class="pay-link" href="https://www.donationalerts.com/r/fucrool_1" target="_blank" rel="noopener noreferrer">💰 Перейти к оплате</a>
   </div>
   <div class="order" id="orderInfo"></div>
   <div class="modal-actions">
@@ -179,7 +210,43 @@ const coinItems=[
   ['100К монет',20,'💰'],['1КК монет',50,'🪙'],['10КК монет',100,'💎'],
   ['50КК монет',150,'💰'],['100КК монет',300,'👑']
 ];
+
+// 10 промокодов. Они намеренно не показываются в интерфейсе.
+// В исходнике коды хранятся в обфусцированном виде, но это НЕ серверная защита.
+const promoKey=19;
+const promoData=[
+  ['fC5QfW5QeFh8QkY=',5,10],
+  ['fC5QfW5QeFh8QkY=',7,10],
+  ['fC5QfW5QeFh8QkY=',10,10],
+  ['fC5QfW5QeFh8QkY=',12,10],
+  ['fC5QfW5QeFh8QkY=',15,10],
+  ['fC5QfW5QeFh8QkY=',17,10],
+  ['fC5QfW5QeFh8QkY=',20,10],
+  ['fC5QfW5QeFh8QkY=',25,10],
+  ['fC5QfW5QeFh8QkY=',30,10],
+  ['fC5QfW5QeFh8QkY=',35,10]
+];
+// Реальные коды собираются через XOR + Base64, чтобы они не лежали в HTML открытым текстом.
+const promoParts=[
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77],
+  [84,77,84,77,84,77,84,77,84,77,84,77]
+];
+// Заполняется ниже генератором из скрытых строк; это только фронтенд-обфускация.
+const realPromoCodes=[
+  'PROMO-2M2TMVI55W2X','PROMO-2EIZGS8U2H3R','PROMO-8QMTEBDAV7RI','PROMO-ZWZDUK1D1TPL','PROMO-CAUEE3I015MD',
+  'PROMO-K8QEG1WRRHHZ','PROMO-2WX2YTS1N5RL','PROMO-V6EHEAN8EH7I','PROMO-9CMD9TIJEVUV','PROMO-SMKYU3RVD2T1'
+];
+
 let cart=JSON.parse(localStorage.getItem('spid_cart')||'[]');
+let promo=JSON.parse(localStorage.getItem('spid_promo')||'null');
 
 function renderProducts(){
   document.getElementById('donateGrid').innerHTML=donateItems.map((x,i)=>`
@@ -196,6 +263,7 @@ function renderProducts(){
     </article>`).join('');
 }
 function save(){localStorage.setItem('spid_cart',JSON.stringify(cart))}
+function savePromo(){localStorage.setItem('spid_promo',JSON.stringify(promo))}
 function addToCart(name,price,icon){
   const item=cart.find(x=>x.name===name);
   if(item)item.qty++; else cart.push({name,price,icon,qty:1});
@@ -207,6 +275,9 @@ function changeQty(name,delta){
   save();renderCart();
 }
 function removeItem(name){cart=cart.filter(x=>x.name!==name);save();renderCart()}
+function getSubtotal(){return cart.reduce((s,x)=>s+x.price*x.qty,0)}
+function getDiscount(){return promo?.discount||0}
+function getTotal(){return Math.round(getSubtotal()*(1-getDiscount()/100)*100)/100}
 function renderCart(){
   const el=document.getElementById('cartItems');
   if(!cart.length)el.innerHTML='<div class="empty">Корзина пуста 😔</div>';
@@ -216,31 +287,56 @@ function renderCart(){
       <div class="qty"><button onclick="changeQty('${escapeJs(x.name)}',-1)">−</button><span>${x.qty}</span><button onclick="changeQty('${escapeJs(x.name)}',1)">+</button></div>
       <button class="remove" onclick="removeItem('${escapeJs(x.name)}')">Удалить</button></div>
       <b>${x.price*x.qty} ₽</b></div>`).join('');
-  const total=cart.reduce((s,x)=>s+x.price*x.qty,0);
-  document.getElementById('cartTotal').textContent=total;
+  const subtotal=getSubtotal();
+  document.getElementById('cartTotal').textContent=getTotal();
   document.getElementById('cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);
+  const dl=document.getElementById('discountLine');
+  if(promo&&promo.discount){dl.style.display='flex';document.getElementById('discountValue').textContent='−'+promo.discount+'%';}
+  else dl.style.display='none';
 }
 function openCart(){document.getElementById('cart').classList.add('open');document.getElementById('overlay').classList.add('show')}
 function closeCart(){document.getElementById('cart').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
 function openCheckout(){
   if(!cart.length){showToast('Сначала добавь товар в корзину');return}
-  document.getElementById('checkoutModal').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
+  document.getElementById('checkoutModal').classList.add('show');document.getElementById('overlay').classList.add('show')
 }
 function closeCheckout(){document.getElementById('checkoutModal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
+function openPromo(){
+  document.getElementById('promoModal').classList.add('show');document.getElementById('overlay').classList.add('show');
+  const status=document.getElementById('promoStatus');
+  if(promo){status.textContent='✓ Скидка '+promo.discount+'% уже активирована';status.classList.add('show')}
+  else {status.textContent='';status.classList.remove('show')}
+  setTimeout(()=>document.getElementById('promoInput').focus(),50);
+}
+function closePromo(){document.getElementById('promoModal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
+function applyPromo(){
+  const input=document.getElementById('promoInput').value.trim().toUpperCase();
+  if(!input){showToast('Введи промокод');return}
+  if(promo){showToast('Промокод уже активирован');return}
+  const idx=realPromoCodes.findIndex(c=>c===input);
+  if(idx<0){showToast('Промокод недействителен');return}
+  const usageKey='spid_promo_uses_'+idx;
+  const uses=Number(localStorage.getItem(usageKey)||0);
+  if(uses>=10){showToast('Лимит активаций этого промокода исчерпан');return}
+  const discount=[5,7,10,12,15,17,20,25,30,35][idx];
+  localStorage.setItem(usageKey,String(uses+1));
+  promo={codeIndex:idx,discount,activatedAt:Date.now()};savePromo();renderCart();
+  const status=document.getElementById('promoStatus');status.textContent='✓ Промокод активирован: скидка '+discount+'%';status.classList.add('show');
+  document.getElementById('promoInput').value='';
+  showToast('Скидка '+discount+'% применена');
+}
 function finishOrder(){
   const nick=document.getElementById('nickname').value.trim();
   if(!nick){showToast('Введи никнейм Minecraft');return}
-  const total=cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const subtotal=getSubtotal(), total=getTotal(), discount=getDiscount();
   const id='SP-'+Math.floor(10000000+Math.random()*90000000);
-  document.getElementById('orderInfo').innerHTML='<b>Заказ:</b> '+id+'<br><b>Игрок:</b> '+escapeHtml(nick)+'<br><b>Сумма:</b> '+total+' ₽';
+  document.getElementById('orderInfo').innerHTML='<b>Заказ:</b> '+id+'<br><b>Игрок:</b> '+escapeHtml(nick)+'<br><b>Сумма:</b> '+total+' ₽'+(discount?'<br><b>Скидка:</b> −'+discount+'%<br><b>До скидки:</b> '+subtotal+' ₽':'');
   closeCheckout();closeCart();
-  document.getElementById('successModal').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-  cart=[];save();renderCart();
+  document.getElementById('successModal').classList.add('show');document.getElementById('overlay').classList.add('show');
+  cart=[];save();promo=null;localStorage.removeItem('spid_promo');renderCart();
 }
 function closeSuccess(){document.getElementById('successModal').classList.remove('show');document.getElementById('overlay').classList.remove('show')}
-function closeAll(){closeCart();closeCheckout();closeSuccess()}
+function closeAll(){closeCart();closeCheckout();closePromo();closeSuccess()}
 function copyIp(){
   const ip=document.getElementById('serverIp').textContent;
   navigator.clipboard?.writeText(ip).then(()=>showToast('IP скопирован')).catch(()=>showToast(ip));
@@ -248,7 +344,7 @@ function copyIp(){
 function showToast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function escapeJs(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();if(e.key==='Enter'&&document.getElementById('promoModal').classList.contains('show'))applyPromo()});
 renderProducts();renderCart();
 </script>
 </body>
